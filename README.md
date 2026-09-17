@@ -1,6 +1,8 @@
-<img src="public/favicon.svg" width="64" height="64" alt="Incline logo" />
+<p align="center">
+  <img src="public/favicon.svg" width="96" height="96" alt="Incline logo" />
+</p>
 
-# Incline
+<h1 align="center">incline</h1>
 
 A local taste-calibration companion for coding agents. The agent starts a temporary browser experience, the user explores visual directions, and Incline saves contextual preference evidence back to the project before closing the server.
 
