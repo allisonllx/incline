@@ -59,6 +59,70 @@ Implemented optional source: [getdesign.md's public VoltAgent repository](https:
 
 DesignMD can provide an optional source of guides and examples for users with access. On 2026-09-17 the user reported that key retrieval says anonymous free key issuance is closed, existing personal keys still work, and new access is available through a trial/paid flow. This supersedes the assumption that new users can obtain free access from the advertised free tool tier. Do not make DesignMD onboarding a dependency or promise a free integration for new users. Trial terms, current checkout pricing and authenticated access remain unverified. Recheck the [provider's access terms](https://www.designmd.co/mcp) before integration; keep ordinary links, user-provided files and original guides sufficient. No provider is installed or called by the current local workflow.
 
+## Next milestone: feedback and explainable taste refinement
+
+These are planned capabilities, not claims about the current runtime. Prioritize saved design feedback, competing interpretations and checks against confirmed preferences before autonomous profile evolution. A taste profile remains an incomplete, contextual record with room for unknown and unfamiliar directions.
+
+### Make design feedback part of the saved evidence
+
+After generation, associate the actual result and the user's reaction with the relevant project, collection and collection revision. Preserve a stable artifact version or visual snapshot where available, rather than relying only on a URL whose appearance may later change. Record the exact feedback, when it was given, the aspect it concerns and any explicit scope. Keep original events and link later corrections instead of overwriting the history.
+
+For example, the user's “damn I like it” about Sidenote should preserve that successful result alongside its collection. It is evidence of overall approval in that context, not proof that every individual detail was endorsed. A later “make the headings smaller” concerns heading size; it must not erase the successful example, imply that everything else was disliked, or establish a universal preference for small headings. Silence about other aspects remains unknown. This is a future capture requirement; adding this example to the roadmap does not itself update a taste profile.
+
+Retain the path to the result: designs and comparisons actually shown, reactions, revisions, alternatives explored and explicit qualities to preserve. A final summary such as “likes editorial design” is not a replacement for that evidence. Keep feedback project-local unless the user explicitly chooses to save a personal copy.
+
+### Make profile updates explainable and resistant to regression
+
+Separate direct user statements, observed choices, agent interpretations and unresolved questions. Each proposed preference should point to its supporting and conflicting evidence, source artifact and project context. Show what would change, why, and where the proposed rule applies. Keep the installed skill instructions stable while versioned taste evidence evolves outside the skill package.
+
+Maintain several plausible explanations when a choice is ambiguous. Choosing a newspaper-style design could reflect typography, density, nostalgia or a combination; a single choice does not establish which. Inferences should remain provisional rather than becoming instructions through repetition by the agent.
+
+Before applying an inferred update, check existing explicit “keep” instructions and relevant confirmed examples across contexts. Preserve alternatives such as expressive portfolios and restrained dashboards. A new explicit instruction takes precedence within its stated scope; an agent hypothesis must not silently override it. Explain conflicts and use a focused clarification when their resolution would materially change the design. Preserve earlier versions and the evidence for superseding a preference so changes remain understandable and reversible.
+
+### Build automated evaluations for that behaviour
+
+Add scenarios that evaluate the agent's interpretation and application of evidence, alongside the existing storage and API tests:
+
+- Likes expressive portfolios but restrained dashboards: apply the relevant context without merging them into one style.
+- Approves typography, then requests tighter spacing: change spacing while preserving the explicit typography instruction.
+- Approves a result, then asks for smaller headings: retain overall approval and record a correction to that aspect.
+- Selects one complex composition over another without explanation: retain competing interpretations and avoid claiming an isolated font or colour preference.
+- Imports a personal collection into a new project: retain provenance and review inherited context without treating every old preference as newly approved.
+- Gives a newer, explicitly scoped correction: supersede the conflicting instruction within that scope while preserving its historical source and other contexts.
+- Does not mention an earlier preference: do not infer rejection, expiry or reaffirmation from silence.
+
+Compare proposed interpretations with the current profile and check individual preservation requirements, not just an aggregate score that can conceal regressions. Where enough feedback exists, reserve some confirmed examples from the update process for evaluation; do not claim independent validation when the same evidence was used to construct and assess the update. Include cases where the correct behaviour is to remain uncertain or ask a targeted question. These evaluations can catch reasoning and preservation errors; neither automated scores nor an agent's aesthetic judgment certify that a design matches the user's taste.
+
+### Validate the complete workflow across agents
+
+Project/global installation and the standalone runtime have been checked for Codex, including temporary two-project reuse, draft resume and completion. Explicit personal-library reuse is already implemented; it is no longer a future feature to add after testing.
+
+Remaining work is hands-on validation of the full agent experience in clean projects with Codex, Cursor and Claude Code: native skill discovery, launch from the active project, opening the visual session, resume, completion, reading the resulting brief and applying it to a generated design. Include local and global installation, available filesystem permissions, project-only mode, selected collection reuse and independence of project edits. Test the new feedback-capture flow when it exists. Do not equate a successful CLI installation or HTTP test with proof that every agent completes the entire workflow correctly.
+
+### Introduce targeted follow-up comparisons
+
+Use a few relevant compositions to clarify a specific uncertainty rather than requiring another complete quiz. For the newspaper example, keep typography similar while varying layout, then explore whether the preference carries into a different project context. Label comparisons that vary several qualities so the agent does not overstate what they isolate.
+
+Retain “both,” “neither,” “depends,” free-text direction and the option to stop. Include suitable unfamiliar directions so the system does not repeatedly show only variations of its current best guess. Optimize for useful clarification with reasonable user effort, not for quiz completion, agreement with the current profile or making a profile appear comprehensive.
+
+### Learn how to explore: the Dream-RSI connection
+
+The user linked [Max For AI's Dream-RSI post](https://x.com/MaxForAI/status/2100111071726174279). The [project's own description](https://dream-rsi.com/) explains replaying already evaluated discovery branches to improve exploration policies. Its authors also report that summarized directional advice narrowed exploration and underperformed in their experiments. This motivates testing how Incline selects comparisons and balances further exploration with refinement; it does not establish that the same method already works for subjective design taste.
+
+Keep exploration strategy separate from taste evidence. Recorded interactions could help compare candidate question-selection or interpretation strategies, alongside the current strategy as a baseline. Preserve multiple hypotheses and inspect where alternative strategies would require feedback that was never collected.
+
+Replay can use only observed evidence. It cannot recover the user's response to an unseen design, an unasked question or a different ordering of interactions. Predicted or simulated reactions must remain labeled hypotheses and must never become user evidence. Better scores on historical feedback do not guarantee better future designs or prevent all regressions; evaluate new strategies with real user feedback before adopting them broadly. A large autonomous replay system is a later research option, not a dependency for the first feedback milestone.
+
+## Later: preferences that change over time
+
+Introduce feedback-event timestamps and source context when building feedback capture. Track when a preference was explicitly reaffirmed or superseded; merely reading or applying a stored preference must not count as reaffirmation. Preserve the existing session creation time and original statements.
+
+Distinguish changes in project context, a temporary experiment, repeated changes in comparable situations and an explicit statement such as “I don't like this anymore.” A single contrasting choice is insufficient to infer a lasting change. New explicit instructions govern their stated scope, while historical evidence remains available for understanding earlier work.
+
+Older evidence may become less certain as a guide to current taste without being deleted or rewritten. Do not silently expire explicit preservation instructions or interpret a long absence of interaction as dislike. When a conflict matters, offer a lightweight scope clarification such as “For this project,” “Exploring something new,” or “Update my usual preference.” Personal-library updates remain an explicit choice.
+
+Automated detection of long-term taste changes is lower priority. Collect the necessary temporal evidence now, then evaluate any ageing or change-detection policy against real longitudinal usage. Avoid an arbitrary universal expiry period, repeated compulsory quizzes, or a single global taste score that erases multiple active directions. Extend regression scenarios to verify both preservation and justified change: freezing outdated preferences forever can also produce the wrong result.
+
 ## Future expansion: posters and slides
 
 These are planned extensions, not part of the current implementation.
@@ -71,11 +135,12 @@ Add a medium alongside project context so that a bold poster preference need not
 
 ## Suggested sequence
 
-1. Complete hands-on trials of the standard installation and personal-library workflow in coding agents; collect feedback on launch, reuse, resume and return to the original task.
-2. Make generated results and subsequent feedback durable evidence. Track explicit statements separately from agent hypotheses and evaluate updates against earlier preservation instructions and project context.
-3. Use collected evidence to guide optional follow-up comparisons. Add reference providers only when needed, keeping the standalone workflow complete.
-4. Add a versioned medium field and separate comparison catalogs while preserving existing website profiles.
-5. Pilot posters with varied real compositions; then pilot slides with both individual slides and sequences. Select evidence relevant to each project's medium and context.
+1. Validate the complete workflow across coding agents, building on the implemented standard installation and explicit personal-library reuse.
+2. Save generated results and aspect-specific feedback with artifact versions, source context and timestamps. Keep direct user statements separate from agent hypotheses.
+3. Add explainable, versioned profile updates with competing interpretations, preservation checks and automated behavioural evaluations across contexts.
+4. Introduce targeted follow-up comparisons, including unfamiliar directions. Evaluate question-selection strategies against recorded evidence and real user feedback; defer a large autonomous replay system.
+5. Evaluate long-term preference changes once longitudinal evidence is sufficient, retaining explicit scope, history and user control. This is lower priority than the feedback and regression work above.
+6. Add a versioned medium field and separate comparison catalogs while preserving existing website profiles. Pilot posters, then slides, using evidence relevant to each project's medium and context. Additional reference providers remain optional and should be added only when needed.
 
 ## Preserve what already works
 
