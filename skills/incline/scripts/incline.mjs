@@ -1337,7 +1337,7 @@ ${next.filter((s) => s.complete).map(exportMarkdown).join("\n---\n\n")}`
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer",
-        "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"
+        "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: http: data:; frame-ancestors 'none'; base-uri 'none'"
       });
       res.end(req.method === "HEAD" ? void 0 : bytes);
     } catch (e) {

@@ -55,6 +55,8 @@ If the user already gave a description, images or links, carry them into the ses
 
 All fields are optional. Each reference needs exactly one `file` or `url`; optional `title` and `note` retain user wording. Relative files resolve from the JSON file's directory. PNG, JPEG, WebP and GIF are supported, up to 8 MB each and 24 references per collection. Imports copy images into the project and mark them as inspiration. URLs must be HTTP(S); they are saved as links without automatically fetching previews. The opened page starts at the imported collection for the user to review. If conversation images are unavailable as local files, preserve the description and explain the missing attachment instead of inventing a substitute.
 
+The image drop area accepts files and web-image drags, including embedded thumbnails. A remote image must permit browser access; if copying is blocked, ask the user to save the image and choose the local file. Google Images may provide a thumbnail rather than the full-resolution source. Never claim the full-size original was retrieved solely because a thumbnail imported successfully.
+
 Markdown design guides can also be imported as `file` (UTF-8 `.md` or `.markdown`, up to 200 KB), with an optional `sourceUrl`. The local editor supports uploading or pasting them. For finding and importing public getdesign.md references, guide interpretation, optional provider access, or writing a project-specific `DESIGN.md`, read [Design guides as references](references/design-guides.md).
 
 ## Interpret a collection

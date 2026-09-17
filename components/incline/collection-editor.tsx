@@ -25,6 +25,7 @@ import {
   type Reference,
 } from '@/lib/collection';
 import { exportMarkdown, getRounds, type Session } from '@/lib/taste';
+import { fetchDroppedImage, resolveImageDrop } from '@/lib/image-drop';
 import type { Connection } from './use-session-store';
 import { GuideInput, ReferenceGuide, type GuideUpload } from './design-guide';
 
@@ -189,7 +190,7 @@ export function CollectionEditor({
     setUrl('');
     setError('');
   }
-  async function addImages(files: File[]) {
+  async function addImages(files: File[], imageUrl?: string) {
     if (inFlight.current || finishing) return;
     if (!connection) {
       setError(
@@ -197,29 +198,35 @@ export function CollectionEditor({
       );
       return;
     }
-    if (files.length + latest.current.collection!.references.length > 24) {
+    if (!files.length && !imageUrl) return;
+    if (
+      (imageUrl ? 1 : files.length) +
+        latest.current.collection!.references.length >
+      24
+    ) {
       setError(
         'Choose fewer images. Each collection holds up to 24 references.',
       );
-      return;
-    }
-    const invalid = files.find(
-      (file) =>
-        !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(
-          file.type,
-        ) ||
-        file.size === 0 ||
-        file.size > 8_000_000,
-    );
-    if (invalid) {
-      setError(`${invalid.name}: choose a PNG, JPG, WebP or GIF up to 8 MB.`);
       return;
     }
     inFlight.current = true;
     setUploading(true);
     setError('');
     try {
-      for (const file of files) {
+      const images = imageUrl ? [await fetchDroppedImage(imageUrl)] : files;
+      const invalid = images.find(
+        (file) =>
+          !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(
+            file.type,
+          ) ||
+          file.size === 0 ||
+          file.size > 8_000_000,
+      );
+      if (invalid)
+        throw new Error(
+          `${invalid.name}: choose a PNG, JPG, WebP or GIF up to 8 MB.`,
+        );
+      for (const file of images) {
         const response = await fetch('/api/assets', {
           method: 'POST',
           headers: {
@@ -260,6 +267,39 @@ export function CollectionEditor({
       inFlight.current = false;
       setUploading(false);
       if (fileInput.current) fileInput.current.value = '';
+    }
+  }
+  function dropImages(transfer: DataTransfer) {
+    if (inFlight.current || finishing) return;
+    try {
+      // Read drag data synchronously: the browser clears it after the drop handler.
+      const files = Array.from(transfer.files);
+      let imageUrl: string | undefined;
+      if (!files.length) {
+        const html = transfer.getData('text/html');
+        if (html.length > 12_000_000)
+          throw new Error('Choose an image up to 8 MB.');
+        // Template contents stay detached and inert: never render dropped HTML.
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        imageUrl =
+          template.content.querySelector('img')?.getAttribute('src') ??
+          undefined;
+      }
+      const drop = resolveImageDrop({
+        files,
+        imageUrl,
+        uriList: transfer.getData('text/uri-list'),
+        text: transfer.getData('text/plain'),
+      });
+      if (drop.kind === 'files') void addImages(drop.files);
+      else void addImages([], drop.url);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Could not read this image. Save it first, then choose the file.',
+      );
     }
   }
   async function addGuide(guide: GuideUpload): Promise<boolean> {
@@ -443,18 +483,23 @@ export function CollectionEditor({
               className={`reference-drop ${dragging ? 'dragging' : ''}`}
               onDragOver={(e) => {
                 e.preventDefault();
-                setDragging(true);
+                e.dataTransfer.dropEffect = busy ? 'none' : 'copy';
+                setDragging(!busy);
               }}
               onDragLeave={() => setDragging(false)}
               onDrop={(e) => {
                 e.preventDefault();
                 setDragging(false);
-                void addImages(Array.from(e.dataTransfer.files));
+                dropImages(e.dataTransfer);
               }}
             >
               <ImagePlus size={24} />
-              <strong>Drop images here</strong>
-              <span>PNG, JPG, WebP or GIF · up to 8 MB each</span>
+              <strong>
+                {uploading ? 'Adding references…' : 'Drop images here'}
+              </strong>
+              <span>
+                Files or web images · PNG, JPG, WebP or GIF · up to 8 MB
+              </span>
               <button
                 type="button"
                 className="text-button"
@@ -513,13 +558,6 @@ export function CollectionEditor({
               </small>
             </div>
           </div>
-          <GuideInput
-            local={!!connection}
-            busy={busy}
-            full={collection.references.length >= 24}
-            onAdd={addGuide}
-            onPendingChange={setPendingGuide}
-          />
           {error && (
             <div className="collection-error" role="alert">
               <span>{error}</span>
@@ -532,6 +570,13 @@ export function CollectionEditor({
               </button>
             </div>
           )}
+          <GuideInput
+            local={!!connection}
+            busy={busy}
+            full={collection.references.length >= 24}
+            onAdd={addGuide}
+            onPendingChange={setPendingGuide}
+          />
           <div className="reference-board">
             {collection.references.map((reference, index) => (
               <article className="reference-card" key={reference.id}>

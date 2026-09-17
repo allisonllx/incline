@@ -452,7 +452,7 @@ export async function startServer({
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'no-referrer',
         'Content-Security-Policy':
-          "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+          "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: http: data:; frame-ancestors 'none'; base-uri 'none'",
       });
       res.end(req.method === 'HEAD' ? undefined : bytes);
     } catch (e) {
