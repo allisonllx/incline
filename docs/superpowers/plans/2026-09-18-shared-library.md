@@ -55,5 +55,12 @@ Interfaces: connection exposes personal-library availability; the new component 
 
 - [x] Run `npm test`, `npm run lint`, `npm run typecheck`, `npm run build:skill`, and `git diff --check`.
 - [x] Smoke-test a clean installed bundle with two temporary project directories and a separate test personal library. No real user evidence is promoted during tests.
-- [ ] Update roadmap, package archive, commit and publish the runnable skill so the documented GitHub installation works.
-- [ ] Relaunch the user's preview with their existing data, allowing them to choose what to save in the personal library.
+- [x] Update roadmap, package archive, commit and publish the runnable skill so the documented GitHub installation works.
+- [x] Relaunch the user's preview with their existing data, allowing them to choose what to save in the personal library.
+
+## Verification results
+
+- 52 tests pass; lint, typecheck, portable build and diff checks pass. Independent code review found no critical or important issue.
+- Installed from the published GitHub repository with the skills CLI in an isolated project and globally for Codex. Both contain all 10 distributed files byte-for-byte, including the original image.
+- Both installed runtimes passed HTTP launch, nested-root detection, draft resume, shared save/import between temporary projects, exact reference preservation, independent edits, completion event and process exit checks. Test libraries used temporary directories.
+- Relaunched the updated global installation against the existing user project. No existing evidence was automatically copied into the personal library.
