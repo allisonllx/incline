@@ -1,3 +1,5 @@
+<img src="public/favicon.svg" width="64" height="64" alt="Incline logo" />
+
 # Incline
 
 A local taste-calibration companion for coding agents. The agent starts a temporary browser experience, the user explores visual directions, and Incline saves contextual preference evidence back to the project before closing the server.
@@ -113,3 +115,7 @@ npm run build:skill
 Tests cover inference semantics, catalog compatibility, project isolation, adaptation, revision, local token/origin enforcement, invalid payloads, drafts, immutable history, locking, completion and shutdown. The bundled package has also been smoke-tested through real HTTP: all entry assets load, a completed profile is written, the agent receives its event, and the process exits. App lint excludes untouched generated UI primitives. Browser checks cover collection creation, URL validation, image upload and enlargement, guide import/upload/paste and original-text preview, draft reload, optional comparisons, and completion after editing. Guide tests also cover source/notes preservation, authenticated plain-text retrieval, malformed files, and reopening the saved collection. Project and global installation through the skills CLI were verified against this GitHub repository for Codex, including all bundled files and the two-project reuse flow. Interactive discovery in other coding-agent clients remains untested.
 
 The server binds only to loopback on an available port. API calls require the temporary session token and same-origin requests. Browser payloads cannot choose file paths. Saved data is validated, revisions are written before current state changes, and unreadable saved data fails closed.
+
+## Icon credits
+
+The arrow mark and interface icons are based on [Lucide](https://lucide.dev/), including icons derived from Feather. The [ISC and MIT license notices](public/lucide-LICENSE.txt) are included in this repository and the portable skill package.
