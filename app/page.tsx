@@ -16,24 +16,34 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { useSessionStore } from '@/components/incline/use-session-store';
+import { CollectionEditor } from '@/components/incline/collection-editor';
+import { emptyCollection } from '@/lib/collection';
+import { Catalog } from '@/components/incline/catalog';
 import { Specimen } from '@/components/incline/specimen';
 import {
   contexts,
   styles,
+  sessionStyles,
   styleNames,
   getRounds,
   deriveProfile,
   reviseAnswer,
-  parseSaved,
   exportMarkdown,
   type Session,
   type Context,
   type Exploration,
   type Choice,
   type Style,
+  type Variant,
 } from '@/lib/taste';
 
-const storageKey = 'incline.sessions.v1';
 const choiceLabels: Record<Choice, string> = {
   a: 'I lean toward A',
   b: 'I lean toward B',
@@ -56,13 +66,35 @@ function download(name: string, text: string, type: string) {
 }
 
 export default function Home() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [ready, setReady] = useState(false);
-  const [storageError, setStorageError] = useState('');
+  const {
+    sessions,
+    setSessions,
+    ready,
+    error: storageError,
+    connection,
+    finishing,
+    result,
+    finish,
+    initialId,
+    saveState,
+  } = useSessionStore();
+  const [inspection, setInspection] = useState<{
+    variant: Variant;
+    title: string;
+    context: Context;
+  } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [view, setView] = useState<'setup' | 'quiz' | 'profile' | 'library'>(
-    'setup',
-  );
+  const [view, setView] = useState<
+    | 'welcome'
+    | 'setup'
+    | 'quiz'
+    | 'profile'
+    | 'library'
+    | 'catalog'
+    | 'collection'
+  >('welcome');
+  const [collectingImages, setCollectingImages] = useState(false);
+  const imported = useRef(false);
   const [context, setContext] = useState<Context>('portfolio');
   const [exploration, setExploration] = useState<Exploration>('stretch');
   const [name, setName] = useState('');
@@ -71,57 +103,70 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
   const active = sessions.find((s) => s.id === activeId);
-  const rounds = getRounds(active?.answers ?? []);
+  const rounds = getRounds(active?.answers ?? [], active?.catalogVersion ?? 2);
   const step = active?.answers.length ?? 0;
-  const round = rounds[Math.min(step, 7)];
-  // Browser storage must be hydrated after SSR; this effect synchronizes an external store.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      const saved = parseSaved(raw);
-      // Browser-only hydration from an external store is intentional.
-      // oxlint-disable-next-line react/react-compiler
-      setSessions(saved);
-      if (
-        raw &&
-        saved.length === 0 &&
-        raw !== JSON.stringify({ version: 1, sessions: [] })
-      )
-        setStorageError(
-          'Saved data could not be read. Your new session will replace it when you begin.',
-        );
-    } catch {
-      setStorageError(
-        'Browser storage is unavailable. You can still take the quiz and export your profile.',
-      );
-    }
-    setReady(true);
-  }, []);
-  // A failed external storage write is reported to the user.
-  useEffect(() => {
-    if (!ready || sessions.length === 0) return;
-    try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({ version: 1, sessions }),
-      );
-    } catch {
-      // Report failure of the external persistence operation.
-      // oxlint-disable-next-line react/react-compiler
-      setStorageError(
-        'Changes could not be saved in this browser. Export your profile to keep a copy.',
-      );
-    }
-  }, [sessions, ready]);
+  const round = rounds[Math.min(step, rounds.length - 1)];
   useEffect(() => {
     heading.current?.focus();
   }, [view, step]);
+  useEffect(() => {
+    if (ready && initialId && !imported.current) {
+      imported.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- opens a server-imported collection once after boot
+      setActiveId(initialId);
+      setView('collection');
+    }
+  }, [ready, initialId]);
+  function beginCollection() {
+    const session: Session = {
+      id: crypto.randomUUID(),
+      catalogVersion: 2,
+      name: '',
+      context: 'portfolio',
+      exploration: 'stretch',
+      answers: [],
+      keep: [],
+      explore: [],
+      notes: '',
+      complete: false,
+      createdAt: new Date().toISOString(),
+      collection: emptyCollection(),
+    };
+    setSessions((previous) => [session, ...previous]);
+    setActiveId(session.id);
+    setView('collection');
+    setStatus('');
+  }
+  function collectFromProfile() {
+    if (!active) return;
+    if (!active.collection)
+      update({
+        ...active,
+        collection: {
+          ...emptyCollection(),
+          projectContext: contexts[active.context],
+        },
+      });
+    setView('collection');
+  }
+  async function finishCollection(next: Session) {
+    const snapshot = sessions.map((session) =>
+      session.id === next.id ? next : session,
+    );
+    setSessions(snapshot);
+    if (connection) await finish(next.id, snapshot);
+    else {
+      setView('library');
+      setStatus('Collection saved in this browser.');
+    }
+  }
   function update(next: Session) {
     setSessions((prev) => prev.map((s) => (s.id === next.id ? next : s)));
   }
   function begin() {
     const s: Session = {
       id: crypto.randomUUID(),
+      catalogVersion: 2,
       name: name.trim() || contexts[context],
       context,
       exploration,
@@ -145,15 +190,16 @@ export default function Home() {
       ...active.answers,
       { roundId: round.id, choice, reason: reason.trim() },
     ];
-    update({ ...active, answers, complete: answers.length === 8 });
+    update({ ...active, answers, complete: answers.length === rounds.length });
     setChoice(null);
     setReason('');
-    if (answers.length === 8) setView('profile');
+    if (answers.length === rounds.length)
+      setView(active.collection ? 'collection' : 'profile');
   }
   function back() {
     if (!active) return;
     if (step === 0) {
-      setView('library');
+      setView(active.collection ? 'collection' : 'library');
       return;
     }
     const prior = active.answers[step - 1];
@@ -184,8 +230,9 @@ export default function Home() {
       <header className="site-header">
         <button
           className="wordmark"
+          disabled={!!result || finishing || collectingImages}
           onClick={() => {
-            setView('setup');
+            setView('welcome');
             setStatus('');
           }}
           aria-label="Incline home"
@@ -195,22 +242,30 @@ export default function Home() {
           </span>
           incline<span className="beta">EARLY EXPLORATION</span>
         </button>
-        <nav aria-label="Main navigation">
+        <nav
+          aria-label="Main navigation"
+          style={result ? { visibility: 'hidden' } : undefined}
+        >
           <button
-            className={view === 'setup' || view === 'quiz' ? 'nav-active' : ''}
-            onClick={() =>
-              setView(active && !active.complete ? 'quiz' : 'setup')
+            disabled={finishing || collectingImages}
+            className={
+              (!result && ['welcome', 'setup', 'collection'].includes(view)) ||
+              view === 'quiz'
+                ? 'nav-active'
+                : ''
             }
+            onClick={() => setView('welcome')}
           >
             Discover
           </button>
           <button
+            disabled={finishing || collectingImages}
             className={
               view === 'profile' || view === 'library' ? 'nav-active' : ''
             }
             onClick={() => setView('library')}
           >
-            Your profiles{' '}
+            Your collections{' '}
             {sessions.length > 0 && (
               <span className="nav-count">{sessions.length}</span>
             )}
@@ -224,7 +279,139 @@ export default function Home() {
         <output className="storage-warning">{storageError}</output>
       )}
       <main>
-        {view === 'setup' && (
+        {result && (
+          <div className="done-view">
+            <div className="done-symbol">
+              <Check size={30} />
+            </div>
+            <div className="eyebrow">SAVED TO YOUR PROJECT</div>
+            <h1>
+              Your agent can take it{' '}
+              <span className="serif-word">from here.</span>
+            </h1>
+            <p>
+              Your collection and evidence are saved, and the temporary server
+              has stopped. You can close this tab and return to your
+              conversation.
+            </p>
+            <div className="saved-path">
+              <span>PROFILE</span>
+              <code>{result.profilePath}</code>
+            </div>
+            <p className="fine-print">
+              Earlier revisions are preserved. Your taste still has room to
+              change.
+            </p>
+          </div>
+        )}
+        {!result && view === 'welcome' && (
+          <div className="welcome-view">
+            <div className="welcome-heading">
+              <div className="eyebrow">
+                <span className="tiny-line" /> YOUR TASTE HAS RANGE
+              </div>
+              <h1>
+                A place for what
+                <br />
+                you <span className="serif-word">lean toward.</span>
+                <span className="heading-dot">↗</span>
+              </h1>
+              <p>
+                Collect the things that catch your eye.
+                <br />
+                Find the words, explore the possibilities, make something that
+                feels like you.
+              </p>
+            </div>
+            <div className="entry-choices">
+              <button
+                className="entry-card"
+                aria-label="I have something in mind"
+                disabled={!ready}
+                onClick={() => beginCollection()}
+              >
+                <div className="entry-art entry-pictures" aria-hidden="true">
+                  <div className="paper-one">
+                    a detail
+                    <br />
+                    <em>worth keeping.</em>
+                  </div>
+                  <div className="paper-two">✳</div>
+                  <span>pieces of the picture</span>
+                </div>
+                <div className="entry-copy">
+                  <span className="eyebrow">BRING YOUR IDEAS</span>
+                  <h2>
+                    I have something in mind <ArrowUpRight size={21} />
+                  </h2>
+                  <p>
+                    Describe a feeling, bring images and links, or mix them
+                    together. A rough idea is enough.
+                  </p>
+                </div>
+              </button>
+              <button
+                className="entry-card"
+                aria-label="Help me discover"
+                disabled={!ready}
+                onClick={() => setView('setup')}
+              >
+                <div className="entry-art entry-explore" aria-hidden="true">
+                  <span>Aa</span>
+                  <i>Aa</i>
+                  <small>this, that, or a little of both.</small>
+                </div>
+                <div className="entry-copy">
+                  <span className="eyebrow">FOLLOW YOUR CURIOSITY</span>
+                  <h2>
+                    Help me discover <ArrowUpRight size={21} />
+                  </h2>
+                  <p>
+                    Compare visual directions and notice what resonates. Both is
+                    always an answer.
+                  </p>
+                </div>
+              </button>
+            </div>
+            <div className="welcome-footer">
+              <p>Start with what you have. Explore whenever you like.</p>
+              <button
+                className="text-button"
+                onClick={() => setView('catalog')}
+              >
+                Browse the example gallery <ArrowUpRight size={15} />
+              </button>
+            </div>
+          </div>
+        )}
+        {!result && view === 'collection' && active?.collection && (
+          <CollectionEditor
+            key={active.id}
+            session={active}
+            connection={connection}
+            finishing={finishing}
+            saveState={saveState}
+            onChange={update}
+            onBusyChange={setCollectingImages}
+            onBack={() => setView('library')}
+            onQuiz={() => {
+              setChoice(null);
+              setReason('');
+              setView(step === rounds.length ? 'profile' : 'quiz');
+            }}
+            onFinish={(session) => void finishCollection(session)}
+          />
+        )}
+        {!result && view === 'catalog' && (
+          <Catalog
+            context={context}
+            onBack={() => setView('welcome')}
+            onInspect={(variant, title) =>
+              setInspection({ variant, title, context })
+            }
+          />
+        )}
+        {!result && view === 'setup' && (
           <div className="setup-layout">
             <section className="setup-main">
               <div className="eyebrow">
@@ -314,9 +501,21 @@ export default function Home() {
                   >
                     Find my inclinations <ArrowRight size={18} />
                   </Button>
-                  <span>8 comparisons · about 3 minutes</span>
+                  <span>12 comparisons · about 5 minutes</span>
                 </div>
               </div>
+              <button
+                className="catalog-toggle"
+                onClick={() => setView('catalog')}
+              >
+                Browse all 12 directions <ArrowUpRight size={15} />
+              </button>
+              {connection && (
+                <p className="fine-print">
+                  Working locally with your agent. Finish to save into this
+                  project’s .incline folder.
+                </p>
+              )}
             </section>
             <aside className="setup-preview">
               <div className="preview-caption">
@@ -326,7 +525,7 @@ export default function Home() {
               <div className="preview-stack">
                 <div className="preview-sheet back-sheet">
                   <Specimen
-                    variant={{ style: 'bold' }}
+                    variant={{ style: 'brutalist' }}
                     context={context}
                     small
                   />
@@ -355,7 +554,7 @@ export default function Home() {
             </aside>
           </div>
         )}
-        {view === 'quiz' && active && (
+        {!result && view === 'quiz' && active && (
           <div className="quiz-view">
             <div className="quiz-meta">
               <button className="text-button" onClick={back}>
@@ -367,14 +566,29 @@ export default function Home() {
                 {explorationLabels[active.exploration]}
               </span>
               <span className="step-count">
-                {String(step + 1).padStart(2, '0')} <span>/ 08</span>
+                {String(step + 1).padStart(2, '0')}{' '}
+                <span>/ {String(rounds.length).padStart(2, '0')}</span>
               </span>
             </div>
-            <Progress aria-label="Quiz completion" value={(step / 8) * 100} />
+            {active.collection && (
+              <button
+                className="text-button return-collection"
+                onClick={() => setView('collection')}
+              >
+                <Layers size={15} /> Return to your collection · comparisons are
+                optional
+              </button>
+            )}
+            <Progress
+              aria-label="Quiz completion"
+              value={(step / rounds.length) * 100}
+            />
             <div className="quiz-heading">
               <div className="eyebrow">
                 {round.dimension} <span className="round-dot">·</span>{' '}
-                {step === 6 ? 'A FOLLOW-UP FOR YOU' : 'FOLLOW YOUR INSTINCT'}
+                {round.id.startsWith('boundary')
+                  ? 'A FOLLOW-UP FOR YOU'
+                  : 'FOLLOW YOUR INSTINCT'}
               </div>
               <h1 ref={heading} tabIndex={-1}>
                 {round.title}
@@ -397,19 +611,34 @@ export default function Home() {
                     )}
                   </div>
                   <Specimen variant={round[side]} context={active.context} />
-                  <Button
-                    variant="ghost"
-                    className="candidate-choice"
-                    onClick={() => setChoice(side)}
-                    aria-pressed={choice === side}
-                  >
-                    {choice === side ? (
-                      <Check size={16} />
-                    ) : (
-                      <ArrowUpRight size={16} />
-                    )}{' '}
-                    {choiceLabels[side]}
-                  </Button>
+                  <div className="candidate-tools">
+                    <Button
+                      variant="ghost"
+                      className="candidate-choice"
+                      onClick={() => setChoice(side)}
+                      aria-pressed={choice === side}
+                    >
+                      {choice === side ? (
+                        <Check size={16} />
+                      ) : (
+                        <ArrowUpRight size={16} />
+                      )}{' '}
+                      {choiceLabels[side]}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="inspect-button"
+                      onClick={() =>
+                        setInspection({
+                          variant: round[side],
+                          title: round.labels[i],
+                          context: active.context,
+                        })
+                      }
+                    >
+                      View larger <ArrowUpRight size={14} />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -457,14 +686,16 @@ export default function Home() {
                   disabled={!choice}
                   onClick={next}
                 >
-                  {step === 7 ? 'See my profile' : 'Next comparison'}
+                  {step === rounds.length - 1
+                    ? 'See my profile'
+                    : 'Next comparison'}
                   <ArrowRight size={18} />
                 </Button>
               </div>
             </div>
           </div>
         )}
-        {view === 'profile' && active && (
+        {!result && view === 'profile' && active && (
           <div className="profile-view">
             <div className="profile-top">
               <div>
@@ -498,6 +729,15 @@ export default function Home() {
                 Export profile
               </Button>
             </div>
+            <button
+              className="text-button profile-collect"
+              onClick={collectFromProfile}
+            >
+              <Plus size={16} />{' '}
+              {active.collection
+                ? 'Return to your collection'
+                : 'Add your own direction & references'}
+            </button>
             <div className="profile-note">
               <Sparkles size={20} />
               <p>
@@ -507,12 +747,17 @@ export default function Home() {
               </p>
             </div>
             <div className="style-grid">
-              {styles.map((style) => {
+              {sessionStyles(active).map((style) => {
                 const e = evidence.find((e) => e.tag === style);
                 return (
                   <article className="style-profile" key={style}>
                     <Specimen
-                      variant={{ style }}
+                      variant={{
+                        style,
+                        ...(active.catalogVersion !== 2
+                          ? { layout: 'classic' as const }
+                          : {}),
+                      }}
                       context={active.context}
                       small
                     />
@@ -588,6 +833,10 @@ export default function Home() {
                                   serif: 'Serif headings',
                                   neutral: 'Neutral palette',
                                   accent: 'Colour accents',
+                                  split: 'Split composition',
+                                  centered: 'Centred composition',
+                                  still: 'Still typography',
+                                  animated: 'Moving typography',
                                 } as Record<string, string>
                               )[e.tag]
                             }
@@ -658,13 +907,36 @@ export default function Home() {
                 </div>
               ))}
             </details>
+            {connection && (
+              <div className="local-savebar">
+                <p>
+                  Ready to bring this back to your agent?
+                  <span>
+                    Saves the profile and a new revision, then closes the local
+                    server.
+                  </span>
+                </p>
+                <Button
+                  className="primary-button"
+                  disabled={finishing}
+                  onClick={() => {
+                    if (active.collection)
+                      void finishCollection({ ...active, complete: true });
+                    else void finish(active.id);
+                  }}
+                >
+                  {finishing ? 'Saving…' : 'Finish & return to agent'}
+                  <ArrowRight size={17} />
+                </Button>
+              </div>
+            )}
             <div className="profile-bottom">
               <Button
                 variant="outline"
                 className="secondary-button"
                 onClick={() => {
                   setName('');
-                  setView('setup');
+                  setView('welcome');
                 }}
               >
                 <Plus size={16} />
@@ -690,37 +962,40 @@ export default function Home() {
             </div>
           </div>
         )}
-        {view === 'library' && (
+        {!result && view === 'library' && (
           <div className="library-view">
             <div className="profile-top">
               <div>
                 <div className="eyebrow">ROOM FOR DIFFERENT SIDES OF YOU</div>
                 <h1 ref={heading} tabIndex={-1}>
-                  Your project profiles.
+                  Your collections.
                 </h1>
-                <p>Separate contexts. All part of your range.</p>
+                <p>
+                  Different projects, moods and possibilities. All part of your
+                  range.
+                </p>
               </div>
               <Button
                 className="primary-button"
                 onClick={() => {
                   setName('');
-                  setView('setup');
+                  setView('welcome');
                 }}
               >
                 <Plus size={17} />
-                New exploration
+                New collection
               </Button>
             </div>
             {sessions.length === 0 ? (
               <div className="empty-state">
                 <Layers size={35} />
-                <h2>Your range starts with a few choices.</h2>
-                <p>Take the first quiz to make a profile for your project.</p>
+                <h2>Start with whatever catches your eye.</h2>
+                <p>A description, a reference, or a few visual choices.</p>
                 <Button
                   className="primary-button"
-                  onClick={() => setView('setup')}
+                  onClick={() => setView('welcome')}
                 >
-                  Find my inclinations <ArrowRight size={17} />
+                  Start a collection <ArrowRight size={17} />
                 </Button>
               </div>
             ) : (
@@ -733,7 +1008,13 @@ export default function Home() {
                       setActiveId(s.id);
                       setChoice(null);
                       setReason('');
-                      setView(s.complete ? 'profile' : 'quiz');
+                      setView(
+                        s.collection
+                          ? 'collection'
+                          : s.complete
+                            ? 'profile'
+                            : 'quiz',
+                      );
                       setStatus('');
                     }}
                   >
@@ -741,16 +1022,21 @@ export default function Home() {
                       <Layers size={22} />
                     </span>
                     <span>
-                      <strong>{s.name}</strong>
+                      <strong>{s.name || 'Untitled collection'}</strong>
                       <small>
-                        {contexts[s.context]} ·{' '}
-                        {explorationLabels[s.exploration]}
+                        {s.collection
+                          ? `${s.collection.projectContext || 'Open direction'} · ${s.collection.references.length} references`
+                          : `${contexts[s.context]} · ${explorationLabels[s.exploration]}`}
                       </small>
                     </span>
                     <span className="session-state">
-                      {s.complete
-                        ? 'View profile'
-                        : `${s.answers.length}/8 · Continue`}
+                      {s.collection
+                        ? s.complete
+                          ? 'Open collection'
+                          : 'Continue collecting'
+                        : s.complete
+                          ? 'View profile'
+                          : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion).length} · Continue`}
                     </span>
                     <ArrowUpRight size={20} />
                   </button>
@@ -760,13 +1046,35 @@ export default function Home() {
           </div>
         )}
       </main>
+      <Dialog
+        open={!!inspection}
+        onOpenChange={(open) => {
+          if (!open) setInspection(null);
+        }}
+      >
+        <DialogContent className="specimen-dialog">
+          <DialogTitle>{inspection?.title}</DialogTitle>
+          <DialogDescription>
+            Inspect the composition. Closing this preview does not change your
+            choice.
+          </DialogDescription>
+          {inspection && (
+            <Specimen
+              variant={inspection.variant}
+              context={inspection.context}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       <output className="status-message">{status}</output>
       <footer className="site-footer">
         <span>
           incline <span className="footer-slash">/</span> Taste is a spectrum.
         </span>
         <span>
-          Profiles stay in this browser. Export to take them with you.
+          {connection
+            ? 'Local session · Saved in your project’s .incline folder on Finish.'
+            : 'Browser demo · Launch the Incline skill to save directly to your project.'}
         </span>
       </footer>
     </div>

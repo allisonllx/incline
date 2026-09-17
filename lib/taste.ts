@@ -1,9 +1,29 @@
+import {
+  validCollection,
+  collectionHasContent,
+  collectionMarkdown,
+  type Collection,
+} from './collection.ts';
 export type Choice = 'a' | 'b' | 'both' | 'neither' | 'depends';
 export type Context = 'portfolio' | 'dashboard' | 'brand';
 export type Exploration = 'familiar' | 'stretch' | 'surprise';
-export type Style = 'minimal' | 'editorial' | 'bold' | 'playful';
+export type Style =
+  | 'minimal'
+  | 'editorial'
+  | 'bold'
+  | 'playful'
+  | 'swiss'
+  | 'brutalist'
+  | 'terminal'
+  | 'cinematic'
+  | 'deco'
+  | 'bento'
+  | 'organic'
+  | 'kinetic';
 export type Variant = {
   style: Style;
+  layout?: 'classic' | 'split' | 'centered';
+  motion?: 'still' | 'animated';
   density?: 'compact' | 'balanced' | 'airy' | 'expansive';
   type?: 'sans' | 'serif';
   color?: 'neutral' | 'accent';
@@ -20,6 +40,8 @@ export type Round = {
 };
 export type Answer = { roundId: string; choice: Choice; reason: string };
 export type Session = {
+  collection?: Collection;
+  catalogVersion?: 1 | 2;
   id: string;
   name: string;
   context: Context;
@@ -39,12 +61,33 @@ export type Evidence = {
   conditional: number;
   rounds: string[];
 };
-export const styles: Style[] = ['minimal', 'editorial', 'bold', 'playful'];
+export const styles: Style[] = [
+  'minimal',
+  'editorial',
+  'bold',
+  'playful',
+  'swiss',
+  'brutalist',
+  'terminal',
+  'cinematic',
+  'deco',
+  'bento',
+  'organic',
+  'kinetic',
+];
 export const styleNames: Record<Style, string> = {
   minimal: 'Quiet precision',
   editorial: 'Editorial warmth',
   bold: 'Bold expression',
   playful: 'Playful structure',
+  swiss: 'Swiss grid',
+  brutalist: 'Brutalist poster',
+  terminal: 'Terminal / technical',
+  cinematic: 'Cinematic image-led',
+  deco: 'Art deco / luxury',
+  bento: 'Modular bento',
+  organic: 'Organic / field notes',
+  kinetic: 'Kinetic typography',
 };
 export const contexts: Record<Context, string> = {
   portfolio: 'Personal portfolio',
@@ -57,7 +100,7 @@ const base: Variant = {
   type: 'sans',
   color: 'neutral',
 };
-export function getRounds(answers: Answer[]): Round[] {
+function getLegacyRounds(answers: Answer[]): Round[] {
   const density = answers.find((a) => a.roundId === 'density')?.choice;
   const boundary: Round =
     density === 'b'
@@ -167,7 +210,7 @@ export function getRounds(answers: Answer[]): Round[] {
 }
 export function deriveProfile(session: Session): Evidence[] {
   const evidence = new Map<string, Evidence>();
-  const rounds = getRounds(session.answers);
+  const rounds = getRounds(session.answers, session.catalogVersion);
   for (const answer of session.answers) {
     const round = rounds.find((r) => r.id === answer.roundId);
     if (!round) continue;
@@ -206,6 +249,9 @@ export function parseSaved(raw: string | null): Session[] {
       if (
         !s ||
         typeof s.id !== 'string' ||
+        (s.catalogVersion !== undefined &&
+          s.catalogVersion !== 1 &&
+          s.catalogVersion !== 2) ||
         typeof s.name !== 'string' ||
         !Object.hasOwn(contexts, s.context) ||
         !['familiar', 'stretch', 'surprise'].includes(s.exploration) ||
@@ -213,7 +259,7 @@ export function parseSaved(raw: string | null): Session[] {
         typeof s.complete !== 'boolean' ||
         typeof s.createdAt !== 'string' ||
         !Array.isArray(s.answers) ||
-        s.answers.length > 8 ||
+        s.answers.length > 12 ||
         !Array.isArray(s.keep) ||
         !Array.isArray(s.explore) ||
         ![...s.keep, ...s.explore].every((x) => styles.includes(x))
@@ -229,10 +275,14 @@ export function parseSaved(raw: string | null): Session[] {
         )
       )
         return false;
-      const rounds = getRounds(s.answers);
+      if (s.collection !== undefined && !validCollection(s.collection))
+        return false;
+      const rounds = getRounds(s.answers, s.catalogVersion);
       return (
         s.answers.every((a, i) => rounds[i]?.id === a.roundId) &&
-        (!s.complete || s.answers.length === 8)
+        (!s.complete ||
+          s.answers.length === rounds.length ||
+          (s.collection !== undefined && collectionHasContent(s.collection)))
       );
     });
   } catch {
@@ -240,13 +290,83 @@ export function parseSaved(raw: string | null): Session[] {
   }
 }
 export function exportMarkdown(session: Session): string {
-  const rounds = getRounds(session.answers);
-  return `# Incline · ${session.name}\n\nContext: ${session.context}\nExploration: ${session.exploration}\n\n## Explicit project instructions\nKeep: ${session.keep.join(', ') || 'Not specified'}\nExplore: ${session.explore.join(', ') || 'Not specified'}\n\n${session.notes || 'No preservation notes yet.'}\n\n## Provisional evidence\nThese preferences apply to this project. A/B choices are relative preferences, not absolute endorsements. Both welcomes both shown examples; neither rejects these examples, not an entire style. Unmentioned qualities are unknown. Preserve multiple directions; do not collapse this into one type.\n\n${session.answers
-    .map((a) => {
-      const r = rounds.find((r) => r.id === a.roundId);
-      return `- ${r?.dimension}: ${r?.labels.join(' / ')} → ${a.choice}${a.reason ? ` — ${a.reason}` : ''}`;
-    })
-    .join(
-      '\n',
-    )}\n\nThis is a curated calibration, not a validated prediction of taste. Confirm directions with the user on a new design.\n`;
+  const rounds = getRounds(session.answers, session.catalogVersion);
+  return `# Incline · ${session.name}\n\nContext: ${session.collection ? session.collection.projectContext || 'Not specified' : session.context}\nExploration: ${session.exploration}\n\n${session.collection ? collectionMarkdown(session.collection) : ''}## Explicit project instructions\nKeep: ${session.keep.join(', ') || 'Not specified'}\nExplore: ${session.explore.join(', ') || 'Not specified'}\n\n${session.notes || 'No preservation notes yet.'}\n\n## Provisional evidence\nThese preferences apply to this project. A/B choices are relative preferences, not absolute endorsements. Both welcomes both shown examples; neither rejects these examples, not an entire style. Unmentioned qualities are unknown. Preserve multiple directions; do not collapse this into one type.\n\n${
+    session.answers
+      .map((a) => {
+        const r = rounds.find((r) => r.id === a.roundId);
+        return `- ${r?.dimension}: ${r?.labels.join(' / ')} → ${a.choice}${a.reason ? ` — ${a.reason}` : ''}`;
+      })
+      .join('\n') || 'No comparisons taken. No style preference inferred.'
+  }\n\nThis is a curated calibration, not a validated prediction of taste. Confirm directions with the user on a new design.\n`;
+}
+
+export function getRounds(answers: Answer[], version: 1 | 2 = 1): Round[] {
+  const legacy = getLegacyRounds(answers);
+  if (version === 1)
+    return legacy.map((r) => ({
+      ...r,
+      a: { ...r.a, layout: 'classic' },
+      b: { ...r.b, layout: 'classic' },
+    }));
+  const pairs: [Style, Style, string][] = [
+    ['swiss', 'editorial', 'A precise grid, or an editorial rhythm?'],
+    ['brutalist', 'minimal', 'Make a statement, or leave some silence?'],
+    ['cinematic', 'terminal', 'An atmosphere, or an instrument?'],
+    ['deco', 'playful', 'Ornamental elegance, or playful energy?'],
+    ['bento', 'organic', 'A modular system, or something more human?'],
+    ['bold', 'kinetic', 'A strong composition, or type that moves?'],
+  ];
+  return [
+    ...pairs.map(
+      ([a, b, title], i): Round => ({
+        id: `range-${i + 1}`,
+        title,
+        prompt:
+          'Consider the whole composition for your project. Liking one direction never rules out another.',
+        dimension: 'Style & composition',
+        a: { style: a },
+        b: { style: b },
+        labels: [styleNames[a], styleNames[b]],
+        tags: [a, b],
+      }),
+    ),
+    ...legacy
+      .filter((r) => ['density', 'typography', 'colour'].includes(r.id))
+      .map((r) => ({
+        ...r,
+        a: { ...r.a, layout: 'split' as const },
+        b: { ...r.b, layout: 'split' as const },
+      })),
+    {
+      id: 'layout',
+      title: 'How should the page unfold?',
+      prompt:
+        'The same content and visual treatment. Compare a divided composition with a centred one.',
+      dimension: 'Layout',
+      a: { ...base, layout: 'split' },
+      b: { ...base, layout: 'centered' },
+      labels: ['Split composition', 'Centred composition'],
+      tags: ['split', 'centered'],
+    },
+    {
+      ...legacy[6],
+      a: { ...legacy[6].a, layout: 'split' },
+      b: { ...legacy[6].b, layout: 'split' },
+    },
+    {
+      id: 'motion',
+      title: 'Let it move, or let it rest?',
+      prompt:
+        'Compare the same typographic composition in motion and at rest. Your device’s reduced-motion setting is respected.',
+      dimension: 'Motion',
+      a: { style: 'kinetic', motion: 'still' },
+      b: { style: 'kinetic', motion: 'animated' },
+      labels: ['Still composition', 'Moving typography'],
+      tags: ['still', 'animated'],
+    },
+  ];
+}
+export function sessionStyles(session: Session): Style[] {
+  return session.catalogVersion === 2 ? styles : styles.slice(0, 4);
 }

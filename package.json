@@ -1,9 +1,9 @@
 {
-  "name": "sites-project",
+  "name": "incline",
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
     "dev": "vinext dev",
@@ -11,8 +11,10 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "oxlint",
     "format": "oxfmt",
-    "test": "node --test lib/taste.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "node --test lib/*.test.ts local/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "build:skill": "vite build --config vite.local.config.ts && node local/build-skill.mjs",
+    "incline": "node skills/incline/scripts/incline.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -51,7 +53,8 @@
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vite": "8.3.0",
-    "wrangler": "4.133.0"
+    "wrangler": "4.133.0",
+    "esbuild": "0.28.1"
   },
   "type": "module"
 }

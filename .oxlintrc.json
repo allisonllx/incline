@@ -31,7 +31,10 @@
     "coverage/**",
     "next-env.d.ts",
     "components/ui/**",
-    "hooks/use-mobile.ts"
+    "hooks/use-mobile.ts",
+    "skills/incline/assets/ui/**",
+    "skills/incline/scripts/incline.mjs",
+    "skills/incline/scripts/getdesign.mjs"
   ],
   "rules": {
     "no-array-constructor": "error",
