@@ -28,6 +28,18 @@ A standalone short terminal command remains optional future work. A skill instal
 
 Research: [skills CLI source and installation options](https://github.com/vercel-labs/skills) document `add`, `--skill` and `--global`. [CodeDB's MCP setup](https://github.com/justrach/codedb/blob/main/docs/mcp.md) separates central per-project indexes under `~/.codedb/projects/<hash>/` from active-root selection through workspace roots, an explicit project argument and the working directory. This is a useful precedent for central storage with explicit project context, not permission bypass.
 
+## Planned: saved-collection suggestions for new projects
+
+Make the nudge automatic when enabled, while keeping reuse an explicit choice. Offer a remembered, user-level preference: **“Suggest my saved collections when starting new projects.”** This is planned behaviour; the current runtime accesses the library only through explicit library operations. Enabling suggestions permits checking the configured personal library, not scanning other repositories or automatically saving project evidence there. Respect `--local-only` and allow the preference to be turned off.
+
+- **Existing project profile:** use its selected direction first; do not repeatedly prompt about personal collections. Manual library access remains available.
+- **New project with saved collections and suggestions enabled:** offer “Start from a saved taste collection, mix a few, or explore something new?” Show collection context so the user can judge relevance. An empty or unavailable library should not block starting the project.
+- **Explicit selection:** copy selected collections and original assets into a project-local draft as inspiration, retaining source attribution, notes and context. Confirm which qualities should guide this project before treating inherited preferences as its chosen direction.
+- **Modular reuse:** allow deliberate selection of aspects, such as typography from one collection and spacing from another. Preserve the source of each selected quality and surface conflicts; do not average entire profiles into one style or assume every quality was endorsed.
+- **Skip:** remember dismissal for this project and continue with a fresh direction without repeated nudges. Keep manual reuse available later.
+
+Project edits must remain independent of library snapshots and source projects. Validation should cover the remembered preference being enabled and disabled, existing project profiles, project-level dismissal, empty/unavailable libraries, `--local-only`, mixed-source attribution and independent edits after reuse. Update the skill's library-access instructions alongside implementation so agents follow the same preference and project context.
+
 ### Two entry points, one collection
 
 - **I have something in mind:** one entry for descriptions, images, design guides and source links. Accept mixed styles and custom project context, and preserve original references alongside the user's explanations. When the user already described it to the agent, carry that description into the local session rather than requiring them to repeat it. Describing a direction and bringing references share one editor, so they should not appear as separate homepage destinations.
@@ -136,6 +148,7 @@ Add a medium alongside project context so that a bold poster preference need not
 ## Suggested sequence
 
 1. Validate the complete workflow across coding agents, building on the implemented standard installation and explicit personal-library reuse.
+   Add opt-in saved-collection suggestions for new projects, remembered project dismissal and explicit modular reuse as described above.
 2. Save generated results and aspect-specific feedback with artifact versions, source context and timestamps. Keep direct user statements separate from agent hypotheses.
 3. Add explainable, versioned profile updates with competing interpretations, preservation checks and automated behavioural evaluations across contexts.
 4. Introduce targeted follow-up comparisons, including unfamiliar directions. Evaluate question-selection strategies against recorded evidence and real user feedback; defer a large autonomous replay system.
