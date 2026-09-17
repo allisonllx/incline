@@ -39,8 +39,5 @@ next-env.d.ts
 
 *.tsbuildinfo
 
-# Local taste evidence and generated portable bundle
+# Local taste evidence (the complete portable skill is distributed in Git)
 .incline/
-/skills/incline/assets/ui/
-/skills/incline/scripts/incline.mjs
-/skills/incline/scripts/getdesign.mjs

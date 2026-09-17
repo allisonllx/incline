@@ -2,7 +2,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { parseSaved, type Session } from '@/lib/taste';
 
-export type Connection = { token: string; directory: string };
+export type Connection = {
+  token: string;
+  directory: string;
+  personalLibrary?: { available: boolean; directory: string | null };
+};
 export type SavedResult = {
   status: string;
   profilePath: string;
@@ -10,7 +14,7 @@ export type SavedResult = {
   revisionPath: string;
 };
 const storageKey = 'incline.sessions.v1';
-async function api<T>(path: string, token: string, data?: unknown) {
+export async function api<T>(path: string, token: string, data?: unknown) {
   const response = await fetch(path, {
     method: data === undefined ? 'GET' : 'POST',
     headers: {
@@ -55,10 +59,15 @@ export function useSessionStore() {
             sessions: Session[];
             directory: string;
             initialId?: string;
+            personalLibrary?: Connection['personalLibrary'];
           }>('/api/boot', token);
           if (cancelled) return;
           setSessions(boot.sessions);
-          setConnection({ token, directory: boot.directory });
+          setConnection({
+            token,
+            directory: boot.directory,
+            personalLibrary: boot.personalLibrary,
+          });
           setInitialId(boot.initialId ?? null);
         } else {
           const raw = localStorage.getItem(storageKey);

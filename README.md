@@ -8,26 +8,25 @@ The current scope is website design. See [the roadmap](plan.md) for future poste
 
 ## Use the portable skill
 
-The built `skills/incline/` folder is self-contained: `SKILL.md`, bundled Node scripts, supporting references, and static UI assets. It requires Node 22 or newer. No account, hosted service, API key, or dependency installation is needed to run the local collection experience. The optional public-reference helper needs internet access.
-
-Ask your agent to use the skill at `skills/incline/SKILL.md`, or copy the **entire built folder**, including `assets/` and `scripts/`, into the agent's skill location. Typical project locations are `.cursor/skills/incline/` for [Cursor](https://prod.cursor.com/docs/skills) and `.claude/skills/incline/` for [Claude Code](https://code.claude.com/docs/en/skills). This Codex installation uses `~/.codex/skills/` for user skills. No agent configuration is automatically modified by building the package.
-
-From a fresh clone, build the portable skill first (Node 22.18+):
+Install for the current project:
 
 ```sh
-git clone https://github.com/allisonllx/incline.git
-cd incline
-npm ci
-npm run build:skill
+npx skills add allisonllx/incline --skill incline
 ```
 
-The generated scripts and UI assets are not committed. After building, start a session with:
+Or install for your user, available across projects:
 
 ```sh
-node skills/incline/scripts/incline.mjs --project /absolute/path/to/your/project
+npx skills add allisonllx/incline --skill incline --global
 ```
 
-The process prints a JSON `ready` event with the localhost URL. Open that exact URL. After reviewing your collection or completing the optional comparisons, choose **Finish & return to agent**. The process writes the files, prints a `completed` event with their paths, and exits. An agent retaining the process can then read the profile and continue the design task.
+Choose your coding agent in the installer, then ask it: **“Use Incline to help design this website.”** The agent starts the temporary visual session and reads the result when you finish. You do not need to locate a script or enter your project's path. Node 22 or newer is required; the complete UI and bundled scripts are included, with no source build, account or service required. The optional public-reference helper needs internet access.
+
+Installation scope controls where the agent finds the skill. It does **not** determine where your taste is saved. Both installation modes support project-only collections and an optional shared personal library. You can also copy the entire `skills/incline/` folder, including `assets/`, `scripts/` and `references/`, into your agent's skill location.
+
+For manual use, run the installed `scripts/incline.mjs` with Node from your project. It detects the nearest repository root, or uses the current directory outside Git. `--project <directory>` overrides that choice; `--input <collection.json>` imports conversation context. `--library-dir <directory>` selects a different personal library, and `--local-only` disables personal-library access entirely.
+
+The process prints a JSON `ready` event with the localhost URL. Open that exact URL. Choose **Finish & return to agent** to write the project collection, emit a `completed` event with its paths, and stop the server. The agent can then read the profile and continue the design task.
 
 Closing the tab early leaves a resumable draft. Restart against the same project to resume from Your collections. The server also stops after 30 idle minutes. A process lock prevents concurrent writers; stale locks whose process no longer exists are recovered automatically.
 
@@ -43,7 +42,17 @@ Closing the tab early leaves a resumable draft. Restart against the same project
   assets/<reference-id>.*     original images and Markdown design guides
 ```
 
-The stable skill describes how to interpret taste; mutable evidence stays outside it. Nothing automatically overwrites an installed skill. Project contexts remain distinct, and new sessions do not delete earlier ones. Keep `.incline/` private unless deliberately sharing it. There is no global profile inference or cross-project syncing yet.
+The stable skill describes how to interpret taste; mutable evidence stays outside it. Nothing automatically overwrites an installed skill. Project contexts remain distinct, and new sessions do not delete earlier ones. Keep `.incline/` private unless deliberately sharing it.
+
+## Reuse taste across projects
+
+In **Your collections → This project**, choose **Save to personal library** on a collection you want to reuse. It saves a separate, immutable copy under `~/.incline/library/`, including original references and contextual evidence. Opening Incline or finishing a project does not automatically copy anything there.
+
+In another project, open **Your collections → Personal library** and choose **Use in this project**. Incline copies the collection into a new draft, with fresh local asset files and source attribution. Review its context and earlier preferences before applying it. References previously marked “direction” become inspiration in the new draft; their original intent remains in the preserved source snapshot.
+
+Project edits do not update the personal copy or other projects. Saving another personal copy creates a new snapshot. This supports several different styles without averaging them into one profile, and does not scan or require access to other repositories. Existing project-only collections can be copied through the same explicit action; their original files and revision history stay intact.
+
+The personal library is only read when opened or used and is created only when saving a copy. The agent's existing filesystem permissions still apply; if access is denied, Incline reports the required library location and preserves existing data. Global installation grants no additional filesystem permission. See [personal-library workflow](skills/incline/references/personal-library.md) for storage and agent details.
 
 ## Bring references from the conversation
 
@@ -83,10 +92,14 @@ The [Fable gallery](https://fable-25.netlify.app/) informed the breadth of the e
 Source development requires Node 22.18+ for native TypeScript test imports.
 
 ```sh
-npm install
+git clone https://github.com/allisonllx/incline.git
+cd incline
+npm ci
 npm run build:skill
-npm run incline -- --project /absolute/path/to/project
+npm run incline
 ```
+
+Generated runtime scripts and static UI assets are committed under `skills/incline/` so standard skill installs are immediately runnable. Rebuild them after changing the source and include the regenerated files in the same change. No `node_modules` or user taste data belongs in the skill package.
 
 The frontend is shared with the earlier hosted demonstration. `npm run dev` runs that browser-only demonstration with localStorage; the portable skill uses the filesystem server instead. Local workflow changes do not require cloud deployment.
 

@@ -40,6 +40,7 @@ export type Round = {
 };
 export type Answer = { roundId: string; choice: Choice; reason: string };
 export type Session = {
+  librarySource?: { id: string; name: string; context: string };
   collection?: Collection;
   catalogVersion?: 1 | 2;
   id: string;
@@ -277,6 +278,23 @@ export function parseSaved(raw: string | null): Session[] {
         return false;
       if (s.collection !== undefined && !validCollection(s.collection))
         return false;
+      if (s.librarySource !== undefined) {
+        const source = s.librarySource;
+        if (
+          !source ||
+          typeof source !== 'object' ||
+          Array.isArray(source) ||
+          typeof source.id !== 'string' ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(
+            source.id,
+          ) ||
+          typeof source.name !== 'string' ||
+          source.name.length > 80 ||
+          typeof source.context !== 'string' ||
+          source.context.length > 300
+        )
+          return false;
+      }
       const rounds = getRounds(s.answers, s.catalogVersion);
       return (
         s.answers.every((a, i) => rounds[i]?.id === a.roundId) &&
@@ -291,7 +309,7 @@ export function parseSaved(raw: string | null): Session[] {
 }
 export function exportMarkdown(session: Session): string {
   const rounds = getRounds(session.answers, session.catalogVersion);
-  return `# Incline · ${session.name}\n\nContext: ${session.collection ? session.collection.projectContext || 'Not specified' : session.context}\nExploration: ${session.exploration}\n\n${session.collection ? collectionMarkdown(session.collection) : ''}## Explicit project instructions\nKeep: ${session.keep.join(', ') || 'Not specified'}\nExplore: ${session.explore.join(', ') || 'Not specified'}\n\n${session.notes || 'No preservation notes yet.'}\n\n## Provisional evidence\nThese preferences apply to this project. A/B choices are relative preferences, not absolute endorsements. Both welcomes both shown examples; neither rejects these examples, not an entire style. Unmentioned qualities are unknown. Preserve multiple directions; do not collapse this into one type.\n\n${
+  return `# Incline · ${session.name}\n\nContext: ${session.collection ? session.collection.projectContext || 'Not specified' : session.context}\nExploration: ${session.exploration}\n\n${session.librarySource ? `## Personal library source\n\nSaved copy: ${session.librarySource.name} (${session.librarySource.id})\nOriginal context: ${session.librarySource.context || 'Not specified'}\nOriginal snapshot: .incline/library-sources/${session.id}/snapshot.json\nAsset mapping: .incline/library-sources/${session.id}/receipt.json\n\nThe source context needs review for this project. Review inherited keep/explore selections and notes with the user; imported evidence is not automatically approved for this project. References begin as inspiration. The source snapshot preserves the original intent and notes.\n\n` : ''}${session.collection ? collectionMarkdown(session.collection) : ''}## ${session.librarySource ? 'Project instructions — review inherited notes' : 'Explicit project instructions'}\nKeep: ${session.keep.join(', ') || 'Not specified'}\nExplore: ${session.explore.join(', ') || 'Not specified'}\n\n${session.notes || 'No preservation notes yet.'}\n\n## Provisional evidence\n${session.librarySource ? 'Inherited comparisons describe the source context; review their relevance to this project.' : 'These preferences apply to this project.'} A/B choices are relative preferences, not absolute endorsements. Both welcomes both shown examples; neither rejects these examples, not an entire style. Unmentioned qualities are unknown. Preserve multiple directions; do not collapse this into one type.\n\n${
     session.answers
       .map((a) => {
         const r = rounds.find((r) => r.id === a.roundId);

@@ -347,6 +347,19 @@ export function CollectionEditor({
         </div>
         <span className="collection-number">01 — ∞</span>
       </div>
+      {session.librarySource && (
+        <aside className="library-origin">
+          <strong>A personal collection, ready for this project.</strong>
+          <p>
+            Copied from “{session.librarySource.name || 'Untitled collection'}”
+            {session.librarySource.context
+              ? ` · ${session.librarySource.context}`
+              : ''}
+            . Review its references and earlier preferences for what fits here.
+            Your changes stay in this project.
+          </p>
+        </aside>
+      )}
       <fieldset disabled={finishing} className="collection-fields">
         <div className="collection-intro-grid">
           <section className="collection-writing">

@@ -10,7 +10,23 @@ Taste is a collection of possibilities, not a single style label. Preserve proje
 
 Incline should help people discover, collect, and articulate taste that their agents can use. The built-in examples are prompts for exploration, never an exhaustive taxonomy. Directions such as magazine cutouts, old newspapers, handwritten letters, and glassmorphism must be expressible without matching a predefined label.
 
-The local prototype now supports description-led collections, original image uploads, Markdown design-guide upload/paste, links, optional notes, per-reference inspiration/direction intent, and saving without a quiz. Agents can prefill from conversation context with `--input`. Targeted generated comparisons and external reference providers remain future work.
+The local prototype now supports description-led collections, original image uploads, Markdown design-guide upload/paste, links, optional notes, per-reference inspiration/direction intent, and saving without a quiz. Agents can prefill from conversation context with `--input`. Public getdesign.md retrieval is implemented; targeted generated comparisons and additional reference providers remain future work.
+
+## Implemented: personal library and standard installation
+
+The skill supports both project installation and global installation through `npx skills add allisonllx/incline --skill incline`, optionally with `--global`. The complete runtime is included in the skill directory. The agent launches it from the active project; the launcher detects the nearest repository root, with an explicit project override available.
+
+Installation and data scope are independent. Project collections, drafts, revisions and chosen direction remain in `<project>/.incline/`. Users explicitly save immutable personal copies to `~/.incline/library/`, or a configured library location, and explicitly reuse them as new project drafts. Original references, notes and comparisons retain their context; inherited direction references start as inspiration. Imports preserve the source snapshot and an asset ID mapping. Editing a project copy never changes the library or another project.
+
+Existing project-only data remains readable and can be copied with the same explicit action. Original files and revision history stay in their source project; saving a personal copy does not migrate the full revision history or remove anything. There is no automatic global promotion or averaging of styles.
+
+The personal library is accessed only by library operations, and created only when saving. `--local-only` disables access. The active agent needs filesystem access to the current project and chosen library; no scanning of other repositories is required. Installation does not grant filesystem permission or guarantee a one-time approval across clients.
+
+Distribution checks cover complete installed assets and standalone launch. Integration tests cover copying between projects, independent edits, old quiz-only sessions, preserved originals, immutable snapshots, permissions, invalid or corrupted inputs and failed-import rollback.
+
+A standalone short terminal command remains optional future work. A skill installation does not publish an npm package or create a global `incline` executable; do not advertise `npx incline` without owning and releasing the package.
+
+Research: [skills CLI source and installation options](https://github.com/vercel-labs/skills) document `add`, `--skill` and `--global`. [CodeDB's MCP setup](https://github.com/justrach/codedb/blob/main/docs/mcp.md) separates central per-project indexes under `~/.codedb/projects/<hash>/` from active-root selection through workspace roots, an explicit project argument and the working directory. This is a useful precedent for central storage with explicit project context, not permission bypass.
 
 ### Two entry points, one collection
 
@@ -55,12 +71,11 @@ Add a medium alongside project context so that a bold poster preference need not
 
 ## Suggested sequence
 
-1. Validate the website workflow across coding agents, including launching, resuming, saving, and returning to the original task.
-2. Implemented: descriptions, reference images and links, and contextual collections that can be saved without completing the quiz. Existing quiz profiles are preserved; validate the resulting briefs in real design tasks.
-3. Use collected evidence to guide optional follow-up comparisons. Add external reference providers only when needed, keeping the standalone workflow complete.
+1. Complete hands-on trials of the standard installation and personal-library workflow in coding agents; collect feedback on launch, reuse, resume and return to the original task.
+2. Make generated results and subsequent feedback durable evidence. Track explicit statements separately from agent hypotheses and evaluate updates against earlier preservation instructions and project context.
+3. Use collected evidence to guide optional follow-up comparisons. Add reference providers only when needed, keeping the standalone workflow complete.
 4. Add a versioned medium field and separate comparison catalogs while preserving existing website profiles.
-5. Pilot posters with varied real compositions; then pilot slides with both individual slides and sequences.
-6. Let agents select the relevant medium and project evidence, with optional personal preferences shared across projects only when the user chooses.
+5. Pilot posters with varied real compositions; then pilot slides with both individual slides and sequences. Select evidence relevant to each project's medium and context.
 
 ## Preserve what already works
 

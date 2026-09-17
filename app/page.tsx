@@ -24,6 +24,10 @@ import {
 } from '@/components/ui/dialog';
 import { useSessionStore } from '@/components/incline/use-session-store';
 import { CollectionEditor } from '@/components/incline/collection-editor';
+import {
+  PersonalLibrary,
+  SavePersonalCopy,
+} from '@/components/incline/personal-library';
 import { emptyCollection } from '@/lib/collection';
 import { Catalog } from '@/components/incline/catalog';
 import { Specimen } from '@/components/incline/specimen';
@@ -94,6 +98,9 @@ export default function Home() {
     | 'collection'
   >('welcome');
   const [collectingImages, setCollectingImages] = useState(false);
+  const [libraryScope, setLibraryScope] = useState<'project' | 'personal'>(
+    'project',
+  );
   const imported = useRef(false);
   const [context, setContext] = useState<Context>('portfolio');
   const [exploration, setExploration] = useState<Exploration>('stretch');
@@ -971,12 +978,14 @@ export default function Home() {
                   Your collections.
                 </h1>
                 <p>
-                  Different projects, moods and possibilities. All part of your
-                  range.
+                  {connection?.personalLibrary?.available
+                    ? 'Keep a direction for this project, or bring something from your personal library.'
+                    : 'Keep different directions together, ready to revisit.'}
                 </p>
               </div>
               <Button
                 className="primary-button"
+                disabled={collectingImages}
                 onClick={() => {
                   setName('');
                   setView('welcome');
@@ -986,7 +995,43 @@ export default function Home() {
                 New collection
               </Button>
             </div>
-            {sessions.length === 0 ? (
+            <fieldset
+              className="library-scopes"
+              aria-label="Collection location"
+            >
+              <button
+                disabled={collectingImages}
+                aria-pressed={libraryScope === 'project'}
+                onClick={() => setLibraryScope('project')}
+              >
+                This project
+              </button>
+              {connection?.personalLibrary?.available && (
+                <button
+                  disabled={collectingImages}
+                  aria-pressed={libraryScope === 'personal'}
+                  onClick={() => setLibraryScope('personal')}
+                >
+                  Personal library
+                </button>
+              )}
+            </fieldset>
+            {libraryScope === 'personal' &&
+            connection?.personalLibrary?.available ? (
+              <PersonalLibrary
+                connection={connection}
+                onBusyChange={setCollectingImages}
+                onImport={(session) => {
+                  setSessions((previous) => [...previous, session]);
+                  setActiveId(session.id);
+                  setChoice(null);
+                  setReason('');
+                  setLibraryScope('project');
+                  setView('collection');
+                  setStatus('A copy is ready. Review it for this project.');
+                }}
+              />
+            ) : sessions.length === 0 ? (
               <div className="empty-state">
                 <Layers size={35} />
                 <h2>Start with whatever catches your eye.</h2>
@@ -1001,45 +1046,55 @@ export default function Home() {
             ) : (
               <div className="session-list">
                 {sessions.map((s) => (
-                  <button
-                    className="session-row"
-                    key={s.id}
-                    onClick={() => {
-                      setActiveId(s.id);
-                      setChoice(null);
-                      setReason('');
-                      setView(
-                        s.collection
-                          ? 'collection'
-                          : s.complete
-                            ? 'profile'
-                            : 'quiz',
-                      );
-                      setStatus('');
-                    }}
-                  >
-                    <span className="session-icon">
-                      <Layers size={22} />
-                    </span>
-                    <span>
-                      <strong>{s.name || 'Untitled collection'}</strong>
-                      <small>
+                  <div className="project-collection-row" key={s.id}>
+                    <button
+                      className="session-row"
+                      disabled={collectingImages}
+                      onClick={() => {
+                        setActiveId(s.id);
+                        setChoice(null);
+                        setReason('');
+                        setView(
+                          s.collection
+                            ? 'collection'
+                            : s.complete
+                              ? 'profile'
+                              : 'quiz',
+                        );
+                        setStatus('');
+                      }}
+                    >
+                      <span className="session-icon">
+                        <Layers size={22} />
+                      </span>
+                      <span>
+                        <strong>{s.name || 'Untitled collection'}</strong>
+                        <small>
+                          {s.collection
+                            ? `${s.collection.projectContext || 'Open direction'} · ${s.collection.references.length} references`
+                            : `${contexts[s.context]} · ${explorationLabels[s.exploration]}`}
+                        </small>
+                      </span>
+                      <span className="session-state">
                         {s.collection
-                          ? `${s.collection.projectContext || 'Open direction'} · ${s.collection.references.length} references`
-                          : `${contexts[s.context]} · ${explorationLabels[s.exploration]}`}
-                      </small>
-                    </span>
-                    <span className="session-state">
-                      {s.collection
-                        ? s.complete
-                          ? 'Open collection'
-                          : 'Continue collecting'
-                        : s.complete
-                          ? 'View profile'
-                          : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion).length} · Continue`}
-                    </span>
-                    <ArrowUpRight size={20} />
-                  </button>
+                          ? s.complete
+                            ? 'Open collection'
+                            : 'Continue collecting'
+                          : s.complete
+                            ? 'View profile'
+                            : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion).length} · Continue`}
+                      </span>
+                      <ArrowUpRight size={20} />
+                    </button>
+                    {connection?.personalLibrary?.available && (
+                      <SavePersonalCopy
+                        session={s}
+                        connection={connection}
+                        disabled={collectingImages}
+                        onBusyChange={setCollectingImages}
+                      />
+                    )}
+                  </div>
                 ))}
               </div>
             )}

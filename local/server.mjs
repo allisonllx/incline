@@ -9,9 +9,13 @@ import {
   open,
   realpath,
   access,
+  rm,
 } from 'node:fs/promises';
-import { resolve, join, extname, sep } from 'node:path';
-import { parseSaved, exportMarkdown } from '../lib/taste.ts';
+import { resolve, join, extname, sep, basename } from 'node:path';
+import { exportMarkdown } from '../lib/taste.ts';
+import { validate } from './sessions.mjs';
+import { createLibrary } from './library.mjs';
+import { homedir } from 'node:os';
 import {
   assetMime,
   assetName,
@@ -24,44 +28,6 @@ import { prepareImport } from './import.mjs';
 
 function failure(message, status = 400) {
   return Object.assign(new Error(message), { status });
-}
-function validate(sessions) {
-  if (!Array.isArray(sessions) || sessions.length > 100)
-    throw failure('Invalid session collection');
-  const valid = parseSaved(JSON.stringify({ version: 1, sessions }));
-  if (
-    valid.length !== sessions.length ||
-    new Set(sessions.map((s) => s.id)).size !== sessions.length
-  )
-    throw failure('Invalid session data');
-  for (const s of valid) {
-    if (
-      !/^[a-zA-Z0-9_-]{1,80}$/.test(s.id) ||
-      s.name.length > 80 ||
-      s.notes.length > 3000 ||
-      s.answers.some((a) => a.reason.length > 600) ||
-      Number.isNaN(Date.parse(s.createdAt))
-    )
-      throw failure('Invalid session fields');
-  }
-  return valid.map((s) => ({
-    id: s.id,
-    catalogVersion: s.catalogVersion ?? 1,
-    name: s.name,
-    context: s.context,
-    exploration: s.exploration,
-    answers: s.answers.map((a) => ({
-      roundId: a.roundId,
-      choice: a.choice,
-      reason: a.reason,
-    })),
-    keep: [...new Set(s.keep)],
-    explore: [...new Set(s.explore)],
-    notes: s.notes,
-    complete: s.complete,
-    createdAt: s.createdAt,
-    ...(s.collection ? { collection: structuredClone(s.collection) } : {}),
-  }));
 }
 
 async function requireAssets(sessions, directory) {
@@ -146,8 +112,13 @@ export async function startServer({
   onFinish = () => {},
   idleMs = 30 * 60 * 1000,
   input,
+  libraryDirectory = join(homedir(), '.incline', 'library'),
 } = {}) {
   const root = await realpath(resolve(project));
+  const personalDirectory =
+    libraryDirectory === null ? null : resolve(libraryDirectory);
+  const library =
+    personalDirectory === null ? null : createLibrary(personalDirectory, root);
   const directory = join(root, '.incline');
   await mkdir(directory, { recursive: true, mode: 0o700 });
   const lock = join(directory, '.lock');
@@ -241,14 +212,116 @@ export async function startServer({
           !timingSafeEqual(Buffer.from(auth), Buffer.from(expected))
         )
           throw failure('Local session token required', 401);
+        if (req.method === 'POST' && req.headers.origin !== origin)
+          throw failure('Origin not allowed', 403);
         if (req.method === 'GET' && url.pathname === '/api/boot')
           return send(res, 200, {
             mode: 'local',
             project: root,
             directory,
             sessions,
+            personalLibrary: {
+              available: library !== null,
+              directory: personalDirectory,
+            },
             ...(initialId ? { initialId } : {}),
           });
+        if (url.pathname === '/api/library' && req.method === 'GET') {
+          if (!library) throw failure('Personal library is disabled', 404);
+          return send(res, 200, { entries: await library.list() });
+        }
+        if (
+          ['/api/library/save', '/api/library/use'].includes(url.pathname) &&
+          req.method === 'POST'
+        ) {
+          if (!library) throw failure('Personal library is disabled', 404);
+          if (!req.headers['content-type']?.startsWith('application/json'))
+            throw failure('JSON required', 415);
+          const data = await body(req);
+          const field = url.pathname === '/api/library/save' ? 'session' : 'id';
+          if (
+            !data ||
+            typeof data !== 'object' ||
+            Array.isArray(data) ||
+            Object.keys(data).length !== 1 ||
+            !Object.hasOwn(data, field)
+          )
+            throw failure('Invalid personal library request');
+          const work = async () => {
+            if (done) throw failure('Session already finished', 409);
+            if (field === 'session')
+              return {
+                entry: await library.save(data.session, basename(root)),
+              };
+            const prepared = await library.prepare(data.id);
+            const next = validate(merge(sessions, [prepared.session]));
+            const sources = join(directory, 'library-sources');
+            const receiptDirectory = join(sources, prepared.session.id);
+            const staging = join(sources, `.pending-${prepared.session.id}`);
+            const writtenAssets = [];
+            let receiptWritten = false;
+            try {
+              await mkdir(sources, { recursive: true, mode: 0o700 });
+              await mkdir(staging, { mode: 0o700 });
+              await writeFile(
+                join(staging, 'snapshot.json'),
+                prepared.source.snapshot,
+                { flag: 'wx', mode: 0o600 },
+              );
+              await writeFile(
+                join(staging, 'evidence.md'),
+                prepared.source.evidence,
+                { flag: 'wx', mode: 0o600 },
+              );
+              await writeFile(
+                join(staging, 'receipt.json'),
+                JSON.stringify(prepared.source.receipt, null, 2),
+                { flag: 'wx', mode: 0o600 },
+              );
+              if (prepared.assets.length)
+                await mkdir(join(staging, 'assets'), { mode: 0o700 });
+              for (const asset of prepared.assets) {
+                await writeFile(
+                  join(staging, 'assets', asset.originalAsset),
+                  asset.bytes,
+                  { flag: 'wx', mode: 0o600 },
+                );
+                await storeNamedAsset(
+                  assetsDirectory,
+                  asset.asset,
+                  asset.bytes,
+                  asset.contentType,
+                );
+                writtenAssets.push(join(assetsDirectory, asset.asset));
+              }
+              await rename(staging, receiptDirectory);
+              receiptWritten = true;
+              await atomic(
+                join(directory, 'draft.json'),
+                JSON.stringify({ version: 1, sessions: next }, null, 2),
+              );
+            } catch (error) {
+              await Promise.all(
+                writtenAssets.map((path) => unlink(path).catch(() => {})),
+              );
+              if (receiptWritten)
+                await rm(receiptDirectory, {
+                  recursive: true,
+                  force: true,
+                }).catch(() => {});
+              throw error;
+            } finally {
+              await rm(staging, { recursive: true, force: true }).catch(
+                () => {},
+              );
+            }
+            sessions = next;
+            return { session: prepared.session };
+          };
+          const current = serial.then(work);
+          serial = current.catch(() => {});
+          return send(res, 201, await current);
+        }
         if (req.method === 'POST' && url.pathname === '/api/assets') {
           if (req.headers.origin !== origin)
             throw failure('Origin not allowed', 403);

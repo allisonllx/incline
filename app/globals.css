@@ -1266,6 +1266,7 @@ h1 {
 }
 .session-row {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 20px;
   border: 1px solid #dfe5d6;
@@ -1276,6 +1277,102 @@ h1 {
 }
 .session-row:hover {
   border-color: #8fa676;
+}
+.library-scopes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 26px 0;
+}
+.library-scopes button {
+  padding: 10px 18px;
+  border: 1px solid #dfe5d6;
+  border-radius: 24px;
+  background: #fff;
+  color: #49583b;
+  font-size: 14px;
+}
+.library-scopes button[aria-pressed='true'] {
+  background: #34432a;
+  border-color: #34432a;
+  color: #fff;
+}
+.library-explanation,
+.library-origin p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #59644f;
+}
+.library-origin {
+  border-left: 3px solid #8fa676;
+  background: #f0f3e9;
+  padding: 18px 22px;
+  margin-bottom: 30px;
+}
+.library-origin strong {
+  font-size: 16px;
+}
+.library-origin p {
+  margin: 8px 0 0;
+}
+.personal-copy-action {
+  padding: 12px 18px 16px;
+}
+.personal-copy-action .text-button {
+  font-size: 14px;
+}
+.personal-copy-action p {
+  font-size: 13px;
+  margin: 8px 0 0;
+  color: #59644f;
+  overflow-wrap: anywhere;
+}
+.personal-error,
+.personal-copy-action p.personal-error {
+  color: #99452e;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.personal-entry-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+.personal-entry {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid #dfe5d6;
+  border-radius: 8px;
+  background: #fff;
+}
+.personal-entry > div {
+  min-width: 0;
+  flex: 1 1 240px;
+  overflow-wrap: anywhere;
+}
+.personal-entry h2 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+.personal-entry p {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+.personal-entry small {
+  font-size: 13px;
+  color: #657059;
+}
+.library-scopes button:disabled,
+.personal-copy-action button:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 .session-icon {
   background: #eef5e5;

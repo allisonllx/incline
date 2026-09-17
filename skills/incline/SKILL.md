@@ -1,6 +1,6 @@
 ---
 name: incline
-description: Discover, collect, and apply contextual website design taste using descriptions, reference images, design guides, links, and optional visual comparisons. Use when the user wants to articulate a direction, curate inspiration, or preserve preferences across design iterations.
+description: Discover, collect, and apply contextual website design taste using descriptions, references, and visual comparisons. Reuse chosen personal collections across projects while keeping each project's direction independent.
 ---
 
 # Incline
@@ -11,15 +11,25 @@ Use the existing `<project>/.incline/profile.md` and relevant sessions in `.incl
 
 The package contains a standalone local UI and server. Node 22 or newer is required; no account, cloud deployment, API key, or package installation is needed.
 
-1. Resolve this skill's directory and the user's active project directory. Start the bundled script in a retained terminal session:
+1. Resolve this skill's directory and use the user's active project as the working directory. Start the bundled script in a retained terminal session:
 
-   `node <skill-directory>/scripts/incline.mjs --project <absolute-project-directory>`
+   `node <skill-directory>/scripts/incline.mjs`
+
+   The launcher detects the nearest repository root, or uses the working directory outside Git. Use `--project <absolute-project-directory>` when the task targets a different directory; do not launch from the skill's installation directory. The user should not need to locate the script or type paths. Project and global skill installations use the same workflow.
 
 2. Read the JSON `ready` event and open its exact `url` in the user's available browser or browser panel. The URL contains a temporary token in its fragment; do not publish or reuse it for other sessions. If opening a browser is unavailable, show that localhost link to the user.
 3. Let the user describe a direction, add references, or explore comparisons. Descriptions and references can be saved without completing a quiz. Do not invent answers or mark references as a chosen direction on their behalf. Notes are optional; an unexplained reference is exploratory evidence.
 4. After the user selects **Finish & return to agent**, read the JSON `completed` event. Confirm the reported `profilePath` exists, read that Markdown and the relevant session evidence from `statePath`, and continue the user's design work. The server shuts down automatically. The page says it is safe to close.
 
 Closing the tab early does not approve a profile change. When “Draft saved” appears, the latest changes are in `.incline/draft.json`; restart against the same project and open **Your collections** to resume. A session also exits after 30 idle minutes. If the user abandons the session, stop its retained process. A lock prevents two simultaneous sessions writing the same project; do not remove a live lock to start another.
+
+## Personal library
+
+Both project and global installations can use a shared personal library at `~/.incline/library`. It is only accessed on an explicit library operation. `--library-dir <directory>` selects another location; `--local-only` disables library access. Installation scope never selects a data scope or grants filesystem permissions.
+
+The user can choose **Your collections → This project → Save to personal library**, then in another project choose **Personal library → Use in this project**. Saving keeps a separate immutable copy; reuse creates an incomplete local draft with copied original assets and source attribution. Review earlier context, notes and quiz evidence for the new brief. Inherited “direction” references start as inspiration; importing does not reconfirm old instructions for every project. Project edits never rewrite the source or other projects.
+
+When the user wants cross-project reuse, explicit personal saving, another library location, or agent-driven library operations, read [Personal library](references/personal-library.md). Never export private project evidence solely because the skill is installed globally. Existing project collections and revisions stay intact when a personal copy is made.
 
 ## Bring existing conversation context
 
@@ -31,8 +41,14 @@ If the user already gave a description, images or links, carry them into the ses
   "description": "Newspaper columns with handwritten notes in the margins",
   "projectContext": "My personal writing website",
   "references": [
-    { "file": "/absolute/path/to/reference.png", "note": "Keep the paper texture" },
-    { "url": "https://example.com/reference", "title": "A reference from our conversation" }
+    {
+      "file": "/absolute/path/to/reference.png",
+      "note": "Keep the paper texture"
+    },
+    {
+      "url": "https://example.com/reference",
+      "title": "A reference from our conversation"
+    }
   ]
 }
 ```
@@ -61,4 +77,4 @@ A reference marked `inspiration` is something to explore. `direction` means use 
 
 `.incline/state.json` is the committed collection. `.incline/profile.md` is its readable index; `.incline/profiles/<session-id>.md` holds individual summaries and original reference paths. `.incline/assets/` stores original image and guide bytes. `.incline/revisions/` preserves immutable prior collections, including explicit instructions. Removing a reference from a collection retains its file for older revisions. `.incline/draft.json` stores unfinished work. Report a read/write error; do not replace unreadable files with empty defaults. Use prior revisions when the user requests recovery.
 
-The data belongs to the selected project and is local to disk. Do not commit it, upload it, or promote it into a global user profile unless the user requests that scope. This package works with any coding agent that can run a local process, open a URL, and read files; native automatic skill discovery depends on the host.
+Project data belongs to the selected project and stays on disk; personal copies belong to the chosen library. Do not commit or upload either, or promote project evidence into the personal library unless the user requests that scope. This package works with any coding agent that can run a local process, open a URL, and read files; native skill discovery depends on the host. Standard installation uses `npx skills add allisonllx/incline --skill incline`, optionally with `--global`.
