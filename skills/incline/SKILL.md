@@ -7,6 +7,14 @@ description: Discover, collect, and apply contextual website design taste using 
 
 Use the existing `<project>/.incline/profile.md` and relevant sessions in `.incline/state.json` before generating a design. Explicit keep/explore selections and preservation notes take precedence over provisional quiz evidence. A person may enjoy several incompatible-looking styles; context determines which to apply. Never infer disapproval from silence or a losing pairwise candidate.
 
+## Observe frontend iterations and catch up
+
+When the user asks to use Incline during frontend iteration, activate project-local evidence recording for that work. Read [Iteration feedback](references/iteration-feedback.md) and use the bundled `scripts/feedback.mjs` command. The agent performs this workflow; there is no background watcher and no automatic access to other chats.
+
+If introduced partway through, review accessible conversation history first, capture explicit feedback and accepted examples with their sources, and mark missing versions or summarized history. Then record meaningful feedback checkpoints quietly as work continues. The initial request authorizes this local recording; do not ask for approval on each event. Stop recording if asked. On a new conversation, read existing evidence for context but do not assume an earlier activation authorizes observing unrelated work.
+
+Before generating or revising a design, read `.incline/feedback/` through the command alongside the existing collection, when present. Keep direct user evidence, observations and agent hypotheses distinct. Feedback records supplement the collection; they do not automatically rewrite it. Explicit acceptance concerns the referenced configuration in its stated context. Unchanged elements and moving on are not approval. Do not infer global taste or save feedback to the personal library without an explicit request.
+
 ## Collect or refine taste
 
 The package contains a standalone local UI and server. Node 22 or newer is required; no account, cloud deployment, API key, or package installation is needed.

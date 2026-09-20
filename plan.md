@@ -75,6 +75,10 @@ DesignMD can provide an optional source of guides and examples for users with ac
 
 These are planned capabilities, not claims about the current runtime. Prioritize saved design feedback, competing interpretations and checks against confirmed preferences before autonomous profile evolution. A taste profile remains an incomplete, contextual record with room for unknown and unfamiliar directions.
 
+### Implemented foundation: agent-operated iteration journal
+
+The portable skill now supports retrospective catch-up from accessible conversation history and live feedback checkpoints through `scripts/feedback.mjs`. Project-local immutable batches preserve evidence type, source, context, coverage gaps, known event times and recording times, with optional copied artifact snapshots and integrity hashes. Retries are idempotent; conflicting corrections append new records. The agent reads this journal alongside the existing collection. It does not independently observe chats, infer approval from unchanged elements, rewrite profiles, or export feedback to the personal library. Browser presentation, automatic version comparison and explainable profile updates remain future work. See the iteration-feedback reference for the executable workflow.
+
 ### Make design feedback part of the saved evidence
 
 After generation, associate the actual result and the user's reaction with the relevant project, collection and collection revision. Preserve a stable artifact version or visual snapshot where available, rather than relying only on a URL whose appearance may later change. Record the exact feedback, when it was given, the aspect it concerns and any explicit scope. Keep original events and link later corrections instead of overwriting the history.

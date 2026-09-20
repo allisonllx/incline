@@ -34,7 +34,8 @@
     "hooks/use-mobile.ts",
     "skills/incline/assets/ui/**",
     "skills/incline/scripts/incline.mjs",
-    "skills/incline/scripts/getdesign.mjs"
+    "skills/incline/scripts/getdesign.mjs",
+    "skills/incline/scripts/feedback.mjs"
   ],
   "rules": {
     "no-array-constructor": "error",

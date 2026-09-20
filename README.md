@@ -4,7 +4,7 @@
 
 <h1 align="center">incline</h1>
 
-A local taste-calibration companion for coding agents. The agent starts a temporary browser experience, the user explores visual directions, and Incline saves contextual preference evidence back to the project before closing the server.
+A local taste-calibration companion for coding agents. Explore and collect visual directions in a temporary browser session, or ask your agent to capture feedback as you iterate a frontend. Incline keeps contextual preference evidence in your project for the agent to use.
 
 Start with your own description, collect reference images, Markdown design guides and links, or take optional visual comparisons. A collection can be saved without a quiz. References retain individual notes and distinguish open inspiration from a direction chosen for this project; nothing forces taste into one style label.
 
@@ -34,6 +34,46 @@ The process prints a JSON `ready` event with the localhost URL. Open that exact 
 
 Closing the tab early leaves a resumable draft. Restart against the same project to resume from Your collections. The server also stops after 30 idle minutes. A process lock prevents concurrent writers; stale locks whose process no longer exists are recovered automatically.
 
+## Ways to use Incline
+
+After installing the skill, use these prompts in your coding agent with the intended project open. You can combine workflows: start with references, explore comparisons, build a frontend, and record feedback as you refine it. The agent handles the local commands; you do not need to supply script paths.
+
+| What you want to do | Suggested prompt | What happens |
+| --- | --- | --- |
+| **Discover a direction** | “Use Incline to help me explore a visual direction for my portfolio. I’m not sure what I like yet.” | Opens the visual session so you can browse examples and try optional comparisons. |
+| **Start with an idea** | “Use Incline to capture this direction for my writing site: newspaper columns, warm paper colours, and handwritten accents. I don’t need a quiz.” | Starts a collection from your description and project context. You can save without answering comparisons. |
+| **Collect references** | “Use Incline to collect these screenshots and links for this dashboard. I like the typography in the first and the density in the second; the third is just inspiration.” | Brings available references and your notes into a collection, preserving which qualities interest you. |
+| **Apply an existing project direction** | “Use this project’s Incline collection and feedback to design the settings page. Keep the typography and spacing we already agreed on.” | Reads the saved evidence and uses it to guide the agent’s frontend work, retaining explicit preservation instructions. |
+| **Record feedback while iterating** | “Use Incline while we iterate this frontend. Record my feedback and the versions I react to. Ask only when something important is ambiguous.” | The active agent saves meaningful feedback checkpoints and available artifact snapshots to the project-local journal. |
+| **Introduce Incline halfway through** | “Use Incline from here. Review our earlier iterations, capture the feedback and decisions we’ve established, then keep track as we go.” | Catches up from accessible conversation history, marks missing context, and continues with live checkpoints. |
+| **Resume unfinished work** | “Reopen my unfinished Incline collection for this project so I can continue adding references.” | Reopens the local session; use **Your collections** to resume the saved draft. |
+| **Save a collection for other projects** | “Help me save this project’s ‘Editorial portfolio’ collection to my Incline personal library.” | Opens the save workflow for a separate reusable copy, including the collection’s original references and notes. |
+| **Reuse a saved collection** | “Check my Incline personal library for collections that could fit this project. Let me choose one to adapt.” | Lets you choose a collection and copy it into a new project draft as inspiration, with the original context preserved. |
+| **Bring a written design guide** | “Use Incline to collect this DESIGN.md as a reference. Keep its reading rhythm, but explore a different colour palette.” | Preserves the original guide and your qualifications alongside other references. |
+| **Explore public design guides** | “Use Incline to look for editorial references in the public getdesign.md collection, then help me choose a guide to explore.” | Uses the optional public-catalog helper to find candidates and import a selected guide as inspiration. Internet access is required. |
+| **Write a project design brief** | “Use our chosen Incline references and explicit feedback to write a project-specific DESIGN.md. Separate confirmed decisions from open questions.” | The agent synthesizes the evidence into an implementation guide with sources and qualities to preserve. |
+
+For a visual collection session, choose **Finish & return to agent** when ready to continue building. Feedback recording works directly through the active agent and does not require opening the visual session.
+
+### During an iteration
+
+Once you have activated recording, ordinary feedback is enough—you do not need to mention Incline in every message:
+
+- “Keep this typography. Make the cards less rounded.”
+- “Restore the previous navigation; that was easier to scan.”
+- “This version looks good for this dashboard.”
+- “Pause here; I haven’t approved the mobile layout yet.”
+
+To resume in a new conversation, say: **“Use Incline for this iteration. Read this project’s saved collection and feedback before we continue.”** To stop, say: **“Stop recording Incline feedback for this task.”** Existing records stay available.
+
+### What to expect
+
+Taste stays project-local unless you explicitly save a collection to the personal library. Global installation makes the skill available across projects; it does not merge their preferences. Personal-library exports currently include collections, not the separate iteration journal.
+
+Catch-up depends on the history and artifacts your agent can access. Summarized conversations remain labeled summaries, unavailable screenshots remain gaps, and unchanged elements are not treated as approval. The skill guides the active agent; it does not independently watch chats or retrieve inaccessible conversations.
+
+Automatic personal-library suggestions, a dedicated interface for mixing aspects from several collections, browser display of journal events, and automatic profile refinement are still [planned](plan.md). Today, ask explicitly to check the library and describe any particular qualities you want the agent to combine.
+
 ## Where taste lives
 
 ```text
@@ -44,9 +84,18 @@ Closing the tab early leaves a resumable draft. Restart against the same project
   revisions/<revision>.json  immutable previous collections
   draft.json                 unfinished work
   assets/<reference-id>.*     original images and Markdown design guides
+  feedback/<batch-id>/        iteration evidence and available artifact snapshots
 ```
 
 The stable skill describes how to interpret taste; mutable evidence stays outside it. Nothing automatically overwrites an installed skill. Project contexts remain distinct, and new sessions do not delete earlier ones. Keep `.incline/` private unless deliberately sharing it.
+
+## Record frontend iteration feedback
+
+Ask the agent: **“Use Incline while we iterate this frontend. Catch up on our earlier feedback, then keep track as we go.”** The skill now includes an agent-operated feedback journal. The agent captures accessible past feedback with source and coverage notes, then records meaningful checkpoints during the work. Exact quotes, historical summaries, observations and tentative interpretations stay distinct. Missing screenshots and unknown historical dates remain explicit gaps.
+
+`node <skill-directory>/scripts/feedback.mjs record --project <project> --input <batch.json>` saves immutable batches and optional artifact snapshots under `.incline/feedback/`. `feedback.mjs read --project <project>` reads them and verifies snapshot hashes. Repeating the same batch is safe; corrections use a new batch. See [iteration feedback](skills/incline/references/iteration-feedback.md) for the schema and workflow.
+
+This runs through the active agent, without a browser or background watcher. It cannot retrieve inaccessible conversations itself. The journal supplements existing collections without rewriting them, inferring approval from silence, or exporting to the personal library. Browser display of journal events and automated profile refinement remain future work.
 
 ## Reuse taste across projects
 

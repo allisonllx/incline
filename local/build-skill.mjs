@@ -3,6 +3,7 @@ await build({
   entryPoints: {
     incline: 'local/cli.mjs',
     getdesign: 'local/getdesign-cli.mjs',
+    feedback: 'local/feedback-cli.mjs',
   },
   bundle: true,
   platform: 'node',
