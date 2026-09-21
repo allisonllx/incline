@@ -163,18 +163,18 @@ Add a medium alongside project context so that a bold poster preference need not
 
 The insights command now supports explicit `rebuild` and read-only `query` operations. Rebuild generates contextual topic pages and a compact index under `.incline/knowledge/`; existing feedback and versioned insights remain authoritative and unchanged. Queries retain exceptions and evidence links, report lexical match strength and freshness, and fall back to saved insights when projections are missing, stale or corrupt. No personal-project scanning, automatic synthesis or database migration is included.
 
-See [retrieval evaluation](docs/evaluations/knowledge-retrieval.md) for synthetic results and remaining real-iteration validation. A4 was delivered first following the user's approval; disposition fields, review receipts, personal insights and quiz revisions remain planned.
+See [retrieval evaluation](docs/evaluations/knowledge-retrieval.md) for synthetic results and remaining real-iteration validation. A4 was delivered first following the user's approval. Contextual dispositions, review receipts, curated personal snapshots and optional v3 discovery probes are now implemented; validation on repeated real iterations remains ongoing.
 
 ## Experimental: Jev learning evaluation (2026-09-22)
 
 A separate observation-only [trial](experiments/jev-learning/README.md) tests the Beacon-inspired learning pipeline against 12 synthetic cases. Jev evaluates candidate support, scope, relationship to existing insights and missing visual evidence. A fixed policy logs review recommendations; it cannot write insights or promote personal preferences. First live results matched 10 of 12 provisional case label sets, offered no unsupported candidate and deferred two useful candidates. These are feasibility results, not calibrated accuracy or design-quality evidence. The portable skill now provides explicit selected-insight reviews with an offline payload preview, hash-bound send and separate immutable evaluation records. A Beacon collector/import adapter and validation on real user feedback remain future work.
 
-## Immediate implementation priorities (2026-09-21)
+## Completed implementation priorities (2026-09-22)
 
 The first implementation now provides a rebuildable file-based knowledge index and generated topic views over authoritative versioned insights. Raw feedback and screenshots are preserved; database migration remains deferred until measured query limitations justify it. See milestone A4 in the detailed plan.
 
 
-See the [Feedback Memory and Discovery Improvement implementation plan](docs/superpowers/plans/2026-09-21-feedback-memory-loop.md). This supersedes the older suggested order for the next work:
+See the [Feedback Memory and Discovery Improvement implementation plan](docs/superpowers/plans/2026-09-21-feedback-memory-loop.md). The three implementation milestones below are delivered; the later suggested sequence remains future work:
 
 1. Close the project feedback loop: qualified acceptance/publication signals, explicit insight-review checkpoints, and relevant rendered checks before presenting a design—especially recurring spacing issues.
 2. Add deliberately curated personal insights with contextual exceptions and portable evidence. Keep this separate from automatic saved-collection nudges.
@@ -199,3 +199,17 @@ Retain the original choices, references, explanations, and profile revisions. Re
 ## Implemented foundation: separate project insights
 
 The `insights.mjs` command stores scoped findings separately from the provenance journal. Current findings retain supporting/conflicting batch-event links, qualifications, open questions and tentative/explicit/superseded status. Immutable revisions and optimistic revision checks prevent lost updates. Agents read compact findings first and resolve only relevant evidence; retrieval checks source changes and artifact availability. This does not yet provide an insights UI, autonomous consolidation, semantic search or cross-project promotion.
+
+## Project feedback review loop
+
+The agent can now connect recorded corrections to versioned findings through per-event review receipts. Before an iteration it queries relevant insights and checks pending feedback; at checkpoints it updates scoped findings or records why no change is needed or why review is deferred. New feedback and changed source hashes remain visible. Optional contextual disposition separates publication permission, readiness and aesthetic approval without assigning universal meanings to phrases.
+
+Suggested prompt: “Use Incline to review pending feedback before this edit. Apply relevant findings, inspect the rendered result at the affected states and viewports, then record what changed and what remains unverified.”
+
+The original archive stays unchanged. This is agent-assisted project-local memory, not a background learner or a guarantee of better taste. Curated personal insights and optional discovery follow-ups are implemented; automatic library suggestions remain planned. See [feedback-loop evaluation](docs/evaluations/feedback-loop.md) for validation boundaries.
+
+## Implemented: curated findings and optional discovery detail
+
+Personal insight snapshots preserve a reviewed finding, scope, exceptions and only its selected evidence, including portable artifact bytes. Preview/save/list/import are explicit operations using `~/.incline/personal-insights/`; imported copies remain tentative project drafts. The reference collection library keeps its existing format. No automatic repository scanning, preference promotion or global style averaging was added.
+
+Catalog v3 makes spacing and motion optional after ten main comparisons. Selections persist, backtracking invalidates dependent answers, and skipped motion contributes no taste evidence. Existing v1/v2 catalogs remain readable with their original question sequences. See the [visual audit and flow checks](docs/evaluations/discovery-follow-ups.md). Repeated real project use is still needed to judge improved alignment and reduced correction burden.

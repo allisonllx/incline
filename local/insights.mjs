@@ -134,7 +134,7 @@ async function resolveEvidence(project, ref, inspectArtifacts = false) {
   }
   return result;
 }
-async function latest(project, insightId) {
+async function latest(project, insightId, requestedRevision) {
   id(insightId);
   const directory = join(project, '.incline/insights', insightId);
   let names;
@@ -148,7 +148,7 @@ async function latest(project, insightId) {
     .filter((n) => /^[1-9][0-9]*\.json$/.test(n))
     .map((n) => Number(n.slice(0, -5)));
   if (!revisions.length) return null;
-  const revision = Math.max(...revisions);
+  const revision = requestedRevision ?? Math.max(...revisions);
   const path = join(directory, `${revision}.json`);
   const { data } = await loadJson(path);
   const {
@@ -282,4 +282,11 @@ export async function insightEvidence(project, insightId) {
       ),
     ),
   };
+}
+
+export async function readInsightRevision(project, insightId, revision) {
+  if (!Number.isSafeInteger(revision) || revision < 1) throw new Error('Invalid revision');
+  const result = await latest(project, insightId, revision);
+  if (!result) throw new Error('Missing insight revision');
+  return result;
 }

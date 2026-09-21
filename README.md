@@ -190,7 +190,7 @@ Incline now includes [reference interpretation and design critique](skills/incli
 
 ## Wider visual exploration
 
-The second catalog has twelve comparisons: six broad pairs cover twelve families with distinct compositions, followed by density, typography, colour, layout, an adaptive spacing boundary, and motion. Directions include Swiss grids, magazine layouts, brutalist posters, restrained split screens, full-bleed cinematic photography, terminals, art deco, playful cards, bento layouts, organic field notes, bold asymmetric type, and kinetic typography. A browsable gallery and larger previews expose the actual compositions. Existing eight-round sessions retain their original catalog and interpretation.
+New sessions use catalog v3: six broad pairs cover twelve families with distinct compositions, followed by density, typography, colour and layout. After those ten comparisons, you can finish or explore an optional adaptive spacing boundary and/or isolated motion comparison. Reduced-motion users can skip motion without generating a preference. Directions include Swiss grids, magazine layouts, brutalist posters, restrained split screens, full-bleed cinematic photography, terminals, art deco, playful cards, bento layouts, organic field notes, bold asymmetric type, and kinetic typography. A browsable gallery and larger previews expose the actual compositions. Existing v1 eight-round and v2 twelve-round sessions retain their original catalogs and interpretation.
 
 A/B is a relative choice, “both” welcomes both examples, “neither” rejects the examples, and “depends” retains uncertainty. Broad composition choices do not isolate one attribute. Explicit keep/explore selections and preservation notes are stored separately from provisional inference. Free-text explanations are preserved verbatim.
 
@@ -226,3 +226,19 @@ The server binds only to loopback on an available port. API calls require the te
 ## Icon credits
 
 The arrow mark and interface icons are based on [Lucide](https://lucide.dev/), including icons derived from Feather. The [ISC and MIT license notices](public/lucide-LICENSE.txt) are included in this repository and the portable skill package.
+
+## Project feedback review loop
+
+The agent can now connect recorded corrections to versioned findings through per-event review receipts. Before an iteration it queries relevant insights and checks pending feedback; at checkpoints it updates scoped findings or records why no change is needed or why review is deferred. New feedback and changed source hashes remain visible. Optional contextual disposition separates publication permission, readiness and aesthetic approval without assigning universal meanings to phrases.
+
+Suggested prompt: “Use Incline to review pending feedback before this edit. Apply relevant findings, inspect the rendered result at the affected states and viewports, then record what changed and what remains unverified.”
+
+The original archive stays unchanged. This is agent-assisted project-local memory, not a background learner or a guarantee of better taste. Curated personal insights and optional discovery follow-ups are available; automatic personal-library suggestions remain planned. See [feedback-loop evaluation](docs/evaluations/feedback-loop.md) for validation boundaries.
+
+## Reuse selected findings across projects
+
+Ask: “Preview a reusable spacing insight from these selected project findings, keeping their exceptions and source evidence.” Once the concrete selection is reviewed, Incline can save it in `~/.incline/personal-insights/`. This is separate from the reference collection library. Saved revisions contain only the selected events and linked artifacts, so they remain usable if the original checkout moves or disappears.
+
+For another project: “List my saved personal insights and import this one as a tentative draft; explain how it fits this brief.” Imports retain their provenance and require contextual review. Existing project instructions take precedence. Nothing scans your other repositories or promotes local findings automatically; `--local-only` disables shared operations. See the [personal insight commands](skills/incline/references/insights.md#explicit-personal-insight-snapshots).
+
+For discovery: “Help me explore a direction; let me finish after the main comparisons unless I choose a spacing or motion follow-up.” Existing sessions keep their previous questions. See the [discovery evaluation](docs/evaluations/discovery-follow-ups.md).

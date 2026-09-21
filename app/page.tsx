@@ -39,6 +39,8 @@ import {
   getRounds,
   deriveProfile,
   reviseAnswer,
+  selectFollowUps,
+  type FollowUp,
   exportMarkdown,
   type Session,
   type Context,
@@ -54,6 +56,7 @@ const choiceLabels: Record<Choice, string> = {
   both: 'I like both',
   neither: 'Neither feels right',
   depends: 'It depends',
+  skipped: 'Skipped — motion not assessed',
 };
 const explorationLabels: Record<Exploration, string> = {
   familiar: 'Keep it familiar',
@@ -92,6 +95,7 @@ export default function Home() {
     | 'welcome'
     | 'setup'
     | 'quiz'
+    | 'followups'
     | 'profile'
     | 'library'
     | 'catalog'
@@ -108,9 +112,21 @@ export default function Home() {
   const [choice, setChoice] = useState<Choice | null>(null);
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState('');
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReducedMotion(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
   const heading = useRef<HTMLHeadingElement>(null);
   const active = sessions.find((s) => s.id === activeId);
-  const rounds = getRounds(active?.answers ?? [], active?.catalogVersion ?? 2);
+  const rounds = getRounds(
+    active?.answers ?? [],
+    active ? (active.catalogVersion ?? 1) : 3,
+    active?.followUps,
+  );
   const step = active?.answers.length ?? 0;
   const round = rounds[Math.min(step, rounds.length - 1)];
   useEffect(() => {
@@ -127,7 +143,8 @@ export default function Home() {
   function beginCollection() {
     const session: Session = {
       id: crypto.randomUUID(),
-      catalogVersion: 2,
+      catalogVersion: 3,
+      followUps: [],
       name: '',
       context: 'portfolio',
       exploration: 'stretch',
@@ -173,7 +190,8 @@ export default function Home() {
   function begin() {
     const s: Session = {
       id: crypto.randomUUID(),
-      catalogVersion: 2,
+      catalogVersion: 3,
+      followUps: [],
       name: name.trim() || contexts[context],
       context,
       exploration,
@@ -191,17 +209,46 @@ export default function Home() {
     setView('quiz');
     setStatus('');
   }
-  function next() {
-    if (!active || !choice) return;
+  function next(selected: Choice | null = choice) {
+    if (
+      !active ||
+      !selected ||
+      (round.id === 'motion' && reducedMotion && selected !== 'skipped')
+    )
+      return;
     const answers = [
       ...active.answers,
-      { roundId: round.id, choice, reason: reason.trim() },
+      {
+        roundId: round.id,
+        choice: selected,
+        reason:
+          selected === 'skipped'
+            ? 'Motion comparison unavailable or skipped; no preference inferred.'
+            : reason.trim(),
+      },
     ];
     update({ ...active, answers, complete: answers.length === rounds.length });
     setChoice(null);
     setReason('');
     if (answers.length === rounds.length)
-      setView(active.collection ? 'collection' : 'profile');
+      setView(
+        active.catalogVersion === 3
+          ? 'followups'
+          : active.collection
+            ? 'collection'
+            : 'profile',
+      );
+  }
+  function exploreFollowUp(topic: FollowUp) {
+    if (!active) return;
+    const next = selectFollowUps(active, [
+      ...(active.followUps ?? []).filter((v) => v !== topic),
+      topic,
+    ]);
+    update(next);
+    setChoice(null);
+    setReason('');
+    setView(next.complete ? 'followups' : 'quiz');
   }
   function back() {
     if (!active) return;
@@ -508,7 +555,7 @@ export default function Home() {
                   >
                     Find my inclinations <ArrowRight size={18} />
                   </Button>
-                  <span>12 comparisons · about 5 minutes</span>
+                  <span>10 comparisons · optional follow-ups</span>
                 </div>
               </div>
               <button
@@ -561,6 +608,67 @@ export default function Home() {
             </aside>
           </div>
         )}
+        {!result && view === 'followups' && active && (
+          <section className="profile-view" aria-label="Optional comparisons">
+            <div className="quiz-heading">
+              <div className="eyebrow">YOUR CHOICE</div>
+              <h1 ref={heading} tabIndex={-1}>
+                Enough to start. Curious about more?
+              </h1>
+              <p>
+                Your main comparisons are complete. These optional questions
+                isolate a detail; liking both or depending on context is a
+                complete answer.
+              </p>
+            </div>
+            <div className="entry-choices">
+              {!active.followUps?.includes('spacing') && (
+                <button
+                  className="entry-card"
+                  aria-label="Explore spacing"
+                  onClick={() => exploreFollowUp('spacing')}
+                >
+                  <div className="entry-copy">
+                    <h2>Explore spacing</h2>
+                    <p>
+                      Compare a narrower spacing range in the same layout, based
+                      on your earlier density answer.
+                    </p>
+                  </div>
+                </button>
+              )}
+              {!active.followUps?.includes('motion') && (
+                <button
+                  className="entry-card"
+                  aria-label="Explore motion"
+                  onClick={() => exploreFollowUp('motion')}
+                >
+                  <div className="entry-copy">
+                    <h2>Explore motion</h2>
+                    <p>
+                      Keep the typography and layout the same; compare movement
+                      with stillness.
+                    </p>
+                    {reducedMotion && (
+                      <p>
+                        Your reduced-motion setting is on. You can skip this
+                        comparison.
+                      </p>
+                    )}
+                  </div>
+                </button>
+              )}
+            </div>
+            <Button
+              className="primary-button followup-actions"
+              onClick={() =>
+                setView(active.collection ? 'collection' : 'profile')
+              }
+            >
+              Finish here <ArrowRight size={18} />
+            </Button>
+          </section>
+        )}
         {!result && view === 'quiz' && active && (
           <div className="quiz-view">
             <div className="quiz-meta">
@@ -602,6 +710,41 @@ export default function Home() {
               </h1>
               <p>{round.prompt}</p>
             </div>
+            {round.id === 'motion' && reducedMotion && (
+              <output className="profile-note">
+                Reduced motion is enabled. Both examples are still, so this
+                comparison cannot demonstrate a motion preference. Skip it
+                without recording a preference.
+              </output>
+            )}
+            {round.id === 'motion' && (
+              <Button
+                className="motion-skip"
+                variant="outline"
+                onClick={() => next('skipped')}
+              >
+                Skip motion comparison
+              </Button>
+            )}
+            {active.catalogVersion === 3 &&
+              round.id.startsWith('boundary-') && (
+                <Button
+                  className="motion-skip"
+                  variant="outline"
+                  onClick={() => {
+                    const next = selectFollowUps(
+                      active,
+                      (active.followUps ?? []).filter((v) => v !== 'spacing'),
+                    );
+                    update(next);
+                    setChoice(null);
+                    setReason('');
+                    setView(next.complete ? 'followups' : 'quiz');
+                  }}
+                >
+                  Skip spacing comparison
+                </Button>
+              )}
             <div className="comparison-grid">
               {(['a', 'b'] as const).map((side, i) => (
                 <div
@@ -622,6 +765,7 @@ export default function Home() {
                     <Button
                       variant="ghost"
                       className="candidate-choice"
+                      disabled={round.id === 'motion' && reducedMotion}
                       onClick={() => setChoice(side)}
                       aria-pressed={choice === side}
                     >
@@ -651,6 +795,7 @@ export default function Home() {
             </div>
             <div className="choice-area">
               <RadioGroup
+                disabled={round.id === 'motion' && reducedMotion}
                 aria-label="Your preference"
                 value={choice ?? ''}
                 onValueChange={(v) => setChoice(v as Choice)}
@@ -690,11 +835,13 @@ export default function Home() {
                 </p>
                 <Button
                   className="primary-button"
-                  disabled={!choice}
-                  onClick={next}
+                  disabled={!choice || (round.id === 'motion' && reducedMotion)}
+                  onClick={() => next()}
                 >
                   {step === rounds.length - 1
-                    ? 'See my profile'
+                    ? active.catalogVersion === 3
+                      ? 'Continue'
+                      : 'See my profile'
                     : 'Next comparison'}
                   <ArrowRight size={18} />
                 </Button>
@@ -753,6 +900,11 @@ export default function Home() {
                 you’d like to explore.
               </p>
             </div>
+            {active.catalogVersion === 3 && active.answers.length >= 10 && (
+              <Button variant="outline" onClick={() => setView('followups')}>
+                Optional comparisons
+              </Button>
+            )}
             <div className="style-grid">
               {sessionStyles(active).map((style) => {
                 const e = evidence.find((e) => e.tag === style);
@@ -761,7 +913,7 @@ export default function Home() {
                     <Specimen
                       variant={{
                         style,
-                        ...(active.catalogVersion !== 2
+                        ...((active.catalogVersion ?? 1) === 1
                           ? { layout: 'classic' as const }
                           : {}),
                       }}
@@ -1082,7 +1234,7 @@ export default function Home() {
                             : 'Continue collecting'
                           : s.complete
                             ? 'View profile'
-                            : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion).length} · Continue`}
+                            : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion, s.followUps).length} · Continue`}
                       </span>
                       <ArrowUpRight size={20} />
                     </button>

@@ -25,6 +25,7 @@ export function validate(sessions) {
   return valid.map((s) => ({
     id: s.id,
     catalogVersion: s.catalogVersion ?? 1,
+    ...(s.catalogVersion === 3 ? { followUps: [...s.followUps] } : {}),
     name: s.name,
     context: s.context,
     exploration: s.exploration,

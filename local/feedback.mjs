@@ -69,7 +69,17 @@ export function validateBatch(data) {
       'occurredAt',
       'context',
       'artifactIds',
+      'disposition',
     ]);
+    if (event.disposition !== undefined) {
+      object(event.disposition, ['publication', 'readiness', 'aesthetic', 'basis']);
+      for (const [axis, values] of Object.entries({
+        publication: ['unknown', 'authorized'],
+        readiness: ['unknown', 'acceptable'],
+        aesthetic: ['unknown', 'positive', 'preferred'],
+      })) if (!values.includes(event.disposition[axis])) fail(`disposition ${axis}`);
+      text(event.disposition.basis, 'disposition basis');
+    }
     id(event.id);
     if (eventIds.has(event.id)) fail('duplicate event ID');
     eventIds.add(event.id);

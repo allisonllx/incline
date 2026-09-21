@@ -21,9 +21,13 @@ async function resolveOptions(args, cwd = process.cwd()) {
   const options = /* @__PURE__ */ new Map();
   for (let index = 0; index < args.length; index++) {
     const flag = args[index];
-    if (!["--project", "--input", "--library-dir", "--local-only"].includes(
-      flag
-    ) || options.has(flag))
+    if (![
+      "--project",
+      "--input",
+      "--library-dir",
+      "--personal-dir",
+      "--local-only"
+    ].includes(flag) || options.has(flag))
       throw new Error(
         `Unknown or repeated option: ${flag}. Use --help for usage.`
       );
@@ -35,10 +39,11 @@ async function resolveOptions(args, cwd = process.cwd()) {
       options.set(flag, resolve(cwd, value));
     }
   }
-  if (options.has("--local-only") && options.has("--library-dir"))
-    throw new Error("Choose --local-only or --library-dir, not both.");
+  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir")))
+    throw new Error("Choose --local-only or a shared directory, not both.");
   return {
     project: options.get("--project") ?? await projectRoot(cwd),
+    personalDirectory: options.has("--local-only") ? null : options.get("--personal-dir") ?? join(homedir(), ".incline", "personal-insights"),
     libraryDirectory: options.has("--local-only") ? null : options.get("--library-dir") ?? join(homedir(), ".incline", "library"),
     ...options.has("--input") ? { input: options.get("--input") } : {}
   };
@@ -175,7 +180,7 @@ async function resolveEvidence(project, ref, inspectArtifacts = false) {
   }
   return result;
 }
-async function latest(project, insightId) {
+async function latest(project, insightId, requestedRevision) {
   id(insightId);
   const directory = join2(project, ".incline/insights", insightId);
   let names;
@@ -187,7 +192,7 @@ async function latest(project, insightId) {
   }
   const revisions = names.filter((n) => /^[1-9][0-9]*\.json$/.test(n)).map((n) => Number(n.slice(0, -5)));
   if (!revisions.length) return null;
-  const revision = Math.max(...revisions);
+  const revision = requestedRevision ?? Math.max(...revisions);
   const path = join2(directory, `${revision}.json`);
   const { data } = await loadJson(path);
   const {

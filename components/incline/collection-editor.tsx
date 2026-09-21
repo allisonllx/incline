@@ -351,7 +351,8 @@ export function CollectionEditor({
   const hasContent =
     collectionHasContent(collection) ||
     session.answers.length ===
-      getRounds(session.answers, session.catalogVersion).length;
+      getRounds(session.answers, session.catalogVersion, session.followUps)
+        .length;
   const busy = uploading || finishing;
   return (
     <div className="collection-view">
@@ -698,7 +699,11 @@ export function CollectionEditor({
             </p>
             <button className="text-button" disabled={busy} onClick={onQuiz}>
               {session.answers.length ===
-              getRounds(session.answers, session.catalogVersion).length
+              getRounds(
+                session.answers,
+                session.catalogVersion,
+                session.followUps,
+              ).length
                 ? 'Review comparisons'
                 : session.answers.length
                   ? 'Continue comparisons'

@@ -53,11 +53,11 @@ The current v2 discovery catalog includes density and a later density-boundary c
 
 Allowed publication values: `unknown`, `authorized`. Readiness: `unknown`, `acceptable`. Aesthetic: `unknown`, `positive`, `preferred`. `basis` is required when disposition is supplied. These are independent axes, not a numerical ranking. `preferred` requires an explicit comparison or statement; positive wording alone is not preference over alternatives. These fields preserve an agent classification and its rationale, not a machine-certified fact.
 
-- [ ] Add validation tests accepting old records unchanged and the additive object; reject unknown keys and values.
-- [ ] Add fixture cases for bare “push,” this user's clarified use, “good enough,” “I love this direction,” and “archive this failed attempt.” Expected classifications belong in a behavioral evaluation fixture, not a keyword classifier.
-- [ ] Extend validation and documentation without changing old `kind: acceptance` events. At retrieval, treat historical acceptance labels through their wording and scope; absence of disposition means unknown, not enthusiastic approval.
-- [ ] Run `node --test local/feedback.test.mjs local/insights.test.mjs`; preserve old source hashes.
-- [ ] Commit this compatibility change separately.
+- [x] Add validation tests accepting old records unchanged and the additive object; reject unknown keys and values.
+- [x] Add fixture cases for bare “push,” this user's clarified use, “good enough,” “I love this direction,” and “archive this failed attempt.” Expected classifications belong in a behavioral evaluation fixture, not a keyword classifier.
+- [x] Extend validation and documentation without changing old `kind: acceptance` events. At retrieval, treat historical acceptance labels through their wording and scope; absence of disposition means unknown, not enthusiastic approval.
+- [x] Run `node --test local/feedback.test.mjs local/insights.test.mjs`; preserve old source hashes.
+- [x] Include the compatibility change in the integrated feature commit (see delivery note below).
 
 Example compatibility assertion using an existing feedback test fixture:
 
@@ -83,12 +83,12 @@ Store immutable receipts at `.incline/reviews/<receipt-id>.json`. Receipt fields
 
 A deferred event stays pending. A changed record hash makes the event pending again. A new independent event remains pending even if another event from its batch was reviewed. A no-change rationale may explain that a request concerns scope or publishing rather than design taste. Do not invent a new insight for every event.
 
-- [ ] Create fixtures with two events in one batch, an existing insight and a second batch. Assert that reviewing one event does not cover its neighbor.
-- [ ] Assert that deferred or changed-source events remain pending, while updated/no-change outcomes cover only the referenced event/hash.
-- [ ] Implement targeted metadata reads and immutable receipt publication; validate all linked events and insight revisions before saving. Reuse safe-ID checks and atomic publication patterns. A conflicting receipt ID fails; identical replay is idempotent.
-- [ ] Expose `insights.mjs pending --project <dir>` and `insights.mjs review --input <receipt.json> --project <dir>` through the existing command. Read-only operations must not create folders.
-- [ ] Report legacy ad hoc feedback folders as warnings and leave them untouched; malformed known `record.json` files fail visibly. Do not silently claim a complete scan when unsupported evidence remains.
-- [ ] Run focused tests and commit.
+- [x] Create fixtures with two events in one batch, an existing insight and a second batch. Assert that reviewing one event does not cover its neighbor.
+- [x] Assert that deferred or changed-source events remain pending, while updated/no-change outcomes cover only the referenced event/hash.
+- [x] Implement targeted metadata reads and immutable receipt publication; validate all linked events and insight revisions before saving. Reuse safe-ID checks and atomic publication patterns. A conflicting receipt ID fails; identical replay is idempotent.
+- [x] Expose `insights.mjs pending --project <dir>` and `insights.mjs review --input <receipt.json> --project <dir>` through the existing command. Read-only operations must not create folders.
+- [x] Report legacy ad hoc feedback folders as warnings and leave them untouched; malformed known `record.json` files fail visibly. Do not silently claim a complete scan when unsupported evidence remains.
+- [x] Run focused tests and commit.
 
 Example pending behavior:
 
@@ -104,13 +104,13 @@ assert.deepEqual((await listPendingEvidence(project)).pending.map(x => x.eventId
 
 **Files:** modify `skills/incline/references/workflows/design.md`, `skills/incline/references/workflows/feedback.md`, `skills/incline/references/insights.md`, `skills/incline/references/design-critique.md`; create `docs/evaluations/feedback-loop.md`.
 
-- [ ] At the start of a design iteration, read applicable insights and check pending feedback. Review relevant events before presenting the result; unrelated pending events need not block a targeted edit.
-- [ ] At a meaningful checkpoint, save new evidence and revise affected insights, retain conflicting examples, or record no-change/deferred with a reason. Activation of recording covers routine project-local tentative curation; it never permits inventing explicit instructions or global promotion.
-- [ ] Turn applicable findings into concrete review questions. For spacing, inspect label/control gaps, text/button gaps, paragraph/divider gaps, group boundaries, output continuity, wrapping at a narrow viewport and any states the change affects.
-- [ ] Require an artifact/version and inspected viewport/state to accompany the agent's assessment. Existing feedback `observation`/`hypothesis` events can retain this assessment; do not label code-only inspection as rendered verification. If unavailable, state unverified rather than pass.
-- [ ] Evaluate a fresh-chat task with only project files supplied: port a lesson's design to a new lesson, preserving stable controls, useful dimension colours and contextual spacing. Record which requirements were actually inspected, missed, or later corrected by the user.
-- [ ] Include counterexamples: large gaps can also fail; dense content can be appropriate; “okay push” does not independently approve all details. Do not encode Layerwise's exact numbers as universal rules.
-- [ ] Update README and roadmap to distinguish available tooling from observed outcomes; commit.
+- [x] At the start of a design iteration, read applicable insights and check pending feedback. Review relevant events before presenting the result; unrelated pending events need not block a targeted edit.
+- [x] At a meaningful checkpoint, save new evidence and revise affected insights, retain conflicting examples, or record no-change/deferred with a reason. Activation of recording covers routine project-local tentative curation; it never permits inventing explicit instructions or global promotion.
+- [x] Turn applicable findings into concrete review questions. For spacing, inspect label/control gaps, text/button gaps, paragraph/divider gaps, group boundaries, output continuity, wrapping at a narrow viewport and any states the change affects.
+- [x] Require an artifact/version and inspected viewport/state to accompany the agent's assessment. Existing feedback `observation`/`hypothesis` events can retain this assessment; do not label code-only inspection as rendered verification. If unavailable, state unverified rather than pass.
+- [x] Evaluate a fresh-chat task with only project files supplied: port a lesson's design to a new lesson, preserving stable controls, useful dimension colours and contextual spacing. Record which requirements were actually inspected, missed, or later corrected by the user.
+- [x] Include counterexamples: large gaps can also fail; dense content can be appropriate; “okay push” does not independently approve all details. Do not encode Layerwise's exact numbers as universal rules.
+- [x] Update README and roadmap to distinguish available tooling from observed outcomes; commit.
 
 **Done when:** a new chat can retrieve an earlier correction, inspect its application in the new result, and keep the insight current. One successful trial is a functional validation, not proof of long-term learning.
 
@@ -131,7 +131,7 @@ assert.deepEqual((await listPendingEvidence(project)).pending.map(x => x.eventId
 - [x] Evaluate a fresh-chat spacing query against a synthetic archive containing relevant and distracting records. Compare files/bytes loaded and whether applicable findings, exceptions and evidence links are retrieved. Record these measurements before making efficiency claims.
 - [x] Ensure repeated generated summaries never count as independent preference evidence. Keep project and explicitly imported personal knowledge scoped; never scan other projects automatically.
 
-**Implementation (2026-09-22):** Delivered independently on `codex/knowledge-index`. The generated index and topic files live in immutable generations selected by an atomic `current.json` pointer. Query freshness uses revision metadata; source content and artifact checks remain targeted evidence operations. See [evaluation](../../evaluations/knowledge-retrieval.md) for synthetic response-size measurements, preservation checks and a fresh-context skill trial. A1–A3, B and C remain unimplemented.
+**Implementation (2026-09-22):** Delivered independently on `codex/knowledge-index`. The generated index and topic files live in immutable generations selected by an atomic `current.json` pointer. Query freshness uses revision metadata; source content and artifact checks remain targeted evidence operations. See [evaluation](../../evaluations/knowledge-retrieval.md) for synthetic response-size measurements, preservation checks and a fresh-context skill trial. At that checkpoint A1–A3, B and C were still pending.
 
 **Done when:** an agent can navigate from a compact query result to current contextual findings and exact evidence without routinely loading the archive. A missing or corrupt generated layer is recoverable without losing knowledge. Consider SQLite or semantic search only after measured retrieval limitations justify them.
 
@@ -153,13 +153,13 @@ importPersonalInsight(directory, id, project) // -> project-local tentative draf
 
 `selection` contains a human-reviewed finding, scope, exceptions, status, source insight revisions and selected evidence bundles. Store immutable copies of selected events and relevant artifacts with hashes, original context and source IDs. Do not depend on absolute paths into another checkout remaining valid. Copy only the evidence selected for this finding; preserve missing-asset status. Failed publication must leave existing snapshots intact.
 
-- [ ] First support saving a single scoped insight. Extend to a synthesis from multiple explicitly selected sources using the same evidence-bundle contract, rather than scanning all repos.
-- [ ] Test that saving requires an explicit operation, does not alter source insights, and retains a portable source record when the original checkout is unavailable.
-- [ ] Test multiple contexts and contradictory evidence without merging them into one aesthetic. Reject references to unavailable source revisions unless the user chooses to proceed with an explicit gap recorded in the snapshot.
-- [ ] Implement selection preview showing the finding, scope, exceptions and exactly what will be copied. Existing explicit user approval of that concrete selection suffices; no repeated generic permission prompts.
-- [ ] On import, retain source attribution and review relevance to the current brief. Project-specific instructions take precedence within scope. Imported hypotheses do not become explicit instructions.
-- [ ] Use a first pilot based on the user's stated recurring spacing concern. Keep exact gap values contextual, and treat the interpretation of “okay push” as a communication preference rather than a visual style preference.
-- [ ] Validate snapshot independence, rejected paths/symlinks, incomplete copies, source/hash corruption, local-only mode and project edits leaving personal versions unchanged. Commit independently.
+- [x] First support saving a single scoped insight. Extend to a synthesis from multiple explicitly selected sources using the same evidence-bundle contract, rather than scanning all repos.
+- [x] Test that saving requires an explicit operation, does not alter source insights, and retains a portable source record when the original checkout is unavailable.
+- [x] Test multiple contexts and contradictory evidence without merging them into one aesthetic. Reject references to unavailable source revisions unless the user chooses to proceed with an explicit gap recorded in the snapshot.
+- [x] Implement selection preview showing the finding, scope, exceptions and exactly what will be copied. Existing explicit user approval of that concrete selection suffices; no repeated generic permission prompts.
+- [x] On import, retain source attribution and review relevance to the current brief. Project-specific instructions take precedence within scope. Imported hypotheses do not become explicit instructions.
+- [x] Use a first pilot based on the user's stated recurring spacing concern. Keep exact gap values contextual, and treat the interpretation of “okay push” as a communication preference rather than a visual style preference.
+- [x] Validate snapshot independence, rejected paths/symlinks, incomplete copies, source/hash corruption, local-only mode and project edits leaving personal versions unchanged. Include the completed milestone in the integrated feature commit.
 
 **Done when:** chosen findings travel between projects with their exceptions and evidence, without automatically learning a universal style from project-local corrections.
 
@@ -171,25 +171,25 @@ This can be delivered independently after its visual audit. Existing catalog ver
 
 **Files:** modify `lib/taste.ts`, `lib/catalog.test.ts`, `lib/taste.test.ts`, `local/sessions.mjs`, relevant session creation/progression in `app/page.tsx` and `components/incline/use-session-store.ts`; inspect actual rendering in `components/incline/specimen.tsx`. Update `skills/incline/references/workflows/collect.md` and README.
 
-- [ ] Render v2 density, spacing-boundary, bold/kinetic and motion pairs at the same viewport. Check the actual differences, including reduced-motion behavior. Save an evaluation note distinguishing observed overlap from assumed overlap.
-- [ ] Introduce catalog version 3 for new sessions. Keep the six broad composition pairs and density/type/colour/layout as the main sequence; treat spacing and motion probes as optional follow-ups rather than mandatory closing rounds.
-- [ ] Add a persisted v3 `followUps` selection, initially empty, containing only `spacing` and/or `motion`. Offer “Explore spacing,” “Explore motion,” or “Finish here.” Explain the isolated question before launching a probe. “Both” and “depends” never force narrowing; a directional answer may suggest a follow-up but never silently select one.
-- [ ] Generate v3 follow-up IDs deterministically from the selection and preceding answers. Preserve the existing adaptive airy/compact distinction. Keep one ordered question plan for rendering, validation, completion, export and resume; update dependent-answer invalidation when preceding answers or selections change.
-- [ ] When motion is suppressed, show that the comparison cannot currently demonstrate motion and allow skipping. Do not infer a still preference from an inaccessible animation.
-- [ ] Add compatibility fixtures for v1/v2 round ordering and exports, v3 completion without probes, optional probe resume, backtracking, and “both/depends” remaining valid endpoints. Test malformed selections and prevent hidden answered rounds from contributing to findings.
-- [ ] Update `sessionStyles`, catalog-version validation, new-session defaults and import defaults wherever necessary; search all catalog-version callers before implementation. Rebuild the packaged UI and runtime, then inspect the resulting flow in the browser.
-- [ ] Commit with a clear note that existing saved answers keep their original meaning.
+- [x] Render v2 density, spacing-boundary, bold/kinetic and motion pairs at the same viewport. Check the actual differences, including reduced-motion behavior. Save an evaluation note distinguishing observed overlap from assumed overlap.
+- [x] Introduce catalog version 3 for new sessions. Keep the six broad composition pairs and density/type/colour/layout as the main sequence; treat spacing and motion probes as optional follow-ups rather than mandatory closing rounds.
+- [x] Add a persisted v3 `followUps` selection, initially empty, containing only `spacing` and/or `motion`. Offer “Explore spacing,” “Explore motion,” or “Finish here.” Explain the isolated question before launching a probe. “Both” and “depends” never force narrowing; a directional answer may suggest a follow-up but never silently select one.
+- [x] Generate v3 follow-up IDs deterministically from the selection and preceding answers. Preserve the existing adaptive airy/compact distinction. Keep one ordered question plan for rendering, validation, completion, export and resume; update dependent-answer invalidation when preceding answers or selections change.
+- [x] When motion is suppressed, show that the comparison cannot currently demonstrate motion and allow skipping. Do not infer a still preference from an inaccessible animation.
+- [x] Add compatibility fixtures for v1/v2 round ordering and exports, v3 completion without probes, optional probe resume, backtracking, and “both/depends” remaining valid endpoints. Test malformed selections and prevent hidden answered rounds from contributing to findings.
+- [x] Update `sessionStyles`, catalog-version validation, new-session defaults and import defaults wherever necessary; search all catalog-version callers before implementation. Rebuild the packaged UI and runtime, then inspect the resulting flow in the browser.
+- [x] Commit with a clear note that existing saved answers keep their original meaning.
 
 **Done when:** the user can finish without repeated-feeling probes, and any follow-up has a visibly distinct purpose. A broad composition preference is never substituted for an isolated motion answer.
 
 ## Delivery checks for each milestone
 
-- [ ] Run focused node:test cases before and after the implementation; use failures that demonstrate the actual behavior being added.
-- [ ] Run `npm test`, `npm run lint`, `npm run typecheck` after integration changes.
-- [ ] Rebuild changed executable bundles with `node local/build-skill.mjs`; use `npm run build:skill` for UI changes. Include generated deliverables and source together.
-- [ ] Validate source and installed skill links/frontmatter. Stage installation in a temporary directory and verify project evidence hashes remain unchanged; preserve local installation customizations.
-- [ ] Keep anonymized or synthetic evaluation fixtures in Git, never the user's personal feedback or screenshots without explicit sharing authorization.
-- [ ] Update the roadmap with completed scope, limitations and pending empirical evaluation. Push only when requested.
+- [x] Run focused node:test cases before and after the implementation; use failures that demonstrate the actual behavior being added.
+- [x] Run `npm test`, `npm run lint`, `npm run typecheck` after integration changes.
+- [x] Rebuild changed executable bundles with `node local/build-skill.mjs`; use `npm run build:skill` for UI changes. Include generated deliverables and source together.
+- [x] Validate source and installed skill links/frontmatter. Stage installation in a temporary directory and verify project evidence hashes remain unchanged; preserve local installation customizations.
+- [x] Keep anonymized or synthetic evaluation fixtures in Git, never the user's personal feedback or screenshots without explicit sharing authorization.
+- [x] Update the roadmap with completed scope, limitations and pending empirical evaluation. Push only when requested.
 
 ## Validation horizons
 
@@ -202,3 +202,19 @@ This can be delivered independently after its visual audit. Existing catalog ver
 ## Recommended execution order
 
 Following the user’s approval to try the indexed knowledge layer first, implement A4 independently over the existing insight revisions. Then A1 → A2 → A3. Then B and C as separate deliverables; neither depends on a long-term aesthetic benchmark being complete. Defer autonomous consolidation, semantic retrieval, large replay systems and medium expansion until the basic memory loop works in repeated real tasks.
+
+## A1–A3 implementation update
+
+Implemented additive contextual dispositions, immutable per-event review receipts and pending/review commands, plus design/feedback workflow checkpoints and contextual rendered-review guidance. The phrase “okay push” has no built-in classification; the earlier clarification belongs to this user only. Original evidence is preserved.
+
+Automated compatibility and coverage checks are in `local/reviews.test.mjs`. The A3 fresh-context synthetic rendered transfer trial is now complete; instruction changes and one trial are not evidence of long-term aesthetic alignment. B and C are implemented as described below. No automatic personal promotion or background process was added.
+
+## Final implementation and delivery — 2026-09-22
+
+Milestones A1–A4, B and C are implemented. B supplies explicit compact preview/save/list/import with immutable portable selected evidence and tentative project drafts. The contextual spacing pilot uses synthetic sources and counterexamples; actual personal evidence was not promoted by this implementation request. C defaults new sessions to catalog v3 while retaining versionless/v1/v2 interpretation, offers optional probes and excludes skipped motion from taste evidence.
+
+The fresh-context transfer trial completed with rendered checks, updated insights and exact review receipts; see [evaluation](../../evaluations/feedback-loop.md). The v2 visual audit and v3 browser flow, reduced motion, narrow viewport, resume and versionless-session regression are recorded in [discovery evaluation](../../evaluations/discovery-follow-ups.md). Ongoing real-user alignment and correction burden remain longitudinal questions, not unfinished implementation.
+
+Delivery checks include the full test suite, lint, type checking, skill frontmatter/relative links, rebuilt UI and CLI bundles, and a staged standalone install. That installed runtime passed v3 draft/resume/finish while preserving existing synthetic evidence; its bundled personal CLI passed preview/save/list/import and local-only checks. Independent reviews identified and verified fixes for historical version fallback and duplicate artifact references producing unreadable snapshots.
+
+Delivery note: A1–A3 were still uncommitted at the start of this continuation, and A/B share the insight runtime bundle. The implementation is recorded as one integrated feature commit rather than manufacturing intermediate commits with mismatched packaged runtime. Keep the feature branch local; pushing, merging and updating the user's global installation are separate actions.

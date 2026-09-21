@@ -106,7 +106,8 @@ export async function prepareImport(inputPath) {
   }
   const session = {
     id: randomUUID(),
-    catalogVersion: 2,
+    catalogVersion: 3,
+    followUps: [],
     name: text(value.name, 80, 'name', 'Imported collection'),
     context: 'portfolio',
     exploration: 'stretch',

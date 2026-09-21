@@ -17,6 +17,10 @@ A reference marked `inspiration` is something to explore. `direction` means use 
 
 Before applying saved feedback, use [project insights](../insights.md) to query the relevant topics. Keep each finding's scope, qualifications and conflicting examples attached to it; a spacing finding is not automatically an instruction to increase every gap. Open selected original evidence and images when needed to interpret or verify the lesson. If no indexed match is useful, inspect the applicable saved findings directly rather than assuming no preference exists. Follow the reported freshness warnings; an index can be current while newly recorded feedback still awaits synthesis.
 
+Also run `node <skill-directory>/scripts/insights.mjs pending --project <project>`. Read relevant pending events from their original records before presenting the next result. Review them against the current brief and existing insights using [review receipts](../insights.md#review-new-evidence). Unrelated backlog need not block a targeted edit; warnings mean the scan is incomplete.
+
+Turn applicable findings into concrete inspection questions before editing. Preserve their scope and counterexamples. After rendering, tie the assessment to an artifact/version, viewport and interaction state; report uninspected conditions as unverified.
+
 ## Apply and inspect
 
 Identify explicit qualities to preserve, inspect the target, and explain which relationships from the references serve the actual product. Follow the critique guide for hierarchy, whitespace, alignment, proximity, contrast, balance, repetition and unity. Diagnose structural problems before assuming a palette change is sufficient. Do not copy salient colours or a reference's concept without a reason relevant to the target.

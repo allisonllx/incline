@@ -1,6 +1,6 @@
 # Project insights: a separate, revisable view
 
-Use this when the user asks to summarize recurring findings, curate design memory, or apply previously recorded feedback. The agent authors insights; the command validates links and stores revisions. It does not infer preferences automatically. Original `.incline/feedback/` files remain unchanged. Cross-project synthesis and personal-library promotion require a separate explicit request and are not provided by this command.
+Use this when the user asks to summarize recurring findings, curate design memory, or apply previously recorded feedback. The agent authors insights; the command validates links and stores revisions. It does not infer preferences automatically. Original `.incline/feedback/` files remain unchanged. Cross-project synthesis and personal insight saving require a separate explicit request; use the personal operations below. Project commands never access personal storage.
 
 ## Read first, retrieve selectively
 
@@ -59,3 +59,73 @@ The insights layer is local and separate from collection state, drafts and libra
 ## Optional second opinion
 
 Use [Jev review](jev-review.md) for an explicitly requested external assessment of selected insights and their linked evidence. It provides an offline preview and stores advisory results separately without modifying findings. It is not required for curation or retrieval.
+
+## Review new evidence
+
+Run `node <skill-directory>/scripts/insights.mjs pending --project <project>`. It returns exact `batchId`, `eventId`, `recordHash` triples plus warnings for unsupported legacy folders. It reads record metadata, not screenshot contents, and creates no files. Malformed known records fail visibly. Open relevant original events and artifacts before deciding an outcome.
+
+Save an immutable receipt with `node <skill-directory>/scripts/insights.mjs review --project <project> --input <receipt.json>`:
+
+```json
+{
+  "id": "lesson-checkpoint-1",
+  "events": [{"batchId":"actual-batch","eventId":"actual-event","recordHash":"COPY_THE_HASH_FROM_PENDING"}],
+  "outcomes": [{
+    "eventRefs": [{"batchId":"actual-batch","eventId":"actual-event","recordHash":"COPY_THE_HASH_FROM_PENDING"}],
+    "action": "updated",
+    "reason": "Narrowed the spacing finding to adjacent lesson controls and retained the large-gap counterexample.",
+    "insightRevisions": [{"id":"control-spacing","revision":2}]
+  }]
+}
+```
+
+Every selected event must appear exactly once across outcomes. `updated` requires saved exact insight revisions whose supporting/conflicting links cover each event and its source hash. Save the insight first. `no-change` explains why no finding needs revision (for example publication permission, a duplicate source or already-covered feedback). `deferred` explains what remains unresolved. Both may use an empty `insightRevisions` array; any supplied revisions must exist.
+
+Receipts live in `.incline/reviews/<id>.json`, with a generated timestamp. Replaying identical input is idempotent; reusing an ID for different input fails. Updated/no-change covers only the selected event/hash. New events and changed hashes remain pending; deferred alone never clears an event and does not revoke an earlier completed review. To correct a completed judgment, append evidence and revise the finding rather than rewriting receipts. Review decisions describe work considered, not aesthetic correctness. No automatic preference inference, archive migration, screenshot inspection or external evaluation happens here.
+
+## Explicit personal insight snapshots
+
+Use only when the user asks to save or reuse chosen findings across projects. Personal insights default to `~/.incline/personal-insights/`, independently of the reference collection library at `~/.incline/library/`. `--personal-dir <directory>` changes only this store. `--local-only` disables personal operations; ordinary project commands remain available. No operation scans other repositories: each source checkout and revision must be explicitly selected.
+
+Prepare a concrete selection with its finding, scope, exceptions, status, exact source revisions and exact supporting/conflicting events. `reviewed: true` records the user's review of that selection; never set it as a substitute for review. Existing explicit approval of the concrete selection is sufficient. Multiple sources use the same schema and retain their own context and evidence roles; do not collapse incompatible contexts into a universal aesthetic. The source `sha256` is optional for pinning previously inspected revision bytes.
+
+```json
+{
+  "id": "contextual-spacing",
+  "expectedRevision": 0,
+  "reviewed": true,
+  "aspect": "spacing",
+  "finding": "Review spacing against hierarchy and density in each layout.",
+  "scope": "A contextual hypothesis to assess against each new brief",
+  "exceptions": [
+    "Exact gap values remain specific to their layout.",
+    "Publication permission alone does not establish visual taste; interpret wording and user-specific clarifications in context."
+  ],
+  "status": "tentative",
+  "sources": [{
+    "project": "/absolute/path/to/explicitly-selected-project",
+    "id": "control-spacing",
+    "revision": 1,
+    "label": "Selected project",
+    "context": "Adjacent controls in a dense analytical interface",
+    "evidence": [{"batchId":"actual-batch", "eventId":"actual-event", "role":"supporting"}]
+  }]
+}
+```
+
+This is a schema example, not evidence of the user's preferences. The implementation's spacing pilot uses synthetic fixtures only. Replace source IDs with reviewed real records only when that evidence is explicitly in scope. An available source must select at least one linked event. Select meaningful conflicting events with `role: "conflicting"`; original roles are enforced. If a source revision is unavailable, the user may explicitly choose to proceed with `gapReason` explaining the missing source and `evidence: []`. Corrupt sources cannot be waived as gaps.
+
+```sh
+node <skill-directory>/scripts/insights.mjs personal-preview --input <selection.json>
+node <skill-directory>/scripts/insights.mjs personal-save --input <selection.json>
+node <skill-directory>/scripts/insights.mjs personal-list
+node <skill-directory>/scripts/insights.mjs personal-import --id contextual-spacing --revision 1 --relevance "How this might relate to the current brief, with limits" --project <project>
+```
+
+Preview may use `reviewed: false` before approval; set it to `true` only once the concrete selection is reviewed. Preview is read-only and shows the exact finding, source contexts, selected events, availability and copied asset sizes without printing encoded asset bytes. Add its returned `selectionHash` to the reviewed input when saving to reject changes since preview. Save also works directly when the user already approved that exact selection. New IDs use `expectedRevision: 0`; updates use the latest revision number. List is read-only and never opens source repositories.
+
+Each immutable `<id>/<revision>.json` file is a hash-checked envelope containing source attribution, selected original events, record hashes, coverage limitations and relevant artifact bytes encoded as base64 with SHA-256. It copies only selected events and their linked artifacts; original absolute paths are attribution only. Missing snapshots stay explicitly missing; no remote locators are downloaded. Source and destination symlinks and unsafe IDs/asset paths are rejected. Files are bounded (8 MB per asset, 32 MB total selected asset bytes, 48 MB saved envelope). Publication uses an exclusive atomic link so competing or failed saves cannot replace a prior revision. Unreadable or changed source evidence and corrupt personal copies fail visibly.
+
+Import copies a self-contained snapshot into `.incline/drafts/personal/<id>/<revision>.json`, alongside a provenance receipt and required current-brief relevance note. It always sets the draft to `tentative`, even if the source was explicit, and requires project review. Current project instructions take precedence within scope. Imports never enter active insight retrieval, rewrite a profile, or authorize design changes automatically. Existing imported draft files are preserved rather than overwritten. Project draft edits cannot change personal revisions, and imports remain usable after the original checkout disappears. Automatic suggestions, global scanning and promotion remain out of scope.
+
+To inspect an imported image reference, read the saved draft or personal revision from its returned path, verify the envelope and artifact SHA-256 values (the personal reader performs these checks), decode the chosen artifact's `contentBase64` into a temporary local file, and open that file with the host image tool. Keep its original source/event IDs and context beside the interpretation. The preview and import CLI responses omit encoded bytes to keep output bounded; the immutable files retain them. Missing artifacts have no bytes to decode and remain a stated evidence gap.

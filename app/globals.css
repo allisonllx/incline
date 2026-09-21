@@ -4158,3 +4158,10 @@ h1 {
     transition: none;
   }
 }
+
+.followup-actions {
+  margin-top: 24px;
+}
+.motion-skip {
+  margin-bottom: 20px;
+}

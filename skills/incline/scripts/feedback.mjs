@@ -25,9 +25,13 @@ async function resolveOptions(args, cwd = process.cwd()) {
   const options = /* @__PURE__ */ new Map();
   for (let index = 0; index < args.length; index++) {
     const flag = args[index];
-    if (!["--project", "--input", "--library-dir", "--local-only"].includes(
-      flag
-    ) || options.has(flag))
+    if (![
+      "--project",
+      "--input",
+      "--library-dir",
+      "--personal-dir",
+      "--local-only"
+    ].includes(flag) || options.has(flag))
       throw new Error(
         `Unknown or repeated option: ${flag}. Use --help for usage.`
       );
@@ -39,10 +43,11 @@ async function resolveOptions(args, cwd = process.cwd()) {
       options.set(flag, resolve(cwd, value));
     }
   }
-  if (options.has("--local-only") && options.has("--library-dir"))
-    throw new Error("Choose --local-only or --library-dir, not both.");
+  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir")))
+    throw new Error("Choose --local-only or a shared directory, not both.");
   return {
     project: options.get("--project") ?? await projectRoot(cwd),
+    personalDirectory: options.has("--local-only") ? null : options.get("--personal-dir") ?? join(homedir(), ".incline", "personal-insights"),
     libraryDirectory: options.has("--local-only") ? null : options.get("--library-dir") ?? join(homedir(), ".incline", "library"),
     ...options.has("--input") ? { input: options.get("--input") } : {}
   };
@@ -118,8 +123,18 @@ function validateBatch(data) {
       "source",
       "occurredAt",
       "context",
-      "artifactIds"
+      "artifactIds",
+      "disposition"
     ]);
+    if (event.disposition !== void 0) {
+      object(event.disposition, ["publication", "readiness", "aesthetic", "basis"]);
+      for (const [axis, values] of Object.entries({
+        publication: ["unknown", "authorized"],
+        readiness: ["unknown", "acceptable"],
+        aesthetic: ["unknown", "positive", "preferred"]
+      })) if (!values.includes(event.disposition[axis])) fail(`disposition ${axis}`);
+      text(event.disposition.basis, "disposition basis");
+    }
     id(event.id);
     if (eventIds.has(event.id)) fail("duplicate event ID");
     eventIds.add(event.id);

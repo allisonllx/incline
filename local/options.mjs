@@ -23,9 +23,13 @@ export async function resolveOptions(args, cwd = process.cwd()) {
   for (let index = 0; index < args.length; index++) {
     const flag = args[index];
     if (
-      !['--project', '--input', '--library-dir', '--local-only'].includes(
-        flag,
-      ) ||
+      ![
+        '--project',
+        '--input',
+        '--library-dir',
+        '--personal-dir',
+        '--local-only',
+      ].includes(flag) ||
       options.has(flag)
     )
       throw new Error(
@@ -39,10 +43,17 @@ export async function resolveOptions(args, cwd = process.cwd()) {
       options.set(flag, resolve(cwd, value));
     }
   }
-  if (options.has('--local-only') && options.has('--library-dir'))
-    throw new Error('Choose --local-only or --library-dir, not both.');
+  if (
+    options.has('--local-only') &&
+    (options.has('--library-dir') || options.has('--personal-dir'))
+  )
+    throw new Error('Choose --local-only or a shared directory, not both.');
   return {
     project: options.get('--project') ?? (await projectRoot(cwd)),
+    personalDirectory: options.has('--local-only')
+      ? null
+      : (options.get('--personal-dir') ??
+        join(homedir(), '.incline', 'personal-insights')),
     libraryDirectory: options.has('--local-only')
       ? null
       : (options.get('--library-dir') ??

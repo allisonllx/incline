@@ -228,11 +228,15 @@ function parseSaved(raw) {
     const data = JSON.parse(raw);
     if (data.version !== 1 || !Array.isArray(data.sessions)) return [];
     return data.sessions.filter((s) => {
-      if (!s || typeof s.id !== "string" || s.catalogVersion !== void 0 && s.catalogVersion !== 1 && s.catalogVersion !== 2 || typeof s.name !== "string" || !Object.hasOwn(contexts, s.context) || !["familiar", "stretch", "surprise"].includes(s.exploration) || typeof s.notes !== "string" || typeof s.complete !== "boolean" || typeof s.createdAt !== "string" || !Array.isArray(s.answers) || s.answers.length > 12 || !Array.isArray(s.keep) || !Array.isArray(s.explore) || ![...s.keep, ...s.explore].every((x) => styles.includes(x)))
+      if (!s || typeof s.id !== "string" || s.catalogVersion !== void 0 && s.catalogVersion !== 1 && s.catalogVersion !== 2 && s.catalogVersion !== 3 || typeof s.name !== "string" || !Object.hasOwn(contexts, s.context) || !["familiar", "stretch", "surprise"].includes(s.exploration) || typeof s.notes !== "string" || typeof s.complete !== "boolean" || typeof s.createdAt !== "string" || !Array.isArray(s.answers) || s.answers.length > 12 || !Array.isArray(s.keep) || !Array.isArray(s.explore) || ![...s.keep, ...s.explore].every((x) => styles.includes(x)))
         return false;
       if (!s.answers.every(
-        (a) => a && typeof a.roundId === "string" && typeof a.reason === "string" && ["a", "b", "both", "neither", "depends"].includes(a.choice)
+        (a) => a && typeof a.roundId === "string" && typeof a.reason === "string" && ["a", "b", "both", "neither", "depends", "skipped"].includes(
+          a.choice
+        ) && (a.choice !== "skipped" || a.roundId === "motion")
       ))
+        return false;
+      if (s.catalogVersion === 3 ? !validFollowUps(s.followUps) : s.followUps !== void 0)
         return false;
       if (s.collection !== void 0 && !validCollection(s.collection))
         return false;
@@ -243,7 +247,7 @@ function parseSaved(raw) {
         ) || typeof source.name !== "string" || source.name.length > 80 || typeof source.context !== "string" || source.context.length > 300)
           return false;
       }
-      const rounds = getRounds(s.answers, s.catalogVersion);
+      const rounds = getRounds(s.answers, s.catalogVersion, s.followUps);
       return s.answers.every((a, i) => rounds[i]?.id === a.roundId) && (!s.complete || s.answers.length === rounds.length || s.collection !== void 0 && collectionHasContent(s.collection));
     });
   } catch {
@@ -251,7 +255,11 @@ function parseSaved(raw) {
   }
 }
 function exportMarkdown(session) {
-  const rounds = getRounds(session.answers, session.catalogVersion);
+  const rounds = getRounds(
+    session.answers,
+    session.catalogVersion,
+    session.followUps
+  );
   return `# Incline \xB7 ${session.name}
 
 Context: ${session.collection ? session.collection.projectContext || "Not specified" : session.context}
@@ -275,7 +283,7 @@ ${session.notes || "No preservation notes yet."}
 ## Provisional evidence
 ${session.librarySource ? "Inherited comparisons describe the source context; review their relevance to this project." : "These preferences apply to this project."} A/B choices are relative preferences, not absolute endorsements. Both welcomes both shown examples; neither rejects these examples, not an entire style. Unmentioned qualities are unknown. Preserve multiple directions; do not collapse this into one type.
 
-${session.answers.map((a) => {
+${session.answers.filter((a) => rounds.some((r) => r.id === a.roundId)).map((a) => {
     const r = rounds.find((r2) => r2.id === a.roundId);
     return `- ${r?.dimension}: ${r?.labels.join(" / ")} \u2192 ${a.choice}${a.reason ? ` \u2014 ${a.reason}` : ""}`;
   }).join("\n") || "No comparisons taken. No style preference inferred."}
@@ -283,7 +291,7 @@ ${session.answers.map((a) => {
 This is a curated calibration, not a validated prediction of taste. Confirm directions with the user on a new design.
 `;
 }
-function getRounds(answers, version = 1) {
+function getRounds(answers, version = 1, followUps = []) {
   const legacy = getLegacyRounds(answers);
   if (version === 1)
     return legacy.map((r) => ({
@@ -299,7 +307,7 @@ function getRounds(answers, version = 1) {
     ["bento", "organic", "A modular system, or something more human?"],
     ["bold", "kinetic", "A strong composition, or type that moves?"]
   ];
-  return [
+  const rounds = [
     ...pairs.map(
       ([a, b, title], i) => ({
         id: `range-${i + 1}`,
@@ -343,6 +351,12 @@ function getRounds(answers, version = 1) {
       tags: ["still", "animated"]
     }
   ];
+  return version === 3 ? rounds.filter(
+    (r, i) => i < 10 || r.id.startsWith("boundary-") && followUps.includes("spacing") || r.id === "motion" && followUps.includes("motion")
+  ) : rounds;
+}
+function validFollowUps(value) {
+  return Array.isArray(value) && value.length <= 2 && new Set(value).size === value.length && value.every((v) => v === "spacing" || v === "motion");
 }
 
 // local/sessions.mjs
@@ -362,6 +376,7 @@ function validate(sessions) {
   return valid.map((s) => ({
     id: s.id,
     catalogVersion: s.catalogVersion ?? 1,
+    ...s.catalogVersion === 3 ? { followUps: [...s.followUps] } : {},
     name: s.name,
     context: s.context,
     exploration: s.exploration,
@@ -912,7 +927,8 @@ async function prepareImport(inputPath) {
   }
   const session = {
     id: randomUUID3(),
-    catalogVersion: 2,
+    catalogVersion: 3,
+    followUps: [],
     name: text2(value.name, 80, "name", "Imported collection"),
     context: "portfolio",
     exploration: "stretch",
@@ -1402,9 +1418,13 @@ async function resolveOptions(args2, cwd = process.cwd()) {
   const options = /* @__PURE__ */ new Map();
   for (let index = 0; index < args2.length; index++) {
     const flag = args2[index];
-    if (!["--project", "--input", "--library-dir", "--local-only"].includes(
-      flag
-    ) || options.has(flag))
+    if (![
+      "--project",
+      "--input",
+      "--library-dir",
+      "--personal-dir",
+      "--local-only"
+    ].includes(flag) || options.has(flag))
       throw new Error(
         `Unknown or repeated option: ${flag}. Use --help for usage.`
       );
@@ -1416,10 +1436,11 @@ async function resolveOptions(args2, cwd = process.cwd()) {
       options.set(flag, resolve4(cwd, value));
     }
   }
-  if (options.has("--local-only") && options.has("--library-dir"))
-    throw new Error("Choose --local-only or --library-dir, not both.");
+  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir")))
+    throw new Error("Choose --local-only or a shared directory, not both.");
   return {
     project: options.get("--project") ?? await projectRoot(cwd),
+    personalDirectory: options.has("--local-only") ? null : options.get("--personal-dir") ?? join4(homedir2(), ".incline", "personal-insights"),
     libraryDirectory: options.has("--local-only") ? null : options.get("--library-dir") ?? join4(homedir2(), ".incline", "library"),
     ...options.has("--input") ? { input: options.get("--input") } : {}
   };

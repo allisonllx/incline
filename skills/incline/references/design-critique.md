@@ -52,7 +52,9 @@ When direction remains uncertain, a small comparison varying the consequential t
 
 Compare the before/after with the same content, viewport and state where possible. Check a representative narrow viewport and relevant interaction states, including keyboard focus and longer content when applicable. Inspect whether the primary task became clearer, the intended qualities survived, and the visual concept is coherent. Do not claim responsive or interaction validation for views you did not inspect.
 
-Record a concise assessment with observed improvement, remaining weakness and unverified conditions. A successful build proves neither visual improvement nor user satisfaction. If a recolour leaves the composition weak, keep investigating the structure rather than declaring success. If tools cannot render the app, state that visual quality remains unverified.
+For contextual spacing, inspect label/control and text/button gaps, paragraph/divider separation, within-group versus between-group spacing, and continuity between related outputs. Check wrapping at a narrow viewport and changed interaction states. Large gaps can fail as readily as cramped ones; dense content can serve the task. Preserve stable controls and meaningful dimension colours when applicable. Do not universalize one project's pixel values.
+
+Identify the exact artifact/version and each viewport/state inspected. Record a concise assessment with observed improvement, remaining weakness and unverified conditions. A successful build proves neither visual improvement nor user satisfaction. If a recolour leaves the composition weak, keep investigating the structure rather than declaring success. If tools cannot render the app, state that visual quality remains unverified.
 
 Save actual user reactions to the relevant artifact/version using the feedback workflow. Keep your assessment as interpretation. Explicit approval of the whole result does not confirm every individual token; silence and unchanged elements do not become positive preference evidence.
 

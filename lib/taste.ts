@@ -4,7 +4,8 @@ import {
   collectionMarkdown,
   type Collection,
 } from './collection.ts';
-export type Choice = 'a' | 'b' | 'both' | 'neither' | 'depends';
+export type Choice = 'a' | 'b' | 'both' | 'neither' | 'depends' | 'skipped';
+export type FollowUp = 'spacing' | 'motion';
 export type Context = 'portfolio' | 'dashboard' | 'brand';
 export type Exploration = 'familiar' | 'stretch' | 'surprise';
 export type Style =
@@ -42,7 +43,8 @@ export type Answer = { roundId: string; choice: Choice; reason: string };
 export type Session = {
   librarySource?: { id: string; name: string; context: string };
   collection?: Collection;
-  catalogVersion?: 1 | 2;
+  catalogVersion?: 1 | 2 | 3;
+  followUps?: FollowUp[];
   id: string;
   name: string;
   context: Context;
@@ -211,10 +213,14 @@ function getLegacyRounds(answers: Answer[]): Round[] {
 }
 export function deriveProfile(session: Session): Evidence[] {
   const evidence = new Map<string, Evidence>();
-  const rounds = getRounds(session.answers, session.catalogVersion);
+  const rounds = getRounds(
+    session.answers,
+    session.catalogVersion,
+    session.followUps,
+  );
   for (const answer of session.answers) {
     const round = rounds.find((r) => r.id === answer.roundId);
-    if (!round) continue;
+    if (!round || answer.choice === 'skipped') continue;
     round.tags.forEach((tag, i) => {
       const row = evidence.get(tag) ?? {
         tag,
@@ -252,7 +258,8 @@ export function parseSaved(raw: string | null): Session[] {
         typeof s.id !== 'string' ||
         (s.catalogVersion !== undefined &&
           s.catalogVersion !== 1 &&
-          s.catalogVersion !== 2) ||
+          s.catalogVersion !== 2 &&
+          s.catalogVersion !== 3) ||
         typeof s.name !== 'string' ||
         !Object.hasOwn(contexts, s.context) ||
         !['familiar', 'stretch', 'surprise'].includes(s.exploration) ||
@@ -272,8 +279,17 @@ export function parseSaved(raw: string | null): Session[] {
             a &&
             typeof a.roundId === 'string' &&
             typeof a.reason === 'string' &&
-            ['a', 'b', 'both', 'neither', 'depends'].includes(a.choice),
+            ['a', 'b', 'both', 'neither', 'depends', 'skipped'].includes(
+              a.choice,
+            ) &&
+            (a.choice !== 'skipped' || a.roundId === 'motion'),
         )
+      )
+        return false;
+      if (
+        s.catalogVersion === 3
+          ? !validFollowUps(s.followUps)
+          : s.followUps !== undefined
       )
         return false;
       if (s.collection !== undefined && !validCollection(s.collection))
@@ -295,7 +311,7 @@ export function parseSaved(raw: string | null): Session[] {
         )
           return false;
       }
-      const rounds = getRounds(s.answers, s.catalogVersion);
+      const rounds = getRounds(s.answers, s.catalogVersion, s.followUps);
       return (
         s.answers.every((a, i) => rounds[i]?.id === a.roundId) &&
         (!s.complete ||
@@ -308,9 +324,14 @@ export function parseSaved(raw: string | null): Session[] {
   }
 }
 export function exportMarkdown(session: Session): string {
-  const rounds = getRounds(session.answers, session.catalogVersion);
+  const rounds = getRounds(
+    session.answers,
+    session.catalogVersion,
+    session.followUps,
+  );
   return `# Incline · ${session.name}\n\nContext: ${session.collection ? session.collection.projectContext || 'Not specified' : session.context}\nExploration: ${session.exploration}\n\n${session.librarySource ? `## Personal library source\n\nSaved copy: ${session.librarySource.name} (${session.librarySource.id})\nOriginal context: ${session.librarySource.context || 'Not specified'}\nOriginal snapshot: .incline/library-sources/${session.id}/snapshot.json\nAsset mapping: .incline/library-sources/${session.id}/receipt.json\n\nThe source context needs review for this project. Review inherited keep/explore selections and notes with the user; imported evidence is not automatically approved for this project. References begin as inspiration. The source snapshot preserves the original intent and notes.\n\n` : ''}${session.collection ? collectionMarkdown(session.collection) : ''}## ${session.librarySource ? 'Project instructions — review inherited notes' : 'Explicit project instructions'}\nKeep: ${session.keep.join(', ') || 'Not specified'}\nExplore: ${session.explore.join(', ') || 'Not specified'}\n\n${session.notes || 'No preservation notes yet.'}\n\n## Provisional evidence\n${session.librarySource ? 'Inherited comparisons describe the source context; review their relevance to this project.' : 'These preferences apply to this project.'} A/B choices are relative preferences, not absolute endorsements. Both welcomes both shown examples; neither rejects these examples, not an entire style. Unmentioned qualities are unknown. Preserve multiple directions; do not collapse this into one type.\n\n${
     session.answers
+      .filter((a) => rounds.some((r) => r.id === a.roundId))
       .map((a) => {
         const r = rounds.find((r) => r.id === a.roundId);
         return `- ${r?.dimension}: ${r?.labels.join(' / ')} → ${a.choice}${a.reason ? ` — ${a.reason}` : ''}`;
@@ -319,7 +340,11 @@ export function exportMarkdown(session: Session): string {
   }\n\nThis is a curated calibration, not a validated prediction of taste. Confirm directions with the user on a new design.\n`;
 }
 
-export function getRounds(answers: Answer[], version: 1 | 2 = 1): Round[] {
+export function getRounds(
+  answers: Answer[],
+  version: 1 | 2 | 3 = 1,
+  followUps: FollowUp[] = [],
+): Round[] {
   const legacy = getLegacyRounds(answers);
   if (version === 1)
     return legacy.map((r) => ({
@@ -335,7 +360,7 @@ export function getRounds(answers: Answer[], version: 1 | 2 = 1): Round[] {
     ['bento', 'organic', 'A modular system, or something more human?'],
     ['bold', 'kinetic', 'A strong composition, or type that moves?'],
   ];
-  return [
+  const rounds: Round[] = [
     ...pairs.map(
       ([a, b, title], i): Round => ({
         id: `range-${i + 1}`,
@@ -384,7 +409,46 @@ export function getRounds(answers: Answer[], version: 1 | 2 = 1): Round[] {
       tags: ['still', 'animated'],
     },
   ];
+  return version === 3
+    ? rounds.filter(
+        (r, i) =>
+          i < 10 ||
+          (r.id.startsWith('boundary-') && followUps.includes('spacing')) ||
+          (r.id === 'motion' && followUps.includes('motion')),
+      )
+    : rounds;
 }
 export function sessionStyles(session: Session): Style[] {
-  return session.catalogVersion === 2 ? styles : styles.slice(0, 4);
+  return (session.catalogVersion ?? 1) >= 2 ? styles : styles.slice(0, 4);
+}
+
+export function validFollowUps(value: unknown): value is FollowUp[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= 2 &&
+    new Set(value).size === value.length &&
+    value.every((v) => v === 'spacing' || v === 'motion')
+  );
+}
+export function selectFollowUps(
+  session: Session,
+  followUps: FollowUp[],
+): Session {
+  if (session.catalogVersion !== 3 || !validFollowUps(followUps))
+    throw new Error('Invalid follow-up selection');
+  const selected = (['spacing', 'motion'] as FollowUp[]).filter((v) =>
+    followUps.includes(v),
+  );
+  const rounds = getRounds(session.answers, 3, selected);
+  const answers: Answer[] = [];
+  for (const answer of session.answers) {
+    if (rounds[answers.length]?.id !== answer.roundId) break;
+    answers.push(answer);
+  }
+  return {
+    ...session,
+    followUps: selected,
+    answers,
+    complete: answers.length === rounds.length,
+  };
 }

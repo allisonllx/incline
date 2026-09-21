@@ -52,3 +52,9 @@ Markdown design guides can also be imported as `file` (UTF-8 `.md` or `.markdown
 ## Finish and handoff
 
 After completion, use the returned profile/state paths as the handoff. If the original request also asked to build or improve a frontend, continue in [Design](design.md) with the selected session and explicit notes. A request only to collect ends after saving or preserving the draft; do not initiate implementation or personal-library export.
+
+## Optional discovery detail
+
+New sessions use catalog v3: six broad composition pairs followed by density, typography, colour and layout (ten main comparisons). After those, the user can finish or choose an isolated spacing and/or motion follow-up. Do not force a narrower preference after “both” or “depends.” The spacing probe adapts to the density answer; a bold/kinetic composition choice does not establish a motion preference.
+
+Selections persist when resuming. Changing an earlier answer or removing a probe discards dependent answers; only the current question plan contributes to the profile. Reduced-motion users see that the motion comparison is unavailable and can skip without supplying preference evidence. A skipped answer is retained as a gap, not a preference for stillness. Existing v1/v2 sessions retain their original question plans and answers.

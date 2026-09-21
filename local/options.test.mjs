@@ -55,3 +55,24 @@ test('library scope is independent of project location and invalid options fail 
     await assert.rejects(resolveOptions(args, cwd));
   }
 });
+
+test('personal directory is independent and local-only disables both shared stores', async () => {
+  const cwd = process.cwd(),
+    defaults = await resolveOptions([], cwd);
+  assert.equal(
+    defaults.personalDirectory,
+    join(homedir(), '.incline', 'personal-insights'),
+  );
+  const alternate = await resolveOptions(
+    ['--personal-dir', './personal', '--library-dir', './references'],
+    cwd,
+  );
+  assert.equal(alternate.personalDirectory, join(cwd, 'personal'));
+  assert.equal(alternate.libraryDirectory, join(cwd, 'references'));
+  const local = await resolveOptions(['--local-only'], cwd);
+  assert.equal(local.personalDirectory, null);
+  assert.equal(local.libraryDirectory, null);
+  await assert.rejects(
+    resolveOptions(['--local-only', '--personal-dir', './personal'], cwd),
+  );
+});

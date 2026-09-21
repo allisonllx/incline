@@ -74,3 +74,15 @@ The journal is separate from `state.json`, `profile.md`, collection revisions an
 - Original screenshot missing: retain the feedback and gap; do not substitute today's render.
 - User moves on: no acceptance unless they explicitly expressed it.
 - New instruction conflicts with an old one: retain both sources, apply the newer instruction within scope, and clarify only consequential unresolved conflicts.
+
+## Contextual disposition (optional)
+
+New events may include `disposition` with all four fields:
+
+```json
+{"publication":"authorized","readiness":"unknown","aesthetic":"unknown","basis":"The user authorized publication; no readiness or aesthetic judgment was established in this context."}
+```
+
+Publication: `unknown` or `authorized`; readiness: `unknown` or `acceptable`; aesthetic: `unknown`, `positive` or `preferred`. Require a nonempty `basis` explaining the contextual evidence. These independent axes are agent interpretations, not measured probabilities. `preferred` needs an explicit comparison or preference statement. No keyword classifier assigns them.
+
+Interpret the speaker's actual wording, qualifiers and known clarifications. One user may clarify that “okay push” usually means acceptable enough to proceed; this is that person's communication convention, not a default for other users. Even then it does not endorse every design detail. “Push despite the design” overrides an inferred acceptance. Old events remain unchanged; a missing disposition means unknown, and historical acceptance labels must be read in context.
