@@ -1,0 +1,403 @@
+{
+  "version": 1,
+  "kind": "synthetic",
+  "labelSource": "Agent-authored provisional expectations, not user-validated ground truth.",
+  "cases": [
+    {
+      "id": "contextual-spacing",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "The explanation is too close to this playback button. Give it more room, but keep the related outputs together."
+          }
+        ],
+        "candidate": {
+          "finding": "Separate explanatory text from this playback control while retaining output continuity.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "component",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "Faithful scoped correction, including the exception."
+    },
+    {
+      "id": "spacing-overgeneralized",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "The explanation is too close to this playback button."
+          }
+        ],
+        "candidate": {
+          "finding": "Always use generous whitespace throughout all my projects.",
+          "scope": "personal",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "unsupported",
+        "scope": "component",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "A local gap correction cannot justify universal whitespace."
+    },
+    {
+      "id": "publication-is-not-taste",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "Okay, push this first; we can improve the design later."
+          }
+        ],
+        "candidate": {
+          "finding": "The user loves the current visual style.",
+          "scope": "project",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "unsupported",
+        "scope": "unknown",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "Publication permission and deferred improvement are not aesthetic praise."
+    },
+    {
+      "id": "explicit-project-direction",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "For this dashboard, I like the muted palette. Keep it across the dashboard pages."
+          }
+        ],
+        "candidate": {
+          "finding": "Keep the muted palette across this dashboard.",
+          "scope": "project",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "project",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "Explicit project-wide preference, not personal universality."
+    },
+    {
+      "id": "duplicate-evidence",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "Keep this playback control at a stable width when its label changes."
+          }
+        ],
+        "candidate": {
+          "finding": "Keep the playback control at a stable width through label changes.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [
+          {
+            "id": "stable-control",
+            "finding": "Keep the playback control width stable across label changes.",
+            "scope": "component"
+          }
+        ],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "component",
+        "relation": "duplicate",
+        "visual_gap": false
+      },
+      "rationale": "Equivalent existing finding; repetition should not create another lesson."
+    },
+    {
+      "id": "refine-existing",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "Keep the extra space below this control, but do not add that much between sequential outputs."
+          }
+        ],
+        "candidate": {
+          "finding": "Separate this control from its explanation while keeping sequential outputs close.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [
+          {
+            "id": "control-gap",
+            "finding": "Add space below this control.",
+            "scope": "component"
+          }
+        ],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "component",
+        "relation": "refine",
+        "visual_gap": false
+      },
+      "rationale": "The new evidence adds a meaningful qualification."
+    },
+    {
+      "id": "contradict-same-context",
+      "state": {
+        "context": "Settings panel",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "On this same settings panel, I now want compact spacing instead of the generous spacing I requested before."
+          }
+        ],
+        "candidate": {
+          "finding": "Use compact spacing on this settings panel.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [
+          {
+            "id": "settings-gap",
+            "finding": "Use generous spacing on this settings panel.",
+            "scope": "component"
+          }
+        ],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "component",
+        "relation": "conflict",
+        "visual_gap": false
+      },
+      "rationale": "Current correction conflicts with the same-context saved finding."
+    },
+    {
+      "id": "different-context-is-not-conflict",
+      "state": {
+        "context": "Analytics data table",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "For this data table, keep rows compact so I can compare values."
+          }
+        ],
+        "candidate": {
+          "finding": "Keep this data table compact for comparison.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [
+          {
+            "id": "portfolio-space",
+            "finding": "Give portfolio sections generous whitespace.",
+            "scope": "portfolio project"
+          }
+        ],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "component",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "A portfolio whitespace preference does not contradict table density."
+    },
+    {
+      "id": "unverified-visual-success",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "assistant",
+            "text": "I changed the CSS gap to 18px. I have not rendered it yet."
+          }
+        ],
+        "candidate": {
+          "finding": "The updated page now looks balanced and the spacing issue is resolved.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "unsupported",
+        "scope": "unknown",
+        "relation": "new",
+        "visual_gap": true
+      },
+      "rationale": "Implementation claim without rendered evidence cannot prove visual success."
+    },
+    {
+      "id": "reversion",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "Restore the previous typography in this header; it was clearer than your new version."
+          }
+        ],
+        "candidate": {
+          "finding": "Prefer the previous header typography over the replacement.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "component",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "A comparative reversion supports a scoped preference."
+    },
+    {
+      "id": "explicit-personal-preference",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "user",
+            "text": "Across my projects, please preserve clear grouping between labels and controls. I care about that generally; exact gaps should depend on the layout."
+          }
+        ],
+        "candidate": {
+          "finding": "Maintain clear label/control grouping across projects, choosing gaps for the layout.",
+          "scope": "personal",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "supported",
+        "scope": "personal",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "The user explicitly states broad scope and contextual exceptions."
+    },
+    {
+      "id": "silence-is-not-approval",
+      "state": {
+        "context": "Lesson interface",
+        "events": [
+          {
+            "id": "event-1",
+            "role": "assistant",
+            "text": "The user asked only to change the icon. They said nothing about the unchanged typography."
+          }
+        ],
+        "candidate": {
+          "finding": "The user strongly prefers the unchanged typography.",
+          "scope": "component",
+          "evidenceIds": [
+            "event-1"
+          ]
+        },
+        "existingInsights": [],
+        "artifacts": {
+          "renderAvailable": false
+        }
+      },
+      "expected": {
+        "support": "unsupported",
+        "scope": "unknown",
+        "relation": "new",
+        "visual_gap": false
+      },
+      "rationale": "Silence cannot establish a strong positive preference."
+    }
+  ]
+}

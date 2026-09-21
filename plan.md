@@ -165,6 +165,10 @@ The insights command now supports explicit `rebuild` and read-only `query` opera
 
 See [retrieval evaluation](docs/evaluations/knowledge-retrieval.md) for synthetic results and remaining real-iteration validation. A4 was delivered first following the user's approval; disposition fields, review receipts, personal insights and quiz revisions remain planned.
 
+## Experimental: Jev learning evaluation (2026-09-22)
+
+A separate observation-only [trial](experiments/jev-learning/README.md) tests the Beacon-inspired learning pipeline against 12 synthetic cases. Jev evaluates candidate support, scope, relationship to existing insights and missing visual evidence. A fixed policy logs review recommendations; it cannot write insights or promote personal preferences. First live results matched 10 of 12 provisional case label sets, offered no unsupported candidate and deferred two useful candidates. These are feasibility results, not calibrated accuracy or design-quality evidence. The portable skill now provides explicit selected-insight reviews with an offline payload preview, hash-bound send and separate immutable evaluation records. A Beacon collector/import adapter and validation on real user feedback remain future work.
+
 ## Immediate implementation priorities (2026-09-21)
 
 The first implementation now provides a rebuildable file-based knowledge index and generated topic views over authoritative versioned insights. Raw feedback and screenshots are preserved; database migration remains deferred until measured query limitations justify it. See milestone A4 in the detailed plan.

@@ -14,7 +14,8 @@
     "test": "node --test lib/*.test.ts local/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "build:skill": "vite build --config vite.local.config.ts && node local/build-skill.mjs",
-    "incline": "node skills/incline/scripts/incline.mjs"
+    "incline": "node skills/incline/scripts/incline.mjs",
+    "eval:jev": "node local/jev-learning-cli.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

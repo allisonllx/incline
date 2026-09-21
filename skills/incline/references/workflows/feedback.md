@@ -14,3 +14,7 @@ When a read fails, report it and preserve the original files; do not replace the
 ## Curate findings separately
 
 When asked to extract or maintain useful findings, read [project insights](../insights.md). Save concise, scoped insights with links to supporting and conflicting events, separate from raw records. Read existing insights first on resume, and retrieve relevant source events as needed. Recording feedback alone does not authorize silently turning it into explicit user instructions. Preserve the difference between user-requested constraints and tentative recurring patterns.
+
+## Optional external review
+
+When the user requests Jev evaluation of selected saved findings, use [Jev review](../jev-review.md). Preview the exact linked text first and send only the authorized selection. Keep the resulting evaluation separate from evidence and insights; a recommendation does not approve a preference or apply a change.

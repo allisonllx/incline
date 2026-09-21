@@ -1,0 +1,814 @@
+{
+  "recordedAt": "2026-09-21T16:13:49.423Z",
+  "mode": "synthetic-shadow",
+  "dataset": "../cases.json",
+  "rubricVersion": "incline-learning-trial-v1",
+  "policy": {
+    "version": "shadow-v1",
+    "confidenceFloor": 0.7,
+    "visualGapCeiling": 0.3
+  },
+  "summary": {
+    "completed": 12,
+    "planned": 12,
+    "exactLabelMatches": 10,
+    "unsupportedCandidatesOffered": 0,
+    "scopedCandidatesIncorrectlyOfferedAsPersonal": 0,
+    "supportedNewOrRefinedCandidatesDeferred": 2,
+    "inputTokens": 12884,
+    "outputTokens": 1838,
+    "rows": [
+      {
+        "caseId": "contextual-spacing",
+        "mismatches": [],
+        "action": "project-review-candidate"
+      },
+      {
+        "caseId": "spacing-overgeneralized",
+        "mismatches": [],
+        "action": "retain-only"
+      },
+      {
+        "caseId": "publication-is-not-taste",
+        "mismatches": [
+          "visual_gap"
+        ],
+        "action": "retain-only"
+      },
+      {
+        "caseId": "explicit-project-direction",
+        "mismatches": [],
+        "action": "review"
+      },
+      {
+        "caseId": "duplicate-evidence",
+        "mismatches": [],
+        "action": "retain-only"
+      },
+      {
+        "caseId": "refine-existing",
+        "mismatches": [
+          "support"
+        ],
+        "action": "review"
+      },
+      {
+        "caseId": "contradict-same-context",
+        "mismatches": [],
+        "action": "review"
+      },
+      {
+        "caseId": "different-context-is-not-conflict",
+        "mismatches": [],
+        "action": "project-review-candidate"
+      },
+      {
+        "caseId": "unverified-visual-success",
+        "mismatches": [],
+        "action": "retain-only"
+      },
+      {
+        "caseId": "reversion",
+        "mismatches": [],
+        "action": "project-review-candidate"
+      },
+      {
+        "caseId": "explicit-personal-preference",
+        "mismatches": [],
+        "action": "personal-review-candidate"
+      },
+      {
+        "caseId": "silence-is-not-approval",
+        "mismatches": [],
+        "action": "retain-only"
+      }
+    ],
+    "limitations": [
+      "Agent-authored synthetic labels are provisional.",
+      "Thresholds are experimental, not calibrated on user feedback.",
+      "No automatic writes, taste confidence, visual-quality verdict or held-out generalization claim."
+    ]
+  },
+  "results": [
+    {
+      "caseId": "contextual-spacing",
+      "requestHash": "7662faddccaf4045fcfcbe651554456700bfca63b4dcde11ec2b6a8b3a754281",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 1004,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.91,
+          "probabilities": {
+            "uncertain": 0.01,
+            "unsupported": 0.04,
+            "supported": 0.95
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 0.98,
+          "probabilities": {
+            "personal": 0,
+            "component": 0.99,
+            "unknown": 0.01,
+            "project": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 1,
+          "probabilities": {
+            "conflict": 0,
+            "uncertain": 0,
+            "duplicate": 0,
+            "new": 1,
+            "refine": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.19
+        }
+      },
+      "usage": {
+        "input_tokens": 1071,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "project-review-candidate",
+        "reason": "Candidate for review only; no automatic insight write or promotion."
+      }
+    },
+    {
+      "caseId": "spacing-overgeneralized",
+      "requestHash": "c53ac9353ca1a6f633c4caa9765828d52b930eca84eefee435ebb8f36a784a17",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 374,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "unsupported",
+          "confidence": 1,
+          "probabilities": {
+            "supported": 0,
+            "uncertain": 0,
+            "unsupported": 1
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 0.96,
+          "probabilities": {
+            "unknown": 0.03,
+            "project": 0,
+            "component": 0.97,
+            "personal": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 1,
+          "probabilities": {
+            "refine": 0,
+            "uncertain": 0,
+            "conflict": 0,
+            "new": 1,
+            "duplicate": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.36
+        }
+      },
+      "usage": {
+        "input_tokens": 1054,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "retain-only",
+        "reason": "The proposed lesson is not supported; preserve evidence without promoting it."
+      }
+    },
+    {
+      "caseId": "publication-is-not-taste",
+      "requestHash": "e7a85e647bc27eb2b1f6104e9606b6f30cb8c6ae106ac885912e2cedec206662",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 281,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "unsupported",
+          "confidence": 1,
+          "probabilities": {
+            "uncertain": 0,
+            "supported": 0,
+            "unsupported": 1
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "unknown",
+          "confidence": 0.96,
+          "probabilities": {
+            "personal": 0,
+            "unknown": 0.97,
+            "project": 0.02,
+            "component": 0.01
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 0.92,
+          "probabilities": {
+            "duplicate": 0,
+            "uncertain": 0,
+            "conflict": 0.06,
+            "new": 0.94,
+            "refine": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.55
+        }
+      },
+      "usage": {
+        "input_tokens": 1056,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "retain-only",
+        "reason": "The proposed lesson is not supported; preserve evidence without promoting it."
+      }
+    },
+    {
+      "caseId": "explicit-project-direction",
+      "requestHash": "fd43863dc7a9b47810eccbf1e3a0972304c8f3f3a789e5e3d9e03de7c4d07880",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 314,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.61,
+          "probabilities": {
+            "unsupported": 0.23,
+            "uncertain": 0.03,
+            "supported": 0.74
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "project",
+          "confidence": 0.9,
+          "probabilities": {
+            "component": 0.07,
+            "personal": 0,
+            "unknown": 0.01,
+            "project": 0.92
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 1,
+          "probabilities": {
+            "duplicate": 0,
+            "conflict": 0,
+            "uncertain": 0,
+            "refine": 0,
+            "new": 1
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.11
+        }
+      },
+      "usage": {
+        "input_tokens": 1060,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "review",
+        "reason": "At least one classification is uncertain."
+      }
+    },
+    {
+      "caseId": "duplicate-evidence",
+      "requestHash": "97a41124d82171cd75c66f782e9909352437771a1b20d00c80290f4f0c0a7f54",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 303,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.95,
+          "probabilities": {
+            "uncertain": 0.01,
+            "unsupported": 0.02,
+            "supported": 0.97
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 0.98,
+          "probabilities": {
+            "component": 0.98,
+            "unknown": 0.02,
+            "project": 0,
+            "personal": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "duplicate",
+          "confidence": 1,
+          "probabilities": {
+            "uncertain": 0,
+            "duplicate": 1,
+            "new": 0,
+            "refine": 0,
+            "conflict": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.2
+        }
+      },
+      "usage": {
+        "input_tokens": 1095,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "retain-only",
+        "reason": "Do not create or count a duplicate lesson."
+      }
+    },
+    {
+      "caseId": "refine-existing",
+      "requestHash": "b8d30c1e19480327ca16bb862987f3aa90b4920ca07e87da0a9a0de221770e3a",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 282,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "unsupported",
+          "confidence": 0.21,
+          "probabilities": {
+            "supported": 0.44,
+            "uncertain": 0.09,
+            "unsupported": 0.47
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 0.76,
+          "probabilities": {
+            "unknown": 0.06,
+            "project": 0.12,
+            "personal": 0,
+            "component": 0.82
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "refine",
+          "confidence": 0.91,
+          "probabilities": {
+            "refine": 0.93,
+            "uncertain": 0,
+            "conflict": 0.02,
+            "new": 0.02,
+            "duplicate": 0.03
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.23
+        }
+      },
+      "usage": {
+        "input_tokens": 1098,
+        "output_tokens": 154
+      },
+      "recommendation": {
+        "action": "review",
+        "reason": "At least one classification is uncertain."
+      }
+    },
+    {
+      "caseId": "contradict-same-context",
+      "requestHash": "a828756246d6f1df42de873f61c88af186e064282fda06e850fdfbb446416f16",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 286,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.91,
+          "probabilities": {
+            "uncertain": 0,
+            "unsupported": 0.06,
+            "supported": 0.94
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 0.99,
+          "probabilities": {
+            "project": 0,
+            "unknown": 0,
+            "component": 1,
+            "personal": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "conflict",
+          "confidence": 1,
+          "probabilities": {
+            "conflict": 1,
+            "uncertain": 0,
+            "refine": 0,
+            "new": 0,
+            "duplicate": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.11
+        }
+      },
+      "usage": {
+        "input_tokens": 1096,
+        "output_tokens": 154
+      },
+      "recommendation": {
+        "action": "review",
+        "reason": "Reconcile conflicting evidence in its context."
+      }
+    },
+    {
+      "caseId": "different-context-is-not-conflict",
+      "requestHash": "d95d2bcd47b432cfc9f59cd75e45f67eafe5369d41754cdafdec91059a7bb7a2",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 291,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.91,
+          "probabilities": {
+            "unsupported": 0.06,
+            "uncertain": 0.01,
+            "supported": 0.9299999999999999
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 0.95,
+          "probabilities": {
+            "project": 0.02,
+            "personal": 0,
+            "unknown": 0.01,
+            "component": 0.97
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 0.85,
+          "probabilities": {
+            "duplicate": 0,
+            "uncertain": 0.01,
+            "refine": 0.02,
+            "conflict": 0.09,
+            "new": 0.88
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.12
+        }
+      },
+      "usage": {
+        "input_tokens": 1090,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "project-review-candidate",
+        "reason": "Candidate for review only; no automatic insight write or promotion."
+      }
+    },
+    {
+      "caseId": "unverified-visual-success",
+      "requestHash": "27a58427ccb7170c2516f35dd8b7667bded2593917815f2ff1d48ad7c7610ee9",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 378,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "unsupported",
+          "confidence": 0.99,
+          "probabilities": {
+            "uncertain": 0,
+            "unsupported": 1,
+            "supported": 0
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "unknown",
+          "confidence": 0.98,
+          "probabilities": {
+            "component": 0.01,
+            "project": 0,
+            "personal": 0,
+            "unknown": 0.99
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 0.98,
+          "probabilities": {
+            "duplicate": 0,
+            "uncertain": 0,
+            "conflict": 0.01,
+            "new": 0.99,
+            "refine": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.97
+        }
+      },
+      "usage": {
+        "input_tokens": 1066,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "retain-only",
+        "reason": "The proposed lesson is not supported; preserve evidence without promoting it."
+      }
+    },
+    {
+      "caseId": "reversion",
+      "requestHash": "e5c9a47bd97aa47b0ea7624a7291aac61ec5e50b04b5bcfa868df4a98f8f929e",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 314,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.82,
+          "probabilities": {
+            "uncertain": 0.02,
+            "unsupported": 0.1,
+            "supported": 0.88
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "component",
+          "confidence": 1,
+          "probabilities": {
+            "personal": 0,
+            "component": 1,
+            "unknown": 0,
+            "project": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 1,
+          "probabilities": {
+            "conflict": 0,
+            "uncertain": 0,
+            "duplicate": 0,
+            "refine": 0,
+            "new": 1
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.16
+        }
+      },
+      "usage": {
+        "input_tokens": 1061,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "project-review-candidate",
+        "reason": "Candidate for review only; no automatic insight write or promotion."
+      }
+    },
+    {
+      "caseId": "explicit-personal-preference",
+      "requestHash": "f408c17a265525eddcafd286d48d9b27f0814bc4c2e3c8868cb648dc4abb769f",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 332,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "supported",
+          "confidence": 0.87,
+          "probabilities": {
+            "unsupported": 0.07,
+            "uncertain": 0.01,
+            "supported": 0.92
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "personal",
+          "confidence": 0.99,
+          "probabilities": {
+            "component": 0,
+            "personal": 0.99,
+            "project": 0.01,
+            "unknown": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 1,
+          "probabilities": {
+            "duplicate": 0,
+            "conflict": 0,
+            "uncertain": 0,
+            "refine": 0,
+            "new": 1
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.09
+        }
+      },
+      "usage": {
+        "input_tokens": 1077,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "personal-review-candidate",
+        "reason": "Candidate for review only; no automatic insight write or promotion."
+      }
+    },
+    {
+      "caseId": "silence-is-not-approval",
+      "requestHash": "f21c12419de8ba0b63cf94994fff1697a588585544f1389a80fc37e2ad6eaa0f",
+      "rubricVersion": "incline-learning-trial-v1",
+      "policy": {
+        "version": "shadow-v1",
+        "confidenceFloor": 0.7,
+        "visualGapCeiling": 0.3
+      },
+      "requestedModel": "jev-1.13.0",
+      "returnedModel": "jev-1.13.0",
+      "elapsedMs": 500,
+      "answers": {
+        "support": {
+          "type": "choice",
+          "choice": "unsupported",
+          "confidence": 0.98,
+          "probabilities": {
+            "unsupported": 0.99,
+            "supported": 0,
+            "uncertain": 0.01
+          }
+        },
+        "scope": {
+          "type": "choice",
+          "choice": "unknown",
+          "confidence": 0.86,
+          "probabilities": {
+            "unknown": 0.9,
+            "component": 0.1,
+            "personal": 0,
+            "project": 0
+          }
+        },
+        "relation": {
+          "type": "choice",
+          "choice": "new",
+          "confidence": 0.98,
+          "probabilities": {
+            "new": 0.99,
+            "refine": 0,
+            "conflict": 0.01,
+            "duplicate": 0,
+            "uncertain": 0
+          }
+        },
+        "visual_gap": {
+          "type": "noul",
+          "noul": 0.37
+        }
+      },
+      "usage": {
+        "input_tokens": 1060,
+        "output_tokens": 153
+      },
+      "recommendation": {
+        "action": "retain-only",
+        "reason": "The proposed lesson is not supported; preserve evidence without promoting it."
+      }
+    }
+  ]
+}

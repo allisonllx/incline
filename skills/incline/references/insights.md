@@ -55,3 +55,7 @@ Generated pages link the original records, but artifact availability is checked 
 ## Limits and boundaries
 
 The insights layer is local and separate from collection state, drafts and library snapshots. It neither replaces the evidence archive nor rewrites `profile.md`. There is no browser insights editor, semantic search or autonomous consolidation service. Retrieval supports a rebuildable word index, exact aspect/scope filters, direct ID reads and targeted provenance retrieval. Older ad hoc feedback folders need explicit conversion before they can supply batch/event links; do not fabricate records to make a finding save.
+
+## Optional second opinion
+
+Use [Jev review](jev-review.md) for an explicitly requested external assessment of selected insights and their linked evidence. It provides an offline preview and stores advisory results separately without modifying findings. It is not required for curation or retrieval.

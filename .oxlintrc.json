@@ -36,7 +36,8 @@
     "skills/incline/scripts/incline.mjs",
     "skills/incline/scripts/getdesign.mjs",
     "skills/incline/scripts/feedback.mjs",
-    "skills/incline/scripts/insights.mjs"
+    "skills/incline/scripts/insights.mjs",
+    "skills/incline/scripts/jev-review.mjs"
   ],
   "rules": {
     "no-array-constructor": "error",

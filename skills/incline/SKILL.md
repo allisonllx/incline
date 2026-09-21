@@ -37,6 +37,6 @@ Do not repeatedly reopen routing, restart a quiz or load every module on each ed
 
 ## Runtime and installation
 
-Node 22 or newer is required. The complete UI and scripts ship in this skill; no account or source build is required. Commands live under `<skill-directory>/scripts/`: `incline.mjs` for the local visual session, `feedback.mjs` for the journal, `insights.mjs` for linked findings, and optional `getdesign.mjs` for public guide retrieval. Load the selected workflow for usage. Only the optional public guide helper requires network access.
+Node 22 or newer is required. The complete UI and scripts ship in this skill; no account or source build is required. Commands live under `<skill-directory>/scripts/`: `incline.mjs` for the local visual session, `feedback.mjs` for the journal, `insights.mjs` for linked findings, and optional `getdesign.mjs` for public guide retrieval. Load the selected workflow for usage. The optional public guide helper and explicitly requested [Jev review](references/jev-review.md) require network access; the rest of the workflow remains local.
 
 Install with `npx skills add allisonllx/incline --skill incline`, optionally with `--global`. These workflows are bundled reference modules, not separately installed skills. Existing commands and project data formats are unchanged. If a bundled module is missing, report the incomplete installation rather than inventing its instructions.

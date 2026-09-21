@@ -137,6 +137,16 @@ Rebuild writes a complete generation under `.incline/knowledge/` and returns its
 
 An up-to-date index does not mean recent feedback has been synthesized or a design has passed visual review. The agent still curates findings and opens selected evidence. No other projects are scanned, and nothing is automatically promoted to personal taste. See [project insights](skills/incline/references/insights.md) for commands and storage details.
 
+## Experimental learning evaluator
+
+A separate [Jev learning trial](experiments/jev-learning/README.md) adapts Beacon's capture/evaluate/review pattern to proposed design lessons. It runs against fixed synthetic examples, records recommendations without applying them, and leaves the portable skill independent of any API service. `npm run eval:jev` previews requests offline; live runs require an explicitly supplied TypeSafe API key. This is not a Beacon collector installation or automatic learning feature. The report includes the first live results and unresolved judgments.
+
+## Optional Jev review of project insights
+
+Ask: **“Use Jev to review the saved spacing insight against its linked feedback. Preview what will be sent, and keep the review separate from my taste profile.”** The portable skill includes `scripts/jev-review.mjs`. Its default operation is an offline preview for a selected insight; optional `--against` IDs add specific comparisons. An explicit send with the preview hash evaluates that exact text and saves an immutable review under `.incline/evaluations/jev/`.
+
+The command uses `TYPESAFE_API_KEY` from the environment or the selected project's `.env`. It sends no screenshots and cannot judge the rendered design. Recommendations never update insights or promote personal taste automatically. Existing Incline commands remain usable without Jev. See [review workflow](skills/incline/references/jev-review.md) for commands, payload details and limitations.
+
 ## Reuse taste across projects
 
 In **Your collections → This project**, choose **Save to personal library** on a collection you want to reuse. It saves a separate, immutable copy under `~/.incline/library/`, including original references and contextual evidence. Opening Incline or finishing a project does not automatically copy anything there.
