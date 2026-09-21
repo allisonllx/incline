@@ -71,6 +71,16 @@ Implemented optional source: [getdesign.md's public VoltAgent repository](https:
 
 DesignMD can provide an optional source of guides and examples for users with access. On 2026-09-17 the user reported that key retrieval says anonymous free key issuance is closed, existing personal keys still work, and new access is available through a trial/paid flow. This supersedes the assumption that new users can obtain free access from the advertised free tool tier. Do not make DesignMD onboarding a dependency or promise a free integration for new users. Trial terms, current checkout pricing and authenticated access remain unverified. Recheck the [provider's access terms](https://www.designmd.co/mcp) before integration; keep ordinary links, user-provided files and original guides sufficient. No provider is installed or called by the current local workflow.
 
+## Implemented guidance: reference interpretation and visual critique
+
+The skill now routes reference-led frontend improvement through a critique guide: explain transferable visual relationships, diagnose the target, assign colour roles and proportions, and inspect the rendered before/after. Eight practical lenses cover hierarchy, whitespace, alignment, proximity, contrast, balance, repetition and unity. Behavioural scenarios cover naive palette mixing, unsuccessful recolours, over-literal portfolio transfers and unavailable evidence. These are guidance and evaluation cases, not measured proof of improved aesthetic output; validation with actual frontend iterations and user feedback remains necessary.
+
+## Implemented structure: one router, four workflow modules
+
+`SKILL.md` now routes by requested outcome into Collect, Design, Feedback or Library. The modules share evidence semantics through `references/evidence.md` and reuse the existing runtime. Mixed requests retain one owner for the deliverable, with supporting workflows returning paths and context instead of restarting intake. This remains one installable skill with bundled references; there are no new commands or storage migrations.
+
+Review routing against real tasks: improve-with-references versus save-references; write versus import a design guide; resume a frontend versus resume a collection; catch-up then redesign; record without opening the visual UI; library lookup without importing; and local-only work without shared-library access. Document/link validation does not prove agents reliably follow these routes. Cross-agent workflow validation remains part of the next milestone.
+
 ## Next milestone: feedback and explainable taste refinement
 
 These are planned capabilities, not claims about the current runtime. Prioritize saved design feedback, competing interpretations and checks against confirmed preferences before autonomous profile evolution. A taste profile remains an incomplete, contextual record with room for unknown and unfamiliar directions.

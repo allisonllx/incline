@@ -34,6 +34,21 @@ The process prints a JSON `ready` event with the localhost URL. Open that exact 
 
 Closing the tab early leaves a resumable draft. Restart against the same project to resume from Your collections. The server also stops after 30 idle minutes. A process lock prevents concurrent writers; stale locks whose process no longer exists are recovered automatically.
 
+## How Incline chooses a workflow
+
+Incline remains one installable skill. Its [entry point](skills/incline/SKILL.md) selects a focused workflow based on what you want done, then loads supporting guidance only as needed:
+
+| Workflow | Responsibility |
+| --- | --- |
+| [Collect](skills/incline/references/workflows/collect.md) | Explore directions, capture references and descriptions, import guides, and resume collections. |
+| [Design](skills/incline/references/workflows/design.md) | Interpret references, critique or improve a frontend, and write a project design brief. |
+| [Feedback](skills/incline/references/workflows/feedback.md) | Catch up on accessible history and record meaningful iteration checkpoints. |
+| [Library](skills/incline/references/workflows/library.md) | Explicitly find, save and reuse personal collections. |
+
+You can keep saying “Use Incline”; there are no extra skills to install or names to memorize. “Improve this screen using these references” enters Design, while “save these references” enters Collect. For “improve this screen and record my feedback,” Design owns the frontend work and Feedback supports it. Shared evidence rules have one home, and workflows hand off saved paths and context without restarting intake.
+
+This reorganizes the agent instructions. The existing browser UI, commands, storage formats and installation stay the same. It does not add automatic library suggestions or an independent background observer.
+
 ## Ways to use Incline
 
 After installing the skill, use these prompts in your coding agent with the intended project open. You can combine workflows: start with references, explore comparisons, build a frontend, and record feedback as you refine it. The agent handles the local commands; you do not need to supply script paths.
@@ -109,7 +124,7 @@ The personal library is only read when opened or used and is created only when s
 
 ## Bring references from the conversation
 
-Agents can prefill a collection with `node skills/incline/scripts/incline.mjs --project /absolute/project --input /absolute/context.json`. The JSON accepts `name`, `description`, `projectContext`, and `references`. Each reference contains either `file` (local image or Markdown path) or `url` (HTTP/S link), with optional `title` and `note`. File paths are relative to the JSON file when not absolute. Markdown files may also include an optional `sourceUrl` to retain their provenance. See the [skill](skills/incline/SKILL.md) for an example. Reusing `--input` creates another collection; resume without it.
+Agents can prefill a collection with `node skills/incline/scripts/incline.mjs --project /absolute/project --input /absolute/context.json`. The JSON accepts `name`, `description`, `projectContext`, and `references`. Each reference contains either `file` (local image or Markdown path) or `url` (HTTP/S link), with optional `title` and `note`. File paths are relative to the JSON file when not absolute. Markdown files may also include an optional `sourceUrl` to retain their provenance. See the [Collect workflow](skills/incline/references/workflows/collect.md) for an example. Reusing `--input` creates another collection; resume without it.
 
 The local editor accepts PNG, JPEG, WebP and GIF files up to 8 MB each, with 24 references per collection. Images are copied into `.incline/assets/` and can be enlarged without cropping. Dragging from another browser tab also works when it supplies an embedded image or an image URL that permits browser access. Some sites block direct copying; Incline shows an error with instructions to save the image and upload the file instead. Google Images may supply a thumbnail, so open the full-size source image first when resolution matters. Reference links are stored without automatic fetching; the host agent reads them when interpreting the brief. The local editor also accepts UTF-8 `.md` / `.markdown` design guides up to 200 KB, through file upload or pasted text. Guides retain original text and optional source links, and are displayed as plain text without executing embedded HTML. A browser-only demo supports descriptions and links; image/guide storage and direct agent handoff require the local skill session.
 
@@ -131,6 +146,12 @@ Search filters public guide names and descriptions. Fetch prints an `inputPath` 
 Only the MIT-licensed public repository is used; no MCP, account or key is needed for this retrieval route, and the website's larger paid catalog is not included. Public GitHub rate limits apply. The helper reports unavailable files and preserves existing evidence. See the [skill's guide workflow](skills/incline/references/design-guides.md) for combining references and extending existing collections.
 
 **DesignMD access update, 2026-09-17:** the user reports that requesting a key returns a message saying anonymous free key issuance is closed, existing personal keys still work, and new access goes through a trial/paid flow. Do not present DesignMD MCP as freely available to new users. The earlier pricing screenshot's free tool labels do not establish that a new free key can be obtained; trial terms and current checkout pricing remain unverified. The integration stays optional and is not installed or required. Links, user-provided guide files and original design guides work independently. See [guide workflows and access notes](skills/incline/references/design-guides.md).
+
+## Improve a design using references
+
+Try: **“Use Incline to study these references. Explain the hierarchy, spacing, typography and visual concept that make them work, then adapt the relevant qualities to my app. Inspect the actual before and after; don’t just copy their colours.”**
+
+Incline now includes [reference interpretation and design critique](skills/incline/references/design-critique.md): eight practical lenses covering hierarchy, whitespace, alignment, proximity, contrast, balance, repetition and unity. The agent connects observed treatments to their effect, assigns palette roles and proportions, and checks the rendered result against the product's task and your explicit preferences. These are decision aids, not an automatic aesthetic score or a rule that every interface should be minimal. User feedback and reference collections stay separate from general design guidance.
 
 ## Wider visual exploration
 
