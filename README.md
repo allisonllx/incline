@@ -100,6 +100,8 @@ Automatic personal-library suggestions, a dedicated interface for mixing aspects
   draft.json                 unfinished work
   assets/<reference-id>.*     original images and Markdown design guides
   feedback/<batch-id>/        iteration evidence and available artifact snapshots
+  insights/<id>/<revision>.json  versioned findings linked to evidence
+  knowledge/                 rebuildable index and generated topic views
 ```
 
 The stable skill describes how to interpret taste; mutable evidence stays outside it. Nothing automatically overwrites an installed skill. Project contexts remain distinct, and new sessions do not delete earlier ones. Keep `.incline/` private unless deliberately sharing it.
@@ -119,6 +121,21 @@ Ask: **“Use Incline to review this project's feedback and save a few useful in
 Insights live separately in `.incline/insights/<id>/`, with immutable revisions. The agent can read compact current findings first, filter by aspect or ID, then retrieve the exact supporting or conflicting events when needed. The evidence command reports whether linked artifacts are saved, unavailable, missing or changed. Original feedback remains untouched.
 
 The bundled `insights.mjs` supports `save --input <file>`, `read [--aspect <topic>] [--id <id>]`, and `evidence --id <id>`, each with `--project <directory>`. See [project insights](skills/incline/references/insights.md) for the schema and workflow. This is agent-authored curation, not automatic preference inference or a browser editor. Cross-project insights are not automatically promoted.
+
+## Retrieve accumulated findings
+
+Ask: **“Use Incline to find the spacing lessons relevant to this page. Keep their exceptions, inspect the supporting screenshots where available, and apply them before presenting the result.”**
+
+Incline includes a small, wiki-inspired knowledge view over saved insights. Topic pages retain context, uncertainty and links to original feedback. They are generated from the versioned findings, so they do not become a second independently edited memory.
+
+```sh
+node <skill-directory>/scripts/insights.mjs rebuild --project <project>
+node <skill-directory>/scripts/insights.mjs query --query "spacing controls" --limit 5 --project <project>
+```
+
+Rebuild writes a complete generation under `.incline/knowledge/` and returns its index and topic-page paths. Query is read-only, excludes superseded findings and reports freshness. Missing, stale or damaged indexes fall back to the authoritative insights. Matching uses words with optional exact aspect/scope filters; it does not provide semantic search. Original feedback, screenshots and insight revisions remain unchanged.
+
+An up-to-date index does not mean recent feedback has been synthesized or a design has passed visual review. The agent still curates findings and opens selected evidence. No other projects are scanned, and nothing is automatically promoted to personal taste. See [project insights](skills/incline/references/insights.md) for commands and storage details.
 
 ## Reuse taste across projects
 

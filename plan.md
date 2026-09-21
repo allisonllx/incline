@@ -159,6 +159,25 @@ These are planned extensions, not part of the current implementation.
 
 Add a medium alongside project context so that a bold poster preference need not affect a restrained product website. Keep shared preferences as explicit or well-supported hypotheses, and store medium-specific evidence separately. A user may welcome several directions within the same medium.
 
+## Implemented: indexed project knowledge (2026-09-22)
+
+The insights command now supports explicit `rebuild` and read-only `query` operations. Rebuild generates contextual topic pages and a compact index under `.incline/knowledge/`; existing feedback and versioned insights remain authoritative and unchanged. Queries retain exceptions and evidence links, report lexical match strength and freshness, and fall back to saved insights when projections are missing, stale or corrupt. No personal-project scanning, automatic synthesis or database migration is included.
+
+See [retrieval evaluation](docs/evaluations/knowledge-retrieval.md) for synthetic results and remaining real-iteration validation. A4 was delivered first following the user's approval; disposition fields, review receipts, personal insights and quiz revisions remain planned.
+
+## Immediate implementation priorities (2026-09-21)
+
+The first implementation now provides a rebuildable file-based knowledge index and generated topic views over authoritative versioned insights. Raw feedback and screenshots are preserved; database migration remains deferred until measured query limitations justify it. See milestone A4 in the detailed plan.
+
+
+See the [Feedback Memory and Discovery Improvement implementation plan](docs/superpowers/plans/2026-09-21-feedback-memory-loop.md). This supersedes the older suggested order for the next work:
+
+1. Close the project feedback loop: qualified acceptance/publication signals, explicit insight-review checkpoints, and relevant rendered checks before presenting a design—especially recurring spacing issues.
+2. Add deliberately curated personal insights with contextual exceptions and portable evidence. Keep this separate from automatic saved-collection nudges.
+3. Audit overlapping quiz comparisons and make isolated spacing/motion probes optional in a new catalog version, preserving old sessions.
+
+Validate recording and memory behavior immediately, and evaluate taste alignment across real iterations over time. Longitudinal validation should not block these concrete improvements. Existing small feedback folders remain an archive; new records can group meaningful checkpoints without rewriting history.
+
 ## Suggested sequence
 
 1. Validate the complete workflow across coding agents, building on the implemented standard installation and explicit personal-library reuse.
