@@ -112,6 +112,14 @@ Ask the agent: **“Use Incline while we iterate this frontend. Catch up on our 
 
 This runs through the active agent, without a browser or background watcher. It cannot retrieve inaccessible conversations itself. The journal supplements existing collections without rewriting them, inferring approval from silence, or exporting to the personal library. Browser display of journal events and automated profile refinement remain future work.
 
+## Keep findings separate from the evidence archive
+
+Ask: **“Use Incline to review this project's feedback and save a few useful insights. Link each finding to its original feedback, keep exceptions, and distinguish explicit instructions from tentative patterns.”**
+
+Insights live separately in `.incline/insights/<id>/`, with immutable revisions. The agent can read compact current findings first, filter by aspect or ID, then retrieve the exact supporting or conflicting events when needed. The evidence command reports whether linked artifacts are saved, unavailable, missing or changed. Original feedback remains untouched.
+
+The bundled `insights.mjs` supports `save --input <file>`, `read [--aspect <topic>] [--id <id>]`, and `evidence --id <id>`, each with `--project <directory>`. See [project insights](skills/incline/references/insights.md) for the schema and workflow. This is agent-authored curation, not automatic preference inference or a browser editor. Cross-project insights are not automatically promoted.
+
 ## Reuse taste across projects
 
 In **Your collections → This project**, choose **Save to personal library** on a collection you want to reuse. It saves a separate, immutable copy under `~/.incline/library/`, including original references and contextual evidence. Opening Incline or finishing a project does not automatically copy anything there.

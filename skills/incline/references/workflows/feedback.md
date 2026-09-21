@@ -10,3 +10,7 @@ An explicit request to record while iterating activates recording for that work;
 When supporting an ongoing frontend task, record meaningful checkpoints and return to that task. Do not make the user open the browser collection UI. A catch-up-only request ends after recording and reporting material limitations. Stop future recording when requested, without deleting previous evidence. On a new conversation, saved evidence remains useful but prior activation does not authorize observing unrelated work.
 
 When a read fails, report it and preserve the original files; do not replace them with empty defaults or silently migrate older ad hoc folders. Distinguish a requested memory recap from a request to create new historical evidence.
+
+## Curate findings separately
+
+When asked to extract or maintain useful findings, read [project insights](../insights.md). Save concise, scoped insights with links to supporting and conflicting events, separate from raw records. Read existing insights first on resume, and retrieve relevant source events as needed. Recording feedback alone does not authorize silently turning it into explicit user instructions. Preserve the difference between user-requested constraints and tentative recurring patterns.

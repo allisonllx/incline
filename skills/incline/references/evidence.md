@@ -6,6 +6,8 @@ All Incline workflows use these interpretation and storage rules. Workflow modul
 
 Use the user's active project as the working directory. Commands detect the nearest repository root, or the working directory outside Git; use `--project <absolute-directory>` when needed. Never launch from the skill's installation directory. Resolve `<skill-directory>` from the installed `SKILL.md`. Project and global installations share the same commands and data model.
 
+Read relevant current findings first with `scripts/insights.mjs read --project <directory>` when an insights folder exists; see [insights](insights.md). Retrieve linked original events when applying or questioning a finding, rather than loading the entire archive by default. Findings are interpretations or scoped instructions, not a replacement for provenance.
+
 Read relevant existing evidence before generating a design: `.incline/profile.md`, the selected sessions in `.incline/state.json`, and the journal through `scripts/feedback.mjs read --project <directory>` when present. Do not read every historical asset for a simple library operation or targeted edit. No existing collection is required to act on a clear user brief.
 
 ## Interpret evidence

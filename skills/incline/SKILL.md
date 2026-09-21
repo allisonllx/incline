@@ -19,7 +19,7 @@ An explicit stop-recording request stops recording without deleting evidence. A 
 | --- | --- | --- |
 | Explore taste, collect descriptions/images/links/guides, or resume a collection | [Collect](references/workflows/collect.md) | Contextual collection or resumable draft |
 | Interpret references, critique or improve a frontend, or write a design brief | [Design](references/workflows/design.md) | Requested critique, brief or visually assessed change |
-| Catch up on past feedback, record iterations, or manage recording | [Feedback](references/workflows/feedback.md) | Attributable project-local journal evidence |
+| Catch up on past feedback, record iterations, curate insights, or manage recording | [Feedback](references/workflows/feedback.md) | Project-local evidence and linked, revisable insights |
 | Explicitly find, save or reuse personal collections | [Library](references/workflows/library.md) | Selected library snapshot or imported local draft |
 
 Match the action, not an incidental word or file type: “improve this app using screenshots” is Design; “save these screenshots as references” is Collect. “Write a DESIGN.md” is Design; “import this DESIGN.md” is Collect. “Resume the frontend” is Design; “resume my unfinished collection” is Collect. Ask one focused routing question only when the distinction materially changes the work and cannot be inferred.
@@ -37,6 +37,6 @@ Do not repeatedly reopen routing, restart a quiz or load every module on each ed
 
 ## Runtime and installation
 
-Node 22 or newer is required. The complete UI and scripts ship in this skill; no account or source build is required. Commands live under `<skill-directory>/scripts/`: `incline.mjs` for the local visual session, `feedback.mjs` for the journal and optional `getdesign.mjs` for public guide retrieval. Load the selected workflow for usage. Only the optional public guide helper requires network access.
+Node 22 or newer is required. The complete UI and scripts ship in this skill; no account or source build is required. Commands live under `<skill-directory>/scripts/`: `incline.mjs` for the local visual session, `feedback.mjs` for the journal, `insights.mjs` for linked findings, and optional `getdesign.mjs` for public guide retrieval. Load the selected workflow for usage. Only the optional public guide helper requires network access.
 
 Install with `npx skills add allisonllx/incline --skill incline`, optionally with `--global`. These workflows are bundled reference modules, not separately installed skills. Existing commands and project data formats are unchanged. If a bundled module is missing, report the incomplete installation rather than inventing its instructions.

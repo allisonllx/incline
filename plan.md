@@ -172,3 +172,7 @@ Add a medium alongside project context so that a bold poster preference need not
 ## Preserve what already works
 
 Retain the original choices, references, explanations, and profile revisions. Record criticism about the specific feature or context it concerns; silence is not proof of approval. Protect explicit “keep” preferences when adding new evidence, represent conflicts as conditional or unresolved, and check prior preferences before promoting a new general rule. Future evaluation should test both useful adaptation and regression across projects and media.
+
+## Implemented foundation: separate project insights
+
+The `insights.mjs` command stores scoped findings separately from the provenance journal. Current findings retain supporting/conflicting batch-event links, qualifications, open questions and tentative/explicit/superseded status. Immutable revisions and optimistic revision checks prevent lost updates. Agents read compact findings first and resolve only relevant evidence; retrieval checks source changes and artifact availability. This does not yet provide an insights UI, autonomous consolidation, semantic search or cross-project promotion.

@@ -4,6 +4,7 @@ await build({
     incline: 'local/cli.mjs',
     getdesign: 'local/getdesign-cli.mjs',
     feedback: 'local/feedback-cli.mjs',
+    insights: 'local/insights-cli.mjs',
   },
   bundle: true,
   platform: 'node',
