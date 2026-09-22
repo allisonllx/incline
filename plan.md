@@ -184,6 +184,10 @@ Validate recording and memory behavior immediately, and evaluate taste alignment
 
 ## Suggested sequence
 
+Immediate design-quality experiment: validate the new reference-transfer visual studies on a real failed case before expanding learning machinery. Compare the original, the current-workflow baseline, and samples that vary whether the new reference feature or existing identity leads. Preserve the actual choice and verify the built result against it. The workflow guidance is implemented; preference improvement remains unproven. See [research and trial protocol](docs/evaluations/reference-transfer-research.md) and [visual studies](skills/incline/references/visual-studies.md).
+
+Planned extension: [Reference Understanding and Recoverable Exploration](docs/superpowers/plans/2026-09-22-reference-exploration.md) separates broad reference interpretation from recovery after an unsuccessful attempt. Add a small project-local derivation graph with immutable checkpoints, exact artifact/feedback links, and compact resume views. Park failed branches without deleting them or interpreting sample rejection as proof against every underlying hypothesis. Evaluate understanding and branch-aware recovery separately against matched inputs and budgets, including the user's explanation burden. The existing journal, insights, and knowledge index stay in place; this extension is planned, not implemented.
+
 1. Validate the complete workflow across coding agents, building on the implemented standard installation and explicit personal-library reuse.
    Add opt-in saved-collection suggestions for new projects, remembered project dismissal and explicit modular reuse as described above.
 2. Save generated results and aspect-specific feedback with artifact versions, source context and timestamps. Keep direct user statements separate from agent hypotheses.
