@@ -14,6 +14,8 @@ Keep the scope small: a representative screen or section with enough surrounding
 
 Choose samples around the uncertainty that changes the design. If the appeal itself is unclear, show two or three coherent adaptations of the strongest grounded hypotheses—for example, one exploring a graphic treatment and another its focal composition. Say what each tests without claiming to know the user's reason. Do not make one candidate per minor detail or combine every hypothesis into an overloaded result. Keep shared qualities where they support each composition; this is design exploration, not an experiment that isolates a causal preference.
 
+The candidate pool can be broader than the displayed set. Select for meaningful diversity, project relevance, and what the comparison could clarify; retain grounded but uncertain alternatives. Do not show several cosmetic variations of the first assumption as if they tested different explanations. Inspect readable details and any relevant observed behavior as well as the opening composition; a screenshot cannot establish motion you have not seen.
+
 For a conflict between a new feature and the existing identity, normally show two directions:
 
 - **Reference feature leads:** give the introduced quality a clear focal role; simplify competing features where allowed. Preserve the product's task and explicit constraints.
@@ -43,6 +45,16 @@ When recording is active or the user asks to remember the choice, use [Feedback]
 - The losing option is not automatically disliked. A composition choice does not establish separate preferences for its colour, spacing, or every token. Reasons remain unknown when none were given.
 
 Use current linked insights and the selected task artifact on resume. Update a scoped finding only when useful, through the existing insights workflow; do not create one per option. No automatic global preference, library promotion, confidence score, or rewriting of earlier choices. If the user changes their mind, preserve the old version and append the correction.
+
+## Recover from an unsuccessful attempt
+
+Before changing direction, inspect whether the attempt actually expressed the proposed treatment. A missing focal illustration may be an execution problem; a faithfully implemented sample can still be a poor interpretation or a poor fit for the project. “Nah” attaches to the displayed sample with an unknown cause unless the user explains more. Do not reject its entire family or ask for an exhaustive diagnosis.
+
+Choose a next operation with a brief evidence-linked explanation: **explore** an untested possibility, **refine** a promising execution, **combine** compatible ideas, **park** an unproductive branch, **return** to an earlier alternative, **reopen** a parked branch when something relevant changes, or **finish** when the task is settled. Parking preserves the attempt, feedback, uncertainty, and possible reason to revisit. Parent links describe how ideas arose; they do not justify propagating rejection to every related idea.
+
+If repeated small revisions make no progress, reconsider the interpretation and expose a materially different direction. Do not keep extending the same weak approach or oscillate between rejected options without new evidence. Honour explicit constraints and the original as a possible winner. End exploration on selection, a stop request, a resolved small edit, or the stated time/sample budget; preserve unresolved alternatives without inventing acceptance. A selected direction proceeds to implementation and inspection.
+
+When the exploration should survive across iterations or tasks, use [recoverable exploration](exploration.md) for immutable checkpoints and selective resume. Save feedback-linked checkpoints only within active recording or an explicit request to remember the exploration. A stop-recording instruction applies to this layer too.
 
 ## Build and check the chosen direction
 

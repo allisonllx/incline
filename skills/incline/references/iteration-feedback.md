@@ -75,6 +75,7 @@ The journal is separate from `state.json`, `profile.md`, collection revisions an
 - User moves on: no acceptance unless they explicitly expressed it.
 - New instruction conflicts with an old one: retain both sources, apply the newer instruction within scope, and clarify only consequential unresolved conflicts.
 - User chooses a generated study: retain the exact compared versions and any qualifications. “Build B” is a directed edit; “I prefer B to A” supports a contextual preference. Neither approves an unseen implementation or establishes that the losing option is disliked. See [visual studies](visual-studies.md) for selection and artifact handling.
+- User rejects a sample without explanation: preserve the reaction against that exact attempt. [Exploration](exploration.md) may link it and park or revisit a branch, but must leave the cause uncertain. The journal remains authoritative; returning to a branch does not rewrite its past feedback or confirm a hypothesis.
 
 ## Contextual disposition (optional)
 

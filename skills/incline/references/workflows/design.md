@@ -29,6 +29,8 @@ When the user requests samples, or competing interpretations would materially ch
 
 For a settled substantial redesign, use a representative rendered study to establish the intended composition without forcing alternatives or another approval round. For a clear small edit, proceed directly. A study is part of the frontend task; it does not restart discovery or require the collection UI.
 
+For competing interpretations across iterations, or an exploration the user asks to remember, load [recoverable exploration](../exploration.md). Keep the hypothesis pool broader than the samples shown at once. Resume relevant branches and source evidence, preserve unsuccessful attempts, and reconsider the interpretation when repeated refinements make no progress. Persistent exploration follows the existing recording scope; it does not start a separate observer or change a personal profile.
+
 ## Apply and inspect
 
 Identify explicit qualities to preserve, inspect the target, and explain which relationships from the references serve the actual product. Follow the critique guide for hierarchy, whitespace, alignment, proximity, contrast, balance, repetition and unity. Diagnose structural problems before assuming a palette change is sufficient. Do not copy salient colours or a reference's concept without a reason relevant to the target.
