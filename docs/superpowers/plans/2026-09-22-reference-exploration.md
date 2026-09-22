@@ -8,7 +8,7 @@
 
 **Tech Stack:** Existing Node ESM helpers, Node's filesystem and crypto modules, node:test, Markdown skill guidance, and esbuild skill packaging. No new database, model service, or UI dependency.
 
-**Spec:** The agreed design, contracts, and acceptance criteria below, extending the [reference-transfer research](../../evaluations/reference-transfer-research.md) and [visual studies](../../../skills/incline/references/visual-studies.md). The user has agreed to the direction and requested this plan; implementation and live trials have not started.
+**Spec:** The agreed design, contracts, and acceptance criteria below, extending the [reference-transfer research](../../evaluations/reference-transfer-research.md) and [visual studies](../../../skills/incline/references/visual-studies.md). The user authorized implementation on 2026-09-22. The local runtime and packaged workflow are implemented; see the execution status below for validation and the separate real-trial boundary.
 
 ## Global constraints
 
@@ -153,7 +153,8 @@ An `explore`, `refine`, `combine`, or `reopen` decision activates its target nod
 | `skills/incline/references/visual-studies.md` | Small displayed sets, meaningful alternatives, recovery decisions, and scope |
 | `local/exploration-model.mjs` | New pure schema, derivation validation, append-only rules, and working projection |
 | `local/exploration-model.test.mjs` | New semantic and graph regression tests |
-| `local/exploration-store.mjs` | New immutable checkpoints, targeted evidence resolution, filesystem checks |
+| `local/exploration-store.mjs` | New immutable checkpoint publication and targeted retrieval |
+| `local/exploration-files.mjs`, `local/exploration-evidence.mjs` | Bounded filesystem reads, hashes, journal resolution, and newly attached evidence checks |
 | `local/exploration-store.test.mjs` | New persistence, integrity, concurrency, and evidence tests |
 | `local/exploration-cli.mjs` | New command adapter using existing project resolution |
 | `local/exploration-cli.test.mjs` | New source/bundled command and read-only behavior tests |
@@ -171,12 +172,12 @@ An `explore`, `refine`, `combine`, or `reopen` decision activates its target nod
 **Consumes:** the existing critique and visual-study guidance, plus the agreed design above.
 **Produces:** a clear workflow that can be followed manually before the new CLI exists.
 
-- [ ] Amend `design-critique.md`: inspect whole composition, readable details, and available behavior; separate observation from mechanism and attraction hypothesis. Replace the two-or-three-hypothesis default with a broad candidate pool whose size depends on meaningful differences and task budget. Retain the two-or-three default only for samples displayed together.
-- [ ] Amend `visual-studies.md`: describe `explore`, `refine`, `combine`, `park`, `return`, `reopen`, and `finish` using the transitions above. Choose samples for plausibility, meaningful diversity, relevance, and what their comparison can clarify. Keep uncertain but grounded alternatives available; do not always select cosmetic variations of the first idea.
-- [ ] Add the recovery check: first inspect whether the sample actually expressed its proposed hypothesis; then decide whether execution, interpretation, project fit, or an unknown cause warrants the next experiment. Record a short explanation. Do not automatically regenerate a rejected sample or ask for a detailed rationale.
-- [ ] Add explicit stop conditions: user chooses or stops; a clear small edit resolves the task; or the stated time/sample budget is reached. Budget exhaustion yields a progress report with preserved alternatives, never manufactured acceptance.
-- [ ] Review the guidance against these cases: bare “I like this”; one named tree detail; multiple interacting qualities; missing motion evidence; vague rejection; explicit exclusion; a selected sample; and delegated choice. Expected behavior is specified in the evaluation table below.
-- [ ] Validate skill structure and local links. No tests that merely assert exact Markdown wording. Commit this task as `docs: define reference exploration and recovery policy` when implementing.
+- [x] Amend `design-critique.md`: inspect whole composition, readable details, and available behavior; separate observation from mechanism and attraction hypothesis. Replace the two-or-three-hypothesis default with a broad candidate pool whose size depends on meaningful differences and task budget. Retain the two-or-three default only for samples displayed together.
+- [x] Amend `visual-studies.md`: describe `explore`, `refine`, `combine`, `park`, `return`, `reopen`, and `finish` using the transitions above. Choose samples for plausibility, meaningful diversity, relevance, and what their comparison can clarify. Keep uncertain but grounded alternatives available; do not always select cosmetic variations of the first idea.
+- [x] Add the recovery check: first inspect whether the sample actually expressed its proposed hypothesis; then decide whether execution, interpretation, project fit, or an unknown cause warrants the next experiment. Record a short explanation. Do not automatically regenerate a rejected sample or ask for a detailed rationale.
+- [x] Add explicit stop conditions: user chooses or stops; a clear small edit resolves the task; or the stated time/sample budget is reached. Budget exhaustion yields a progress report with preserved alternatives, never manufactured acceptance.
+- [x] Review the guidance against these cases: bare “I like this”; one named tree detail; multiple interacting qualities; missing motion evidence; vague rejection; explicit exclusion; a selected sample; and delegated choice. Expected behavior is specified in the evaluation table below.
+- [x] Validate skill structure and local links. No tests that merely assert exact Markdown wording. Commit this task as `docs: define reference exploration and recovery policy` when implementing.
 
 ## Task 2: Preserve a validated exploration graph and its history
 
@@ -184,7 +185,7 @@ An `explore`, `refine`, `combine`, or `reopen` decision activates its target nod
 **Consumes:** the schema and transition rules above.
 **Produces:** `validateExploration`, the basic `explorationView` projection, `saveExploration`, and `readExploration` with the stated signatures.
 
-- [ ] Start with tests for acyclic multi-parent derivation, a multi-hypothesis sample, valid return decisions, and preservation after parking. Define a reusable complete fixture in the model test module; the store tests can build their own smaller snapshot to avoid importing a test module. Its shape is:
+- [x] Start with tests for acyclic multi-parent derivation, a multi-hypothesis sample, valid return decisions, and preservation after parking. Define a reusable complete fixture in the model test module; the store tests can build their own smaller snapshot to avoid importing a test module. Its shape is:
 
 ```javascript
 import test from 'node:test';
@@ -228,11 +229,11 @@ test('parking preserves hypotheses and leaves siblings available', () => {
 });
 ```
 
-- [ ] Run `node --test local/exploration-model.test.mjs` to confirm missing behavior fails. Implement exact-field validation and derivation-cycle detection using a visiting/visited DFS; inspect parent references before traversing. Validate all ID links by type. Enforce prior-row preservation, corrections through `supersedesId`, and append-only attempt feedback. Implement the basic decision projection needed by the test. Add tests that a removal, rewritten claim, dangling ID, duplicate ID, cycle, competing correction, and false `user-instruction` basis fail. Evidence-dependent instruction checks belong to the store; the model checks required links and the store resolves them.
-- [ ] Write persistence tests: first save creates revision 1; parking creates revision 2 without changing revision 1; two writers using the same expected revision cannot overwrite each other; identical retries return `already-saved`; corrupted latest state never becomes an empty study. Verify no feedback/insight/profile file changes.
-- [ ] Implement immutable publication following `local/insights.mjs`: validate, check expected revision, write a private temporary file, publish via an exclusive atomic link, clean up the temporary file. Hash a canonical serialization of the request for retries. Check the expected next revision for a matching request hash before rejecting a retry, including if a later revision now exists. A conflicting request stays a stale-revision error.
-- [ ] Reject path traversal and symlinked study/storage paths; check directories and revision filenames before reads and writes. Missing studies return null; malformed, oversized, unsupported-version, and unexpected filesystem errors remain visible. No silent repair or deletion command.
-- [ ] Run the model/store suites and existing feedback/insights tests. Commit as `feat: preserve reference exploration checkpoints` after these pass.
+- [x] Run `node --test local/exploration-model.test.mjs` to confirm missing behavior fails. Implement exact-field validation and derivation-cycle detection using a visiting/visited DFS; inspect parent references before traversing. Validate all ID links by type. Enforce prior-row preservation, corrections through `supersedesId`, and append-only attempt feedback. Implement the basic decision projection needed by the test. Add tests that a removal, rewritten claim, dangling ID, duplicate ID, cycle, competing correction, and false `user-instruction` basis fail. Evidence-dependent instruction checks belong to the store; the model checks required links and the store resolves them.
+- [x] Write persistence tests: first save creates revision 1; parking creates revision 2 without changing revision 1; two writers using the same expected revision cannot overwrite each other; identical retries return `already-saved`; corrupted latest state never becomes an empty study. Verify no feedback/insight/profile file changes.
+- [x] Implement immutable publication following `local/insights.mjs`: validate, check expected revision, write a private temporary file, publish via an exclusive atomic link, clean up the temporary file. Hash a canonical serialization of the request for retries. Check the expected next revision for a matching request hash before rejecting a retry, including if a later revision now exists. A conflicting request stays a stale-revision error.
+- [x] Reject path traversal and symlinked study/storage paths; check directories and revision filenames before reads and writes. Missing studies return null; malformed, oversized, unsupported-version, and unexpected filesystem errors remain visible. No silent repair or deletion command.
+- [x] Run the model/store suites and existing feedback/insights tests. Commit as `feat: preserve reference exploration checkpoints` after these pass.
 
 ## Task 3: Resume selectively and verify linked evidence
 
@@ -250,12 +251,12 @@ node local/exploration-cli.mjs view --project /absolute/project --id portfolio-s
 node local/exploration-cli.mjs evidence --project /absolute/project --id portfolio-study --node natural
 ```
 
-- [ ] Complete `explorationView` with selective node/ancestor views and bounded summaries. Include exact IDs and omitted counts; a rejected or parked attempt must not make unrelated alternatives disappear. Superseded nodes remain available by ID but do not appear as fresh alternatives. Add an exact return/reopen regression, a correction regression, and a multi-parent sample test. A limit truncates presentation only, never persisted state.
-- [ ] Implement targeted evidence loading by safe batch/event/artifact IDs. Reuse the record format and integrity rules in `local/feedback.mjs` and `local/insights.mjs`; do not turn a screenshot locator into downloaded content. At save, resolve newly linked journal evidence and pin hashes. Require user-instruction links to point to user directed-edit/reversion events; all agent judgments remain inference.
-- [ ] Verify newly supplied local artifact paths and hashes at save; require a complete source or an explicit unavailable entry. At evidence retrieval, check file and record hashes, source presence, and allowed paths. Return per-source statuses `available`, `unavailable`, or `changed`, with explanations and warnings. A broken old asset must not hide the rest of the study or prevent a new correction checkpoint. Reject traversal/symlink escapes without reading the target. Inspect only selected node artifacts and ancestors, not every project's media.
-- [ ] Add integration tests that modify/remove a saved study image, change a journal record, and supply a missing event; assert explicit warnings on reads and rejection of invalid new links on save. Confirm an unrelated screenshot is not needed to open a node. Use small byte fixtures; these tests verify provenance, not image aesthetics.
-- [ ] Build a strict CLI adapter around `resolveOptions` from `local/options.mjs`. Accept only command-specific flags: `save` takes input; `read` accepts revision; `view` accepts node/limit; `evidence` requires node. Reject repeated flags, invalid revisions/limits, and library/personal-directory flags. All read operations are side-effect free, including on an empty project.
-- [ ] Add an `exploration` entry to `local/build-skill.mjs`. Allow the CLI test path override `INCLINE_EXPLORATION_TEST_CLI`; test source and bundled entry points using the same suite:
+- [x] Complete `explorationView` with selective node/ancestor views and bounded summaries. Include exact IDs and omitted counts; a rejected or parked attempt must not make unrelated alternatives disappear. Superseded nodes remain available by ID but do not appear as fresh alternatives. Add an exact return/reopen regression, a correction regression, and a multi-parent sample test. A limit truncates presentation only, never persisted state.
+- [x] Implement targeted evidence loading by safe batch/event/artifact IDs. Reuse the record format and integrity rules in `local/feedback.mjs` and `local/insights.mjs`; do not turn a screenshot locator into downloaded content. At save, resolve newly linked journal evidence and pin hashes. Require user-instruction links to point to user directed-edit/reversion events; all agent judgments remain inference.
+- [x] Verify newly supplied local artifact paths and hashes at save; require a complete source or an explicit unavailable entry. At evidence retrieval, check file and record hashes, source presence, and allowed paths. Return per-source statuses `available`, `unavailable`, or `changed`, with explanations and warnings. A broken old asset must not hide the rest of the study or prevent a new correction checkpoint. Reject traversal/symlink escapes without reading the target. Inspect only selected node artifacts and ancestors, not every project's media.
+- [x] Add integration tests that modify/remove a saved study image, change a journal record, and supply a missing event; assert explicit warnings on reads and rejection of invalid new links on save. Confirm an unrelated screenshot is not needed to open a node. Use small byte fixtures; these tests verify provenance, not image aesthetics.
+- [x] Build a strict CLI adapter around `resolveOptions` from `local/options.mjs`. Accept only command-specific flags: `save` takes input; `read` accepts revision; `view` accepts node/limit; `evidence` requires node. Reject repeated flags, invalid revisions/limits, and library/personal-directory flags. All read operations are side-effect free, including on an empty project.
+- [x] Add an `exploration` entry to `local/build-skill.mjs`. Allow the CLI test path override `INCLINE_EXPLORATION_TEST_CLI`; test source and bundled entry points using the same suite:
 
 ```sh
 node --test local/exploration-model.test.mjs local/exploration-store.test.mjs local/exploration-cli.test.mjs
@@ -263,7 +264,7 @@ node local/build-skill.mjs
 INCLINE_EXPLORATION_TEST_CLI=skills/incline/scripts/exploration.mjs node --test local/exploration-cli.test.mjs
 ```
 
-- [ ] Verify standalone execution from a temporary project uses that project for state. Commit as `feat: resume exploration with linked evidence`.
+- [x] Verify standalone execution from a temporary project uses that project for state. Commit as `feat: resume exploration with linked evidence`.
 
 ## Task 4: Connect the exploration record to the agent workflow
 
@@ -271,13 +272,13 @@ INCLINE_EXPLORATION_TEST_CLI=skills/incline/scripts/exploration.mjs node --test 
 **Consumes:** the commands from Task 3 and current Feedback/Insights workflows.
 **Produces:** an end-to-end instruction path with one owner for the frontend task.
 
-- [ ] Document the command contracts, a complete minimal input based on Task 2's fixture, storage paths, and missing-evidence behavior. Explain that command success validates a record, not its hypotheses.
-- [ ] On a substantial uncertain reference task, inspect references, retrieve applicable existing insights, and read a relevant study if one exists. Use the candidate pool to choose a small diverse sample set. On a clear edit or settled direction, proceed without starting a graph.
-- [ ] At an authorized memory checkpoint, preserve sample/reference visuals and link original feedback using the existing journal. Save the new exploration revision; retain unresolved reasons for dislike. When recording is off, continue the task without persisting user reactions through the graph. A stop-recording instruction must be tested as a workflow case.
-- [ ] Before the next attempt, inspect fidelity to the previous hypothesis and choose a named operation with a concise rationale. On return, retrieve the earlier interpretation and relevant alternatives. Do not treat rejected samples as automatic negative evidence for every property or repeat a parked approach without explaining what changed.
-- [ ] After a choice, build and inspect the exact selected direction using the existing visual-study procedure. Curate a scoped insight only when useful and supported; the exploration graph must not promote itself into a profile. Publication permission remains separate.
-- [ ] Add the suggested prompt: “Use Incline to explore this reference for my app. You can try different interpretations; keep track of the attempts so we can return to other directions if one doesn't work. Show me a few distinct samples at a time.” Explain that this authorizes remembering this exploration, not unrelated observation.
-- [ ] Validate skill structure, links, bundled usage, and the behavior cases below. Commit as `docs: integrate recoverable reference exploration`.
+- [x] Document the command contracts, a complete minimal input based on Task 2's fixture, storage paths, and missing-evidence behavior. Explain that command success validates a record, not its hypotheses.
+- [x] On a substantial uncertain reference task, inspect references, retrieve applicable existing insights, and read a relevant study if one exists. Use the candidate pool to choose a small diverse sample set. On a clear edit or settled direction, proceed without starting a graph.
+- [x] At an authorized memory checkpoint, preserve sample/reference visuals and link original feedback using the existing journal. Save the new exploration revision; retain unresolved reasons for dislike. When recording is off, continue the task without persisting user reactions through the graph. A stop-recording instruction must be tested as a workflow case.
+- [x] Before the next attempt, inspect fidelity to the previous hypothesis and choose a named operation with a concise rationale. On return, retrieve the earlier interpretation and relevant alternatives. Do not treat rejected samples as automatic negative evidence for every property or repeat a parked approach without explaining what changed.
+- [x] After a choice, build and inspect the exact selected direction using the existing visual-study procedure. Curate a scoped insight only when useful and supported; the exploration graph must not promote itself into a profile. Publication permission remains separate.
+- [x] Add the suggested prompt: “Use Incline to explore this reference for my app. You can try different interpretations; keep track of the attempts so we can return to other directions if one doesn't work. Show me a few distinct samples at a time.” Explain that this authorizes remembering this exploration, not unrelated observation.
+- [x] Validate skill structure, links, bundled usage, and the behavior cases below. Commit as `docs: integrate recoverable reference exploration`.
 
 ## Task 5: Check behavior before assessing taste
 
@@ -302,10 +303,10 @@ INCLINE_EXPLORATION_TEST_CLI=skills/incline/scripts/exploration.mjs node --test 
 | Stop recording | Continue requested design work without persisting new feedback through another layer |
 | User selects, stops, or budget expires | End exploration appropriately; do not invent acceptance |
 
-- [ ] Run synthetic scripted feedback through the deterministic record/CLI cases. Label it synthetic in every report; do not write it into real project preference memory.
-- [ ] Run the agent workflow against the sparse-brief and rejection cases. Preserve the actual prompts, available artifacts, model/settings, loaded skill revision/hash, and observed actions. Evaluate whether samples were rendered and whether returns changed an interpretation, rather than checking only prose compliance.
-- [ ] Run `npm test` once after integration because the package adds a new portable entry point and persistence subsystem. Run skill validation and `git diff --check`. Correct failures before starting the real trial. Documentation-only follow-ups do not require repeating unrelated runtime suites.
-- [ ] Report passed behaviors and remaining gaps. No “taste improved” conclusion follows from this task. Commit as `test: document reference exploration behavior checks`.
+- [x] Run synthetic scripted feedback through the deterministic record/CLI cases. Label it synthetic in every report; do not write it into real project preference memory.
+- [x] Run the agent workflow against the sparse-brief and rejection cases. Preserve the actual prompts, available artifacts, model/settings, loaded skill revision/hash, and observed actions. Evaluate whether samples were rendered and whether returns changed an interpretation, rather than checking only prose compliance.
+- [x] Run `npm test` once after integration because the package adds a new portable entry point and persistence subsystem. Run skill validation and `git diff --check`. Correct failures before starting the real trial. Documentation-only follow-ups do not require repeating unrelated runtime suites.
+- [x] Report passed behaviors and remaining gaps. No “taste improved” conclusion follows from this task. Commit as `test: document reference exploration behavior checks`.
 
 ## Task 6: Evaluate understanding and recovery on actual designs
 
@@ -329,3 +330,11 @@ The implementation is complete when local checkpoints, selective resume, artifac
 Defer automatic DOM extraction, screenshot-scoring engines, a graph UI, automatic personal preference promotion, a learned branch-ranking policy, and numeric confidence until a measured need justifies them. Keep the existing visual tools and manual reference inspection usable throughout.
 
 This plan does not claim that hypothesis provenance will improve taste. Its testable proposition is that grounded breadth plus recoverable exploration may reduce premature commitment and repeated correction while producing designs the user prefers.
+
+## Execution status — 2026-09-22
+
+Tasks 1–4 are implemented on `codex/reference-exploration`. The unchanged baseline passed 112 tests; integration passes 160 (48 new), with an additional 3/3 checks against the standalone bundle. Skill validation and targeted lint pass. Task 5 records the passed fresh-context synthetic workflow run, including four inspected samples, scoped recovery, and unchanged memory after recording stopped; Task 6 requires actual compared artifacts and real user reactions and is not claimed complete. See the [evaluation report](../../evaluations/reference-exploration.md).
+
+Implementation details: filesystem and evidence resolution are split into internal helpers to keep publication and projection focused; cycle detection uses iterative topological traversal to handle deep histories without recursion limits. Explicitly decision-linked attempts are included in targeted evidence without expanding unrelated sibling histories. Newly attached feedback links are checked per row, even if the same event was linked elsewhere. Past visual inspection and retained asset availability remain separate: an unavailable capture is an explicit gap, not a reason to attribute the observation to the user.
+
+Local commits group the work by deliverable: `1444e85` contains the runtime, tests, and generated bundle; `af70143` contains interpretation/recovery policy, workflow integration, and usage. The evaluation/status update is a separate documentation commit. This combines the adjacent checkpoint/resume runtime tasks into one tested unit instead of exposing a partially connected command. The real design trial remains open; no other project was modified and no global skill update or publication was performed.

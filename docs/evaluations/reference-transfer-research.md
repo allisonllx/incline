@@ -129,3 +129,7 @@ Structural validation checks skill validity and local reference links. Existing 
 | User asks only to fix a label/control gap | Make the targeted edit without a study or new quiz. |
 
 The complete A/B/C generation trial and user preference evaluation remain pending. The historical replay above is a separate diagnostic, not a successful execution of the new workflow.
+
+## Recoverable exploration extension
+
+The later [reference-exploration implementation and behavior report](reference-exploration.md) adds a broader hypothesis pool, immutable exploration checkpoints, targeted evidence retrieval, and recovery guidance. Its synthetic checks are separate from the A/B/C protocol above. They do not establish a user preference or supersede the pending controlled design comparison.
