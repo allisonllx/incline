@@ -5,6 +5,7 @@ await build({
     getdesign: 'local/getdesign-cli.mjs',
     feedback: 'local/feedback-cli.mjs',
     insights: 'local/insights-cli.mjs',
+    exploration: 'local/exploration-cli.mjs',
     'jev-review': 'local/jev-review-cli.mjs',
   },
   bundle: true,
