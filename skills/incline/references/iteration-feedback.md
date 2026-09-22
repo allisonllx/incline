@@ -74,6 +74,7 @@ The journal is separate from `state.json`, `profile.md`, collection revisions an
 - Original screenshot missing: retain the feedback and gap; do not substitute today's render.
 - User moves on: no acceptance unless they explicitly expressed it.
 - New instruction conflicts with an old one: retain both sources, apply the newer instruction within scope, and clarify only consequential unresolved conflicts.
+- User chooses a generated study: retain the exact compared versions and any qualifications. “Build B” is a directed edit; “I prefer B to A” supports a contextual preference. Neither approves an unseen implementation or establishes that the losing option is disliked. See [visual studies](visual-studies.md) for selection and artifact handling.
 
 ## Contextual disposition (optional)
 

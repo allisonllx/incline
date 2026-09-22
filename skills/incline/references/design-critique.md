@@ -21,16 +21,28 @@ There is no single canonical list of exactly eight design principles. Use the fo
 
 ## Extract relationships before ingredients
 
+### Infer plausible appeal from the whole reference
+
+“I like this website” is enough to start interpretation; the user need not enumerate its appealing details. Inspect the whole composition before narrowing to a mentioned feature: focal mass and negative space, typography relationships, imagery and drawing treatment, material/texture, recurring concept, and interactions or motion you actually observed. A named detail is a priority, not an exhaustive list. Explicit “only use this” and keep/avoid instructions remain binding.
+
+Offer a small set of plausible explanations of its appeal, usually two or three when distinct explanations would change the design. Ground each in an observed region or behaviour, explain the visual mechanism, and connect it to the target's task. Consider combinations: a technical drawing treatment against warm paper and expressive type may matter more than any ingredient alone. Use relevant prior findings within their scope; do not assume the reference's loudest colour or most obvious object is the reason for liking it. Distinguish observation (“the illustration occupies much of the opening view”) from hypothesis (“that focal presence may be part of the appeal”). Do not claim the user's motive or the original designer's intent as fact.
+
+For example, a reference with an ASCII tree and large serif heading might appeal through the natural subject, its printed/technical character, or the relationship between a large organic focal mass and type. Inspect which explanations the source actually supports. If the user mentions the tree, preserve that priority while exploring its treatment and surrounding composition; do not reduce the brief to adding a small tree icon.
+
+Within an authorized design task, use these hypotheses to make reversible experiments without asking the user to confirm every inference first. Make materially different explanations visible through [visual studies](visual-studies.md); explain briefly what each explores, then let the user react. A simple choice or “closer” is useful even without a rationale. Ask a focused question when missing evidence or scope prevents a useful experiment, not for an exhaustive inventory of likes. If the reference is inaccessible, mark the gap rather than inventing an inspection. Hypotheses may guide exploration while remaining provisional in memory; selection alone does not establish why the user preferred a composition.
+
+### Map interpretation to a target change
+
 For each useful reference, make a compact transfer note:
 
 - **Evidence:** the user's stated attraction and what you actually observed, separately.
-- **Mechanism:** how the treatment creates the effect—for example, a large weight/scale contrast against quiet body copy creates emphasis, or a repeated interaction metaphor makes varied content feel connected.
+- **Mechanism and hypothesis:** how the treatment creates the effect, and why it might appeal in this context—for example, a large weight/scale contrast against quiet body copy creates emphasis, or a repeated interaction metaphor makes varied content feel connected. Keep inferred attraction distinct from confirmed preference.
 - **Adaptation:** which relationship would help this product's content and primary task.
 - **Boundary:** what should not transfer literally, and what remains unknown.
 
 “Take purple from image A and green from image B” is not a rationale. A strong reference can contain many colours because they occupy distinct roles, proportions and contexts. A photograph's colours need not become UI theme colours. Likewise, liking a site's desktop metaphor does not authorize adding a fake operating system to an unrelated workflow.
 
-Before changing the frontend, state a short design thesis: intended character, focal point, reading order and the few structural changes expected to help. Tie it to the user's brief. Do not force an extra approval ceremony when the user has already authorized the redesign. Ask a focused question only if a consequential choice is unresolved.
+Before changing the frontend, state a short design thesis: intended character, focal point, reading order and the few structural changes expected to help. Tie it to the user's brief. Connect each central reference quality to a visible target change and name what stays or yields. If a distinctive new feature conflicts with the existing identity, use [visual studies](visual-studies.md) to make that trade-off visible rather than silently dropping the feature or stripping the current design. Do not force an extra approval ceremony when the direction is already settled; resolve consequential open choices through a focused question or comparison.
 
 ## Make colour serve the composition
 
@@ -46,11 +58,11 @@ Inspect the target's actual rendered state before claiming it needs particular f
 
 Express changes concretely: “separate the primary action from three equally weighted secondary actions,” “bring the label closer to its control than to the next group,” or “reduce the number of competing heading weights.” Avoid “make it cleaner” as the whole specification. Preserve useful density, identity and explicit user choices.
 
-When direction remains uncertain, a small comparison varying the consequential treatment can be useful. Do not generate an obligatory set of alternatives or restart a full quiz for clear feedback. Original ideas remain welcome; references inform the reasoning rather than imposing replicas.
+When the user requests alternatives or direction remains uncertain, follow [visual studies](visual-studies.md) for comparable samples, contextual selection, and a recoverable visual target. Do not generate an obligatory set of alternatives or restart a full quiz for clear feedback. Original ideas remain welcome; references inform the reasoning rather than imposing replicas.
 
 ## Inspect the result, not just the code
 
-Compare the before/after with the same content, viewport and state where possible. Check a representative narrow viewport and relevant interaction states, including keyboard focus and longer content when applicable. Inspect whether the primary task became clearer, the intended qualities survived, and the visual concept is coherent. Do not claim responsive or interaction validation for views you did not inspect.
+Compare the before/after with the same content, viewport and state where possible. Include the chosen study and its qualifications when one exists; inspect the focal treatment at readable scale so a minor style pass cannot stand in for an agreed composition. Check a representative narrow viewport and relevant interaction states, including keyboard focus and longer content when applicable. Inspect whether the primary task became clearer, the intended qualities survived, and the visual concept is coherent. Do not claim responsive or interaction validation for views you did not inspect.
 
 For contextual spacing, inspect label/control and text/button gaps, paragraph/divider separation, within-group versus between-group spacing, and continuity between related outputs. Check wrapping at a narrow viewport and changed interaction states. Large gaps can fail as readily as cramped ones; dense content can serve the task. Preserve stable controls and meaningful dimension colours when applicable. Do not universalize one project's pixel values.
 
@@ -68,5 +80,10 @@ These are realistic review scenarios, not claims of automated aesthetic validati
 - **Bold typography reference:** expected: create a deliberate scale/weight relationship with restrained supporting content. Failure: make every label bold or oversized.
 - **Colourful but well-organized target:** expected: assess the relationships and preserve effective colour. Failure: force neutral minimalism because another user liked a restrained reference.
 - **Unavailable old screenshot:** expected: distinguish the user's reported dissatisfaction from a directly observed diagnosis. Failure: invent details or pretend to have compared versions.
+- **Bare reference plus “I like this”:** expected: inspect the full reference, propose evidence-grounded explanations of appeal, and test consequential differences visually within the requested task. Failure: require a detailed list of likes, produce only generic adjectives, or copy the most salient colour.
+- **User mentions one detail:** expected: prioritise it while considering its treatment and surrounding relationships. Failure: treat unmentioned qualities as excluded or transfer a tiny literal object while losing its focal role.
+- **User picks the closer sample without explaining why:** expected: continue from that sample, keeping the cause of preference provisional. Failure: demand a rationale or promote every sampled property to confirmed taste.
+- **New motif versus existing identity:** expected: compare a direction led by the introduced feature with one led by the current identity, preserving explicit constraints and comparable quality. Failure: omit the new feature without exposing the trade-off, or offer two recolours of the same composition.
+- **Qualified sample choice:** expected: retain the exact versions and selected parts, implement the choice, and inspect its rendered outcome. Failure: infer a global preference, call an unchosen option disliked, or treat sample selection as final implementation acceptance.
 
 Evaluate these on real outputs and user reactions over time. This guidance improves the process; it does not retrain the underlying model or guarantee taste alignment.

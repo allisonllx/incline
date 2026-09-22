@@ -18,7 +18,7 @@ An explicit stop-recording request stops recording without deleting evidence. A 
 | Requested outcome | Load | Expected result |
 | --- | --- | --- |
 | Explore taste, collect descriptions/images/links/guides, or resume a collection | [Collect](references/workflows/collect.md) | Contextual collection or resumable draft |
-| Interpret references, critique or improve a frontend, or write a design brief | [Design](references/workflows/design.md) | Requested critique, brief or visually assessed change |
+| Interpret references, compare design samples, critique or improve a frontend, or write a design brief | [Design](references/workflows/design.md) | Requested critique, visual study, brief or visually assessed change |
 | Catch up on past feedback, record iterations, curate insights, or manage recording | [Feedback](references/workflows/feedback.md) | Project-local evidence and linked, revisable insights |
 | Explicitly find, save or reuse personal collections | [Library](references/workflows/library.md) | Selected library snapshot or imported local draft |
 
