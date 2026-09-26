@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api, type Connection } from './use-session-store';
+import { tagsFromText, type PromptTag } from '@/lib/prompt-tags';
 
 type Scope = 'project' | 'personal';
-type Tag = { facet: string; value: string; provenance: string };
+type Tag = PromptTag;
 type Asset = {
   id: string;
   contentType?: string;
@@ -67,26 +68,6 @@ function safeLink(value?: string) {
   } catch {
     return null;
   }
-}
-function tagsFromText(value: string, previous: Tag[] = []): Tag[] {
-  return value
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const index = line.indexOf(':');
-      if (index < 1 || index === line.length - 1)
-        throw new Error('Write each tag as facet: value.');
-      const facet = line.slice(0, index).trim();
-      const value = line.slice(index + 1).trim();
-      return (
-        previous.find((tag) => tag.facet === facet && tag.value === value) ?? {
-          facet,
-          value,
-          provenance: 'user',
-        }
-      );
-    });
 }
 async function fileUpload(file: File): Promise<Upload> {
   if (file.size > 8_000_000) throw new Error('Choose an image under 8 MB.');
@@ -349,7 +330,7 @@ export function PromptLibrary({
     }
   }
   function chooseScope(next: Scope) {
-    if (busy) return;
+    if (busy || next === scope) return;
     viewGeneration.current += 1;
     uploadGeneration.current += 1;
     listGeneration.current += 1;

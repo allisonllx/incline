@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import { startServer } from './server.mjs';
 import { createPromptStore } from './prompts.mjs';
 import { savePromptSettings } from './prompt-settings.mjs';
+import { tagsFromText } from '../lib/prompt-tags.ts';
 
 const png = Buffer.from('89504e470d0a1a0a', 'hex');
 async function fixture(t, options = {}) {
@@ -254,6 +255,41 @@ test('revision editing preserves advanced fields, gaps, recipe, and retained ass
     ).runs,
     [],
   );
+});
+
+test('title-only form edit roundtrips equal tags with distinct provenance', async (t) => {
+  const { root, request } = await fixture(t);
+  const store = createPromptStore(join(root, '.incline', 'prompts'), {
+    projectDirectory: root,
+  });
+  const tags = [
+    {
+      facet: 'technique',
+      value: 'bounded progress',
+      provenance: 'source-text',
+    },
+    { facet: 'technique', value: 'bounded progress', provenance: 'user' },
+  ];
+  const original = await store.save({
+    title: 'Dual provenance',
+    prompt: 'Keep progress bounded',
+    origin: 'user-authored',
+    tags,
+  });
+  const formText = original.tags
+    .map((tag) => `${tag.facet}: ${tag.value}`)
+    .join('\n');
+  const response = await request('/api/prompts/save', {
+    scope: 'project',
+    id: original.id,
+    baseRevision: original.revision,
+    changes: {
+      title: 'Dual provenance edited',
+      tags: tagsFromText(formText, original.tags),
+    },
+  });
+  assert.equal(response.status, 201);
+  assert.deepEqual((await response.json()).entry.tags, tags);
 });
 
 test('arbitrary path assets and oversized uploads are refused; local-only forbids personal operations', async (t) => {
