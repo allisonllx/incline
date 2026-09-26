@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { ArrowUpRight, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api, type Connection } from './use-session-store';
@@ -165,18 +164,19 @@ function Media({
     );
   if (!preview) return <p>Loading {asset.id}…</p>;
   // The authenticated local response is already a verified, retained blob.
-  return asset.contentType?.startsWith('image/') ? (
-    <figure className="prompt-media">
-      <Image
-        src={preview}
-        alt={`Retained asset ${asset.id}`}
-        width={800}
-        height={600}
-        unoptimized
-      />
-      <figcaption>{asset.id} · retained capture</figcaption>
-    </figure>
-  ) : (
+  if (asset.contentType?.startsWith('image/')) {
+    const image = (
+      // oxlint-disable-next-line nextjs/no-img-element -- authenticated blob URLs belong to the standalone local UI
+      <img src={preview} alt={`Retained asset ${asset.id}`} />
+    );
+    return (
+      <figure className="prompt-media">
+        {image}
+        <figcaption>{asset.id} · retained capture</figcaption>
+      </figure>
+    );
+  }
+  return (
     <a href={preview} target="_blank" rel="noreferrer">
       Open retained Markdown {asset.id}
     </a>
