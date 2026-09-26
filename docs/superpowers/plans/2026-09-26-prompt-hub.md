@@ -74,10 +74,12 @@ assert.equal((await store.runs(first.id, next.revision)).length, 0);
 - [x] Teach effect-to-stage planning, representation choice, asset contracts, optional DAG/subagents, integration checks, and recovery linked to existing exploration. A prompt/plan-only request does not execute generation.
 - [x] Supply three to five labelled agent-authored example recipes for retrieval/production tests, with no invented author/user testing claims. Include the supplied online motion source only with actually available prompt text or an explicit source gap.
 - [x] Rebuild standalone scripts and UI; run full tests, lint, typecheck, skill validation and documentation links. Test the packaged CLI from a disposable project, not the repository's private data.
-- [ ] Run a bounded independent behavioural review and final code review; fix material findings. Record limitations and human design evaluation still needed.
+- [x] Run a bounded independent behavioural review and final code review; fix material findings. Record limitations and human design evaluation still needed.
 - [x] Commit completed changes locally; pushing and global skill replacement are separate actions.
 
 ## Progress and rulings
 
 - Design approved for implementation. This plan makes the first delivery concrete; later worker routing, recovery selectors and autonomous execution remain deferred as the spec requires.
 - Node supports the repository's declared runtime. Existing worktree is isolated and clean at implementation start (`43633d5`).
+
+- First delivery verified: 198 tests, lint, typecheck, standalone build, skill validation, 63 local documentation links, packaged CLI and disposable browser checks passed. Final review findings fixed and re-reviewed. Semantic Jev accuracy and improved visual results remain unmeasured; see the evaluation notes.

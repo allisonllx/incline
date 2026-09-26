@@ -40,11 +40,11 @@ This is a review of instructions and proposed first decisions. It did not execut
 
 ## Packaged integration verification
 
-The complete suite passes **195 tests**, with source lint and TypeScript checks passing. The standalone skill build includes the prompt store and routing commands plus the updated library UI. Skill metadata and local documentation links validate.
+The complete suite passes **198 tests**, with source lint and TypeScript checks passing. The standalone skill build includes the prompt store and routing commands plus the updated library UI. Skill metadata and local documentation links validate.
 
 A disposable project and separate disposable personal store exercised the bundled save/read/copy/run/preview commands. A browser walkthrough created and edited a prompt, filtered by text and facet, copied explicitly to the personal library, switched scopes and selections, viewed retained source and result captures with their qualifications, and uploaded a Markdown capture. Reading the resulting immutable revisions confirmed an upload-only edit preserved exact source text (including BOM/CRLF) and prior asset hashes, while the new revision had no inherited run verdicts. Prompt activity did not finish a collection or create a taste profile.
 
-Focused review also corrected stale asynchronous selection/media state and plain-value tag filtering after the result limit. A regression with more than 50 newer text matches verifies the older matching tag is retained. Quick browser navigation was checked; it is not a controlled delayed-network stress test.
+Focused review also corrected stale asynchronous selection/media state and plain-value tag filtering after the result limit. A regression with more than 50 newer text matches verifies the older matching tag is retained. Quick browser navigation was checked; it is not a controlled delayed-network stress test. Final review also corrected clicking an already-active scope and editing identical labels backed by distinct provenance. A browser title-only edit preserved both source-text and user provenance; the scoped final re-review passed.
 
 ## What a real trial still needs
 
