@@ -6,6 +6,7 @@ export type Connection = {
   token: string;
   directory: string;
   personalLibrary?: { available: boolean; directory: string | null };
+  promptLibrary?: { available: boolean };
 };
 export type SavedResult = {
   status: string;
@@ -60,6 +61,7 @@ export function useSessionStore() {
             directory: string;
             initialId?: string;
             personalLibrary?: Connection['personalLibrary'];
+            promptLibrary?: Connection['promptLibrary'];
           }>('/api/boot', token);
           if (cancelled) return;
           setSessions(boot.sessions);
@@ -67,6 +69,7 @@ export function useSessionStore() {
             token,
             directory: boot.directory,
             personalLibrary: boot.personalLibrary,
+            promptLibrary: boot.promptLibrary,
           });
           setInitialId(boot.initialId ?? null);
         } else {

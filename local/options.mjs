@@ -28,6 +28,7 @@ export async function resolveOptions(args, cwd = process.cwd()) {
         '--input',
         '--library-dir',
         '--personal-dir',
+        '--prompt-library-dir',
         '--local-only',
       ].includes(flag) ||
       options.has(flag)
@@ -45,7 +46,9 @@ export async function resolveOptions(args, cwd = process.cwd()) {
   }
   if (
     options.has('--local-only') &&
-    (options.has('--library-dir') || options.has('--personal-dir'))
+    (options.has('--library-dir') ||
+      options.has('--personal-dir') ||
+      options.has('--prompt-library-dir'))
   )
     throw new Error('Choose --local-only or a shared directory, not both.');
   return {
@@ -58,6 +61,10 @@ export async function resolveOptions(args, cwd = process.cwd()) {
       ? null
       : (options.get('--library-dir') ??
         join(homedir(), '.incline', 'library')),
+    promptLibraryDirectory: options.has('--local-only')
+      ? null
+      : (options.get('--prompt-library-dir') ??
+        join(homedir(), '.incline', 'prompt-library')),
     ...(options.has('--input') ? { input: options.get('--input') } : {}),
   };
 }

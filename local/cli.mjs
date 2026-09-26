@@ -8,11 +8,14 @@ const help = `Incline — collect and explore your design taste
 
 node incline.mjs [--project <directory>] [--input <collection.json>]
                  [--library-dir <directory> | --local-only]
+                 [--prompt-library-dir <directory>]
 
 Uses the current repository, or the current directory outside a repository.
 --project selects a different project. A personal library is available at
 ~/.incline/library; it is only accessed when you open it or save a copy.
 --library-dir selects another library. --local-only disables shared access.
+--prompt-library-dir selects the personal prompt library, which is read only
+when you explicitly open it or enable personal prompt lookup.
 
 Prints a ready event with a localhost URL. Open that URL for the user.
 Finish writes the project's .incline/profile.md and an immutable revision,

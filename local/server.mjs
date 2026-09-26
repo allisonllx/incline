@@ -25,6 +25,7 @@ import {
   storeNamedAsset,
 } from './assets.mjs';
 import { prepareImport } from './import.mjs';
+import { handlePromptRequest } from './prompts-api.mjs';
 
 function failure(message, status = 400) {
   return Object.assign(new Error(message), { status });
@@ -113,6 +114,7 @@ export async function startServer({
   idleMs = 30 * 60 * 1000,
   input,
   libraryDirectory = join(homedir(), '.incline', 'library'),
+  promptLibraryDirectory = join(homedir(), '.incline', 'prompt-library'),
 } = {}) {
   const root = await realpath(resolve(project));
   const personalDirectory =
@@ -214,6 +216,14 @@ export async function startServer({
           throw failure('Local session token required', 401);
         if (req.method === 'POST' && req.headers.origin !== origin)
           throw failure('Origin not allowed', 403);
+        if (
+          await handlePromptRequest(req, res, url, {
+            project: root,
+            promptLibraryDirectory,
+            send,
+          })
+        )
+          return;
         if (req.method === 'GET' && url.pathname === '/api/boot')
           return send(res, 200, {
             mode: 'local',
@@ -223,6 +233,9 @@ export async function startServer({
             personalLibrary: {
               available: library !== null,
               directory: personalDirectory,
+            },
+            promptLibrary: {
+              available: promptLibraryDirectory !== null,
             },
             ...(initialId ? { initialId } : {}),
           });

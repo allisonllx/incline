@@ -22,6 +22,10 @@ test('launching inside a repository finds its root; overrides and non-Git projec
     detected.libraryDirectory,
     join(homedir(), '.incline', 'library'),
   );
+  assert.equal(
+    detected.promptLibraryDirectory,
+    join(homedir(), '.incline', 'prompt-library'),
+  );
   assert.equal((await resolveOptions([], other)).project, other);
   assert.equal(
     (await resolveOptions(['--project', '../../../other'], nested)).project,
@@ -39,6 +43,15 @@ test('library scope is independent of project location and invalid options fail 
     null,
   );
   assert.equal(
+    (await resolveOptions(['--local-only'], cwd)).promptLibraryDirectory,
+    null,
+  );
+  assert.equal(
+    (await resolveOptions(['--prompt-library-dir', './prompts'], cwd))
+      .promptLibraryDirectory,
+    join(cwd, 'prompts'),
+  );
+  assert.equal(
     (await resolveOptions(['--library-dir', './shared'], cwd)).libraryDirectory,
     join(cwd, 'shared'),
   );
@@ -50,6 +63,7 @@ test('library scope is independent of project location and invalid options fail 
     ['--project'],
     ['--unknown'],
     ['--local-only', '--library-dir', 'shared'],
+    ['--local-only', '--prompt-library-dir', 'shared'],
     ['--project', '.', '--project', '..'],
   ]) {
     await assert.rejects(resolveOptions(args, cwd));

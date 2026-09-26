@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { useSessionStore } from '@/components/incline/use-session-store';
 import { CollectionEditor } from '@/components/incline/collection-editor';
+import { PromptLibrary } from '@/components/incline/prompt-library';
 import {
   PersonalLibrary,
   SavePersonalCopy,
@@ -104,6 +105,9 @@ export default function Home() {
   const [collectingImages, setCollectingImages] = useState(false);
   const [libraryScope, setLibraryScope] = useState<'project' | 'personal'>(
     'project',
+  );
+  const [libraryArea, setLibraryArea] = useState<'collections' | 'prompts'>(
+    'collections',
   );
   const imported = useRef(false);
   const [context, setContext] = useState<Context>('portfolio');
@@ -1123,132 +1127,154 @@ export default function Home() {
         )}
         {!result && view === 'library' && (
           <div className="library-view">
-            <div className="profile-top">
-              <div>
-                <div className="eyebrow">ROOM FOR DIFFERENT SIDES OF YOU</div>
-                <h1 ref={heading} tabIndex={-1}>
-                  Your collections.
-                </h1>
-                <p>
-                  {connection?.personalLibrary?.available
-                    ? 'Keep a direction for this project, or bring something from your personal library.'
-                    : 'Keep different directions together, ready to revisit.'}
-                </p>
-              </div>
-              <Button
-                className="primary-button"
-                disabled={collectingImages}
-                onClick={() => {
-                  setName('');
-                  setView('welcome');
-                }}
-              >
-                <Plus size={17} />
-                New collection
-              </Button>
-            </div>
-            <fieldset
-              className="library-scopes"
-              aria-label="Collection location"
-            >
+            <fieldset className="library-scopes" aria-label="Library area">
               <button
-                disabled={collectingImages}
-                aria-pressed={libraryScope === 'project'}
-                onClick={() => setLibraryScope('project')}
+                aria-pressed={libraryArea === 'collections'}
+                onClick={() => setLibraryArea('collections')}
               >
-                This project
+                Collections
               </button>
-              {connection?.personalLibrary?.available && (
-                <button
-                  disabled={collectingImages}
-                  aria-pressed={libraryScope === 'personal'}
-                  onClick={() => setLibraryScope('personal')}
-                >
-                  Personal library
-                </button>
-              )}
+              <button
+                aria-pressed={libraryArea === 'prompts'}
+                onClick={() => setLibraryArea('prompts')}
+              >
+                Prompts
+              </button>
             </fieldset>
-            {libraryScope === 'personal' &&
-            connection?.personalLibrary?.available ? (
-              <PersonalLibrary
-                connection={connection}
-                onBusyChange={setCollectingImages}
-                onImport={(session) => {
-                  setSessions((previous) => [...previous, session]);
-                  setActiveId(session.id);
-                  setChoice(null);
-                  setReason('');
-                  setLibraryScope('project');
-                  setView('collection');
-                  setStatus('A copy is ready. Review it for this project.');
-                }}
-              />
-            ) : sessions.length === 0 ? (
-              <div className="empty-state">
-                <Layers size={35} />
-                <h2>Start with whatever catches your eye.</h2>
-                <p>A description, a reference, or a few visual choices.</p>
-                <Button
-                  className="primary-button"
-                  onClick={() => setView('welcome')}
-                >
-                  Start a collection <ArrowRight size={17} />
-                </Button>
-              </div>
+            {libraryArea === 'prompts' ? (
+              <PromptLibrary connection={connection} />
             ) : (
-              <div className="session-list">
-                {sessions.map((s) => (
-                  <div className="project-collection-row" key={s.id}>
-                    <button
-                      className="session-row"
-                      disabled={collectingImages}
-                      onClick={() => {
-                        setActiveId(s.id);
-                        setChoice(null);
-                        setReason('');
-                        setView(
-                          s.collection
-                            ? 'collection'
-                            : s.complete
-                              ? 'profile'
-                              : 'quiz',
-                        );
-                        setStatus('');
-                      }}
-                    >
-                      <span className="session-icon">
-                        <Layers size={22} />
-                      </span>
-                      <span>
-                        <strong>{s.name || 'Untitled collection'}</strong>
-                        <small>
-                          {s.collection
-                            ? `${s.collection.projectContext || 'Open direction'} · ${s.collection.references.length} references`
-                            : `${contexts[s.context]} · ${explorationLabels[s.exploration]}`}
-                        </small>
-                      </span>
-                      <span className="session-state">
-                        {s.collection
-                          ? s.complete
-                            ? 'Open collection'
-                            : 'Continue collecting'
-                          : s.complete
-                            ? 'View profile'
-                            : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion, s.followUps).length} · Continue`}
-                      </span>
-                      <ArrowUpRight size={20} />
-                    </button>
-                    {connection?.personalLibrary?.available && (
-                      <SavePersonalCopy
-                        session={s}
-                        connection={connection}
-                        disabled={collectingImages}
-                        onBusyChange={setCollectingImages}
-                      />
-                    )}
+              <>
+                <div className="profile-top">
+                  <div>
+                    <div className="eyebrow">
+                      ROOM FOR DIFFERENT SIDES OF YOU
+                    </div>
+                    <h1 ref={heading} tabIndex={-1}>
+                      Your collections.
+                    </h1>
+                    <p>
+                      {connection?.personalLibrary?.available
+                        ? 'Keep a direction for this project, or bring something from your personal library.'
+                        : 'Keep different directions together, ready to revisit.'}
+                    </p>
                   </div>
-                ))}
-              </div>
+                  <Button
+                    className="primary-button"
+                    disabled={collectingImages}
+                    onClick={() => {
+                      setName('');
+                      setView('welcome');
+                    }}
+                  >
+                    <Plus size={17} />
+                    New collection
+                  </Button>
+                </div>
+                <fieldset
+                  className="library-scopes"
+                  aria-label="Collection location"
+                >
+                  <button
+                    disabled={collectingImages}
+                    aria-pressed={libraryScope === 'project'}
+                    onClick={() => setLibraryScope('project')}
+                  >
+                    This project
+                  </button>
+                  {connection?.personalLibrary?.available && (
+                    <button
+                      disabled={collectingImages}
+                      aria-pressed={libraryScope === 'personal'}
+                      onClick={() => setLibraryScope('personal')}
+                    >
+                      Personal library
+                    </button>
+                  )}
+                </fieldset>
+                {libraryScope === 'personal' &&
+                connection?.personalLibrary?.available ? (
+                  <PersonalLibrary
+                    connection={connection}
+                    onBusyChange={setCollectingImages}
+                    onImport={(session) => {
+                      setSessions((previous) => [...previous, session]);
+                      setActiveId(session.id);
+                      setChoice(null);
+                      setReason('');
+                      setLibraryScope('project');
+                      setView('collection');
+                      setStatus('A copy is ready. Review it for this project.');
+                    }}
+                  />
+                ) : sessions.length === 0 ? (
+                  <div className="empty-state">
+                    <Layers size={35} />
+                    <h2>Start with whatever catches your eye.</h2>
+                    <p>A description, a reference, or a few visual choices.</p>
+                    <Button
+                      className="primary-button"
+                      onClick={() => setView('welcome')}
+                    >
+                      Start a collection <ArrowRight size={17} />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="session-list">
+                    {sessions.map((s) => (
+                      <div className="project-collection-row" key={s.id}>
+                        <button
+                          className="session-row"
+                          disabled={collectingImages}
+                          onClick={() => {
+                            setActiveId(s.id);
+                            setChoice(null);
+                            setReason('');
+                            setView(
+                              s.collection
+                                ? 'collection'
+                                : s.complete
+                                  ? 'profile'
+                                  : 'quiz',
+                            );
+                            setStatus('');
+                          }}
+                        >
+                          <span className="session-icon">
+                            <Layers size={22} />
+                          </span>
+                          <span>
+                            <strong>{s.name || 'Untitled collection'}</strong>
+                            <small>
+                              {s.collection
+                                ? `${s.collection.projectContext || 'Open direction'} · ${s.collection.references.length} references`
+                                : `${contexts[s.context]} · ${explorationLabels[s.exploration]}`}
+                            </small>
+                          </span>
+                          <span className="session-state">
+                            {s.collection
+                              ? s.complete
+                                ? 'Open collection'
+                                : 'Continue collecting'
+                              : s.complete
+                                ? 'View profile'
+                                : `${s.answers.length}/${getRounds(s.answers, s.catalogVersion, s.followUps).length} · Continue`}
+                          </span>
+                          <ArrowUpRight size={20} />
+                        </button>
+                        {connection?.personalLibrary?.available && (
+                          <SavePersonalCopy
+                            session={s}
+                            connection={connection}
+                            disabled={collectingImages}
+                            onBusyChange={setCollectingImages}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
