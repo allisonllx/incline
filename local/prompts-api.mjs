@@ -288,22 +288,16 @@ export async function handlePromptRequest(
     });
     const exactTags = tagFilters.filter((tag) => tag.facet);
     const plainTags = tagFilters.filter((tag) => !tag.facet);
-    const candidates =
-      url.searchParams.has('text') || exactTags.length
+    if (plainTags.length > 1) throw fail('Use one plain tag value at a time');
+    const entries =
+      url.searchParams.has('text') || tagFilters.length
         ? await store().query({
             text: url.searchParams.get('text') || undefined,
             tags: exactTags,
+            tagValue: plainTags[0]?.value,
             limit: 50,
           })
         : await store().list();
-    const entries = candidates.filter((entry) =>
-      plainTags.every((wanted) =>
-        entry.tags.some(
-          (tag) =>
-            tag.value.toLocaleLowerCase() === wanted.value.toLocaleLowerCase(),
-        ),
-      ),
-    );
     send(res, 200, { entries });
     return true;
   }

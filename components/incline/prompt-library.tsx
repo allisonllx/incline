@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api, type Connection } from './use-session-store';
@@ -217,6 +217,8 @@ export function PromptLibrary({
   const [entries, setEntries] = useState<Summary[]>([]);
   const [selected, setSelected] = useState<Entry | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
+  const [runsLoading, setRunsLoading] = useState(false);
+  const [runsError, setRunsError] = useState(false);
   const [query, setQuery] = useState('');
   const [tagFilter, setTagFilter] = useState('');
   const [lookup, setLookup] = useState(false);
@@ -224,6 +226,7 @@ export function PromptLibrary({
   const [settingsRevision, setSettingsRevision] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [editing, setEditing] = useState(false);
@@ -234,6 +237,18 @@ export function PromptLibrary({
   const [contentGap, setContentGap] = useState('');
   const [tagText, setTagText] = useState('');
   const [uploads, setUploads] = useState<Upload[]>([]);
+  const viewGeneration = useRef(0);
+  const uploadGeneration = useRef(0);
+  const listGeneration = useRef(0);
+
+  useEffect(
+    () => () => {
+      viewGeneration.current += 1;
+      uploadGeneration.current += 1;
+      listGeneration.current += 1;
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!connection) return;
@@ -265,6 +280,7 @@ export function PromptLibrary({
   useEffect(() => {
     if (!connection) return;
     let cancelled = false;
+    const generation = ++listGeneration.current;
     const timer = setTimeout(() => {
       setLoading(true);
       void api<{ entries: Summary[] }>(
@@ -272,16 +288,18 @@ export function PromptLibrary({
         connection.token,
       )
         .then((data) => {
-          if (!cancelled) setEntries(data.entries);
+          if (!cancelled && generation === listGeneration.current)
+            setEntries(data.entries);
         })
         .catch((e: unknown) => {
-          if (!cancelled)
+          if (!cancelled && generation === listGeneration.current)
             setError(
               e instanceof Error ? e.message : 'Could not list prompts.',
             );
         })
         .finally(() => {
-          if (!cancelled) setLoading(false);
+          if (!cancelled && generation === listGeneration.current)
+            setLoading(false);
         });
     }, 150);
     return () => {
@@ -291,26 +309,83 @@ export function PromptLibrary({
   }, [connection, scope, query, tagFilter, message]);
 
   async function open(row: Summary) {
-    if (!connection) return;
+    if (!connection || busy) return;
+    const generation = ++viewGeneration.current;
+    uploadGeneration.current += 1;
     setError('');
     setEditing(false);
+    setUploads([]);
+    setUploading(false);
+    setSelected(null);
+    setRuns([]);
+    setRunsLoading(true);
+    setRunsError(false);
     try {
       const { entry } = await api<{ entry: Entry }>(
         `/api/prompts/${encodeURIComponent(row.id)}?scope=${scope}&revision=${row.revision}`,
         connection.token,
       );
+      if (generation !== viewGeneration.current) return;
       setSelected(entry);
-      const result = await api<{ runs: Run[] }>(
-        `/api/prompts/${encodeURIComponent(row.id)}/runs?scope=${scope}&revision=${row.revision}`,
-        connection.token,
-      );
-      setRuns(result.runs);
+      try {
+        const result = await api<{ runs: Run[] }>(
+          `/api/prompts/${encodeURIComponent(row.id)}/runs?scope=${scope}&revision=${row.revision}`,
+          connection.token,
+        );
+        if (generation === viewGeneration.current) setRuns(result.runs);
+      } catch (e) {
+        if (generation === viewGeneration.current) {
+          setRunsError(true);
+          setError(
+            e instanceof Error ? e.message : 'Could not read result evidence.',
+          );
+        }
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not open prompt.');
+      if (generation === viewGeneration.current)
+        setError(e instanceof Error ? e.message : 'Could not open prompt.');
+    } finally {
+      if (generation === viewGeneration.current) setRunsLoading(false);
     }
   }
+  function chooseScope(next: Scope) {
+    if (busy) return;
+    viewGeneration.current += 1;
+    uploadGeneration.current += 1;
+    listGeneration.current += 1;
+    setScope(next);
+    setSelected(null);
+    setRuns([]);
+    setRunsLoading(false);
+    setRunsError(false);
+    setEditing(false);
+    setUploads([]);
+    setUploading(false);
+    setEntries([]);
+    setLoading(true);
+    setError('');
+  }
+  function changeFilter(kind: 'text' | 'tag', value: string) {
+    viewGeneration.current += 1;
+    listGeneration.current += 1;
+    if (kind === 'text') setQuery(value);
+    else setTagFilter(value);
+    setSelected(null);
+    setRuns([]);
+    setRunsLoading(false);
+    setRunsError(false);
+    setEntries([]);
+    setLoading(true);
+    setError('');
+  }
   function begin(entry: Entry | null) {
+    if (busy) return;
+    viewGeneration.current += 1;
+    uploadGeneration.current += 1;
     setSelected(entry);
+    setRuns([]);
+    setRunsLoading(false);
+    setRunsError(false);
     setEditing(true);
     setError('');
     setMessage('');
@@ -323,9 +398,45 @@ export function PromptLibrary({
       entry?.tags.map((tag) => `${tag.facet}: ${tag.value}`).join('\n') ?? '',
     );
     setUploads([]);
+    setUploading(false);
+  }
+  function cancelEditing() {
+    if (busy) return;
+    viewGeneration.current += 1;
+    uploadGeneration.current += 1;
+    setEditing(false);
+    setUploads([]);
+    setUploading(false);
+    if (selected) void open(selected);
+  }
+  async function selectFiles(files: File[]) {
+    const generation = ++uploadGeneration.current;
+    setUploads([]);
+    setError('');
+    if (files.length > 4) {
+      setError('Choose up to four files per revision.');
+      setUploading(false);
+      return;
+    }
+    if (files.length === 0) {
+      setUploading(false);
+      return;
+    }
+    setUploading(true);
+    try {
+      const next = await Promise.all(files.map(fileUpload));
+      if (generation === uploadGeneration.current) setUploads(next);
+    } catch (reason) {
+      if (generation === uploadGeneration.current)
+        setError(reason instanceof Error ? reason.message : 'Invalid upload.');
+    } finally {
+      if (generation === uploadGeneration.current) setUploading(false);
+    }
   }
   async function save() {
-    if (!connection) return;
+    if (!connection || busy || uploading) return;
+    const generation = ++viewGeneration.current;
+    uploadGeneration.current += 1;
     setBusy(true);
     setError('');
     setMessage('');
@@ -347,19 +458,28 @@ export function PromptLibrary({
           uploads,
         },
       );
-      setSelected(entry);
-      setRuns([]);
-      setEditing(false);
-      setUploads([]);
-      setMessage(`Saved revision ${entry.revision}.`);
+      if (generation === viewGeneration.current) {
+        setSelected(entry);
+        setRuns([]);
+        setRunsLoading(false);
+        setRunsError(false);
+        setEditing(false);
+        setUploads([]);
+        listGeneration.current += 1;
+        setEntries([]);
+        setLoading(true);
+        setMessage(`Saved revision ${entry.revision}.`);
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save prompt.');
+      if (generation === viewGeneration.current)
+        setError(e instanceof Error ? e.message : 'Could not save prompt.');
     } finally {
-      setBusy(false);
+      if (generation === viewGeneration.current) setBusy(false);
     }
   }
   async function copy(to: Scope) {
-    if (!connection || !selected) return;
+    if (!connection || !selected || busy) return;
+    const generation = ++viewGeneration.current;
     setBusy(true);
     setError('');
     setMessage('');
@@ -369,16 +489,24 @@ export function PromptLibrary({
         connection.token,
         { from: scope, to, id: selected.id, revision: selected.revision },
       );
-      setScope(to);
-      setSelected(entry);
-      setRuns([]);
-      setMessage(
-        `Independent copy saved to ${to === 'project' ? 'this project' : 'your personal library'}.`,
-      );
+      if (generation === viewGeneration.current) {
+        setScope(to);
+        setSelected(entry);
+        setRuns([]);
+        setRunsLoading(false);
+        setRunsError(false);
+        listGeneration.current += 1;
+        setEntries([]);
+        setLoading(true);
+        setMessage(
+          `Independent copy saved to ${to === 'project' ? 'this project' : 'your personal library'}.`,
+        );
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not copy prompt.');
+      if (generation === viewGeneration.current)
+        setError(e instanceof Error ? e.message : 'Could not copy prompt.');
     } finally {
-      setBusy(false);
+      if (generation === viewGeneration.current) setBusy(false);
     }
   }
   async function changeLookup(checked: boolean) {
@@ -422,29 +550,27 @@ export function PromptLibrary({
             retained.
           </p>
         </div>
-        <Button className="primary-button" onClick={() => begin(null)}>
+        <Button
+          className="primary-button"
+          disabled={busy}
+          onClick={() => begin(null)}
+        >
           <Plus size={16} /> New prompt
         </Button>
       </div>
       <fieldset className="library-scopes" aria-label="Prompt location">
         <button
+          disabled={busy}
           aria-pressed={scope === 'project'}
-          onClick={() => {
-            setScope('project');
-            setSelected(null);
-            setEditing(false);
-          }}
+          onClick={() => chooseScope('project')}
         >
           This project
         </button>
         {connection.promptLibrary?.available && (
           <button
+            disabled={busy}
             aria-pressed={scope === 'personal'}
-            onClick={() => {
-              setScope('personal');
-              setSelected(null);
-              setEditing(false);
-            }}
+            onClick={() => chooseScope('personal')}
           >
             Personal prompts
           </button>
@@ -471,16 +597,18 @@ export function PromptLibrary({
         <Search size={16} />
         <span className="sr-only">Search prompt metadata</span>
         <input
+          disabled={busy || editing}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => changeFilter('text', e.target.value)}
           placeholder="Search titles, authors, and tags"
         />
       </label>
       <label className="prompt-filter">
         Filter by tag{' '}
         <input
+          disabled={busy || editing}
           value={tagFilter}
-          onChange={(e) => setTagFilter(e.target.value)}
+          onChange={(e) => changeFilter('tag', e.target.value)}
           placeholder="facet: value or value"
         />
       </label>
@@ -502,6 +630,7 @@ export function PromptLibrary({
           )}
           {entries.map((row) => (
             <button
+              disabled={busy}
               key={row.id}
               className="prompt-row"
               aria-pressed={selected?.id === row.id}
@@ -583,36 +712,30 @@ export function PromptLibrary({
                 Retained images or Markdown
                 <input
                   type="file"
+                  disabled={busy || uploading}
                   multiple
                   accept="image/png,image/jpeg,image/webp,image/gif,text/markdown,.md"
-                  onChange={(e) => {
-                    const files = [...(e.target.files ?? [])];
-                    void Promise.all(files.map(fileUpload))
-                      .then((next) => setUploads(next))
-                      .catch((reason: unknown) =>
-                        setError(
-                          reason instanceof Error
-                            ? reason.message
-                            : 'Invalid upload.',
-                        ),
-                      );
-                  }}
+                  onChange={(e) =>
+                    void selectFiles([...(e.target.files ?? [])])
+                  }
                 />
               </label>
+              {uploading && <p>Reading selected files…</p>}
               {uploads.length > 0 && (
                 <p>{uploads.length} file(s) selected for durable capture.</p>
               )}
               <div className="prompt-actions">
                 <Button
                   className="primary-button"
-                  disabled={busy}
+                  disabled={busy || uploading}
                   onClick={() => void save()}
                 >
                   {busy ? 'Saving…' : 'Save revision'}
                 </Button>
                 <button
                   className="text-button"
-                  onClick={() => setEditing(false)}
+                  disabled={busy}
+                  onClick={cancelEditing}
                 >
                   Cancel
                 </button>
@@ -693,7 +816,7 @@ export function PromptLibrary({
               <div className="prompt-assets">
                 {selected.assets.map((asset) => (
                   <Media
-                    key={asset.id}
+                    key={`${scope}:${selected.id}:${selected.revision}:${asset.id}`}
                     connection={connection}
                     asset={asset}
                     url={`/api/prompts/${selected.id}/assets/${asset.id}?scope=${scope}&revision=${selected.revision}`}
@@ -701,7 +824,11 @@ export function PromptLibrary({
                 ))}
               </div>
               <h4>Result evidence</h4>
-              {runs.length === 0 ? (
+              {runsLoading ? (
+                <p>Loading result evidence…</p>
+              ) : runsError ? (
+                <p className="prompt-gap">Result evidence could not be read.</p>
+              ) : runs.length === 0 ? (
                 <p>
                   No recorded runs for this revision. Testing and results have
                   not been established here.
@@ -724,7 +851,7 @@ export function PromptLibrary({
                     </div>
                     {run.artifacts.map((asset) => (
                       <Media
-                        key={asset.id}
+                        key={`${scope}:${selected.id}:${selected.revision}:${run.id}:${asset.id}`}
                         connection={connection}
                         asset={asset}
                         url={`/api/prompts/${selected.id}/runs/${run.id}/${asset.id}?scope=${scope}&revision=${selected.revision}`}

@@ -1306,7 +1306,9 @@ export default function Home() {
         </span>
         <span>
           {connection
-            ? 'Local session · Saved in your project’s .incline folder on Finish.'
+            ? view === 'library' && libraryArea === 'prompts'
+              ? 'Local session · Prompt revisions save when you choose Save revision or copy.'
+              : 'Local session · Saved in your project’s .incline folder on Finish.'
             : 'Browser demo · Launch the Incline skill to save directly to your project.'}
         </span>
       </footer>

@@ -116,6 +116,34 @@ test('exact text, immutable revisions, compact query and provenance', async (t) 
   );
 });
 
+test('plain tag value is filtered before query limit across facets', async (t) => {
+  const { store } = await fixture(t);
+  const older = await store.save({
+    ...base('Older prompt'),
+    title: 'Shared search word',
+    tags: [
+      { facet: 'technique', value: 'Bounded progress', provenance: 'user' },
+    ],
+  });
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  for (let index = 0; index < 55; index++)
+    await store.save({
+      ...base(`Newer ${index}`),
+      title: `Shared search word ${index}`,
+    });
+  const found = await store.query({
+    text: 'Shared',
+    tagValue: 'bounded progress',
+    limit: 50,
+  });
+  assert.deepEqual(
+    found.map((entry) => entry.id),
+    [older.id],
+  );
+  assert.deepEqual(await store.query({ tagValue: 'missing' }), []);
+  await assert.rejects(store.query({ tagValue: '' }), /tag value/);
+});
+
 test('a leading U+FEFF survives save, historical read, and independent copy', async (t) => {
   const { project, store } = await fixture(t);
   const original = '\uFEFFhello\r\n世界';

@@ -1027,7 +1027,7 @@ export function createPromptStore(
     return read(id, revision);
   }
   async function query(options = {}) {
-    exactKeys(options, ['text', 'tags', 'limit'], 'query');
+    exactKeys(options, ['text', 'tags', 'tagValue', 'limit'], 'query');
     const words =
       options.text === undefined
         ? []
@@ -1053,6 +1053,10 @@ export function createPromptStore(
         };
       },
     );
+    const tagValue =
+      options.tagValue === undefined
+        ? null
+        : string(options.tagValue, 'query tag value', 100).toLocaleLowerCase();
     const limit = options.limit ?? 20;
     if (!Number.isInteger(limit) || limit < 1 || limit > 50)
       throw fail('Query limit must be 1–50');
@@ -1080,7 +1084,11 @@ export function createPromptStore(
                 tag.value.toLocaleLowerCase() === wanted.value &&
                 (!wanted.provenance || tag.provenance === wanted.provenance),
             ),
-          )
+          ) &&
+          (!tagValue ||
+            entry.tags.some(
+              (tag) => tag.value.toLocaleLowerCase() === tagValue,
+            ))
         );
       })
       .slice(0, limit);
