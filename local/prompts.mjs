@@ -349,6 +349,36 @@ async function writeJson(path, value) {
     throw fail('Prompt metadata exceeds 1 MB', 413);
   await writeFile(path, bytes, { flag: 'wx', mode: 0o600 });
 }
+async function withPublicationLock(folder, work) {
+  const path = join(folder, '.pending-publication.lock');
+  let handle;
+  try {
+    handle = await open(path, 'wx', 0o600);
+  } catch (error) {
+    if (error.code === 'EEXIST')
+      throw fail('Prompt publication is in progress; retry the write', 409);
+    throw error;
+  }
+  try {
+    return await work();
+  } finally {
+    try {
+      await handle.close();
+    } finally {
+      await rm(path, { force: true });
+    }
+  }
+}
+async function assertPublishedBelow(folder, limit, kind) {
+  let count = 0;
+  const handle = await opendir(folder);
+  for await (const item of handle) {
+    if (item.name.startsWith('.pending-')) continue;
+    if (!uuid.test(item.name) || !item.isDirectory())
+      throw fail(`Unexpected ${kind} entry: ${item.name}`);
+    if (++count >= limit) throw fail(`${kind} limit of ${limit} reached`, 413);
+  }
+}
 function assetLimit(type) {
   return type === 'text/markdown' ? maxGuideBytes : maxAssetBytes;
 }
@@ -864,7 +894,10 @@ export function createPromptStore(
       throw fail(`Prompt text hash mismatch for ${id} revision ${number}`);
     let prompt;
     try {
-      prompt = new TextDecoder('utf-8', { fatal: true }).decode(promptBytes);
+      prompt = new TextDecoder('utf-8', {
+        fatal: true,
+        ignoreBOM: true,
+      }).decode(promptBytes);
     } catch {
       throw fail('Prompt text is not UTF-8');
     }
@@ -970,11 +1003,20 @@ export function createPromptStore(
             item.bytes,
             { flag: 'wx', mode: 0o600 },
           );
-      if (previous !== null && (await latest(id)) !== previous)
-        throw fail('Prompt changed before revision was published', 409);
-      if (await directory(destination, { missing: true }))
-        throw fail('Prompt revision already exists', 409);
-      await rename(staging, destination);
+      if (previous === null) {
+        await withPublicationLock(root, async () => {
+          await assertPublishedBelow(root, maxEntries, 'Prompt entry');
+          if (await directory(destination, { missing: true }))
+            throw fail('Prompt entry already exists', 409);
+          await rename(staging, destination);
+        });
+      } else {
+        if ((await latest(id)) !== previous)
+          throw fail('Prompt changed before revision was published', 409);
+        if (await directory(destination, { missing: true }))
+          throw fail('Prompt revision already exists', 409);
+        await rename(staging, destination);
+      }
     } catch (error) {
       if (['EEXIST', 'ENOTEMPTY'].includes(error.code))
         throw fail('Prompt revision already exists', 409);
@@ -1130,6 +1172,8 @@ export function createPromptStore(
     const data = normalizeRun(input, meta);
     const artifacts = await incomingRunArtifacts(data.artifacts);
     const existing = await runs(id, number);
+    if (existing.length >= maxRuns)
+      throw fail(`Prompt run limit of ${maxRuns} reached`, 413);
     for (const dependency of data.dependencies) {
       const run = existing.find((item) => item.id === dependency.runId);
       if (!run || run.stageId !== dependency.stageId)
@@ -1162,8 +1206,11 @@ export function createPromptStore(
             item.bytes,
             { flag: 'wx', mode: 0o600 },
           );
-      await assertPromptRecording(project);
-      await rename(staging, join(path, record.id));
+      await withPublicationLock(path, async () => {
+        await assertPublishedBelow(path, maxRuns, 'Prompt run');
+        await assertPromptRecording(project);
+        await rename(staging, join(path, record.id));
+      });
     } finally {
       await rm(staging, { recursive: true, force: true });
     }

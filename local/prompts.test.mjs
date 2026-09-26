@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  copyFile,
+  mkdir,
   mkdtemp,
   realpath,
   readFile,
@@ -9,6 +11,7 @@ import {
   symlink,
   writeFile,
 } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createPromptStore, copyPrompt } from './prompts.mjs';
@@ -31,6 +34,8 @@ const base = (prompt = 'Line one\r\n色 🎨\n') => ({
   prompt,
   origin: 'user-authored',
 });
+const digest = (value) =>
+  createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 test('construction and read queries do not create storage', async (t) => {
   const { directory, store } = await fixture(t);
@@ -109,6 +114,103 @@ test('exact text, immutable revisions, compact query and provenance', async (t) 
     store.save({ ...first, baseRevision: 2, prompt: 'blind spread' }),
     /unknown field/i,
   );
+});
+
+test('a leading U+FEFF survives save, historical read, and independent copy', async (t) => {
+  const { project, store } = await fixture(t);
+  const original = '\uFEFFhello\r\n世界';
+  const first = await store.save(base(original));
+  assert.equal(first.prompt, original);
+  await store.save({ id: first.id, baseRevision: 1, ...base('later') });
+  assert.equal((await store.read(first.id, 1)).prompt, original);
+  const copied = await copyPrompt(
+    store,
+    createPromptStore(join(project, 'personal')),
+    first.id,
+    1,
+  );
+  assert.equal(copied.prompt, original);
+  assert.equal(copied.promptSha256, first.promptSha256);
+  assert.equal(copied.copyOf.promptSha256, first.promptSha256);
+});
+
+test('entry quota rejects a 1,001st publication and concurrent writers', async (t) => {
+  const { directory, store } = await fixture(t);
+  const first = await store.save(base('quota'));
+  const sourceMeta = JSON.parse(
+    await readFile(join(directory, first.id, 'revisions', '0001', 'meta.json')),
+  );
+  const sourcePrompt = join(
+    directory,
+    first.id,
+    'revisions',
+    '0001',
+    'prompt.txt',
+  );
+  async function seed() {
+    const id = randomUUID();
+    const revision = join(directory, id, 'revisions', '0001');
+    await mkdir(revision, { recursive: true });
+    const meta = { ...sourceMeta, id };
+    delete meta.metadataSha256;
+    meta.metadataSha256 = digest(meta);
+    await writeFile(join(revision, 'meta.json'), JSON.stringify(meta));
+    await copyFile(sourcePrompt, join(revision, 'prompt.txt'));
+  }
+  for (let i = 0; i < 998; i++) await seed();
+  assert.equal((await store.list()).length, 999);
+  const outcomes = await Promise.allSettled([
+    store.save(base('concurrent A')),
+    createPromptStore(directory).save(base('concurrent B')),
+  ]);
+  assert.equal(
+    outcomes.filter((result) => result.status === 'fulfilled').length,
+    1,
+  );
+  assert.equal((await store.list()).length, 1000);
+  await assert.rejects(store.save(base('over quota')), /1,000|quota|limit/i);
+  assert.equal((await store.list()).length, 1000);
+  assert.equal((await store.read(first.id)).prompt, 'quota');
+});
+
+test('run quota rejects a 1,001st publication and concurrent writers', async (t) => {
+  const { project, directory, store } = await fixture(t);
+  const prompt = await store.save(base('run quota'));
+  await savePromptSettings(project, { recording: 'active' });
+  const first = await store.saveRun(prompt.id, 1, {
+    execution: { status: 'not-run' },
+  });
+  const runsDirectory = join(directory, prompt.id, 'runs', '0001');
+  async function seed() {
+    const id = randomUUID();
+    const folder = join(runsDirectory, id);
+    await mkdir(folder);
+    const record = { ...first, id };
+    delete record.recordSha256;
+    record.recordSha256 = digest(record);
+    await writeFile(join(folder, 'record.json'), JSON.stringify(record));
+  }
+  for (let i = 0; i < 998; i++) await seed();
+  assert.equal((await store.runs(prompt.id, 1)).length, 999);
+  const outcomes = await Promise.allSettled([
+    store.saveRun(prompt.id, 1, { execution: { status: 'not-run' } }),
+    createPromptStore(directory, { projectDirectory: project }).saveRun(
+      prompt.id,
+      1,
+      { execution: { status: 'not-run' } },
+    ),
+  ]);
+  assert.equal(
+    outcomes.filter((result) => result.status === 'fulfilled').length,
+    1,
+  );
+  assert.equal((await store.runs(prompt.id, 1)).length, 1000);
+  await assert.rejects(
+    store.saveRun(prompt.id, 1, { execution: { status: 'not-run' } }),
+    /1,000|quota|limit/i,
+  );
+  assert.equal((await store.runs(prompt.id, 1)).length, 1000);
+  assert.equal((await store.read(prompt.id)).prompt, 'run quota');
 });
 
 test('source-only gap, recipe dependency validation, and bounded schema', async (t) => {
