@@ -523,12 +523,13 @@ export function PromptLibrary({
     );
   return (
     <section className="prompt-library" aria-label="Prompt library">
-      <div className="prompt-library-top">
+      <div className="profile-top">
         <div>
-          <h1>Prompts</h1>
+          <div className="eyebrow">IDEAS WORTH KEEPING</div>
+          <h1>Your prompts.</h1>
           <p>
-            Reusable prompt text and the source or result evidence you have
-            retained.
+            Keep useful prompts, their inspiration, and the results you have
+            explored.
           </p>
         </div>
         <Button
@@ -536,7 +537,7 @@ export function PromptLibrary({
           disabled={busy}
           onClick={() => begin(null)}
         >
-          <Plus size={16} /> New prompt
+          <Plus size={17} /> New prompt
         </Button>
       </div>
       <fieldset className="library-scopes" aria-label="Prompt location">

@@ -5,6 +5,10 @@
 
 Read [shared evidence rules](../evidence.md) and [reference interpretation and design critique](../design-critique.md). Use the existing project collection and journal when present; missing collections are not a reason to block a clear design request. Directly supplied references can inform the work without opening the collection UI.
 
+## Establish the intended experience
+
+When a substantial scene or effect leaves consequential choices about purpose, look or behaviour unresolved, use [Brainstorm](brainstorm.md) before committing to a production plan. Reuse known context, ask focused questions and use small visual or motion studies where helpful. Return with the shared creative brief, keeping user choices separate from proposed defaults. A clear brief or specific correction needs no new interview.
+
 ## Interpret a collection
 
 Read `collection.description`, `collection.projectContext`, and its references from the selected session. Inspect local image paths under `.incline/assets/` with the host's image tool, read `guide` references there as text, and retrieve reference links with available tools when needed. If a reference is inaccessible, state that limitation; do not claim to have seen it. Mobbin or another reference provider is optional, using an existing authorized connection when available.
@@ -19,7 +23,7 @@ A reference marked `inspiration` is something to explore. `direction` means use 
 
 Before applying saved feedback, use [project insights](../insights.md) to query the relevant topics. Keep each finding's scope, qualifications and conflicting examples attached to it; a spacing finding is not automatically an instruction to increase every gap. Open selected original evidence and images when needed to interpret or verify the lesson. If no indexed match is useful, inspect the applicable saved findings directly rather than assuming no preference exists. Follow the reported freshness warnings; an index can be current while newly recorded feedback still awaits synthesis.
 
-Also run `node <skill-directory>/scripts/insights.mjs pending --project <project>`. Read relevant pending events from their original records before presenting the next result. Review them against the current brief and existing insights using [review receipts](../insights.md#review-new-evidence). Unrelated backlog need not block a targeted edit; warnings mean the scan is incomplete.
+Also run `node <skill-directory>/scripts/insights.mjs pending --project <project>`. Read relevant pending events from their original records before presenting the next result. Review them against the current brief and existing insights using [review receipts](../insights.md#review-new-evidence). Write findings or receipts only while recording is active or when the user explicitly requests that maintenance; stopped recording otherwise keeps this review read-only. Unrelated backlog need not block a targeted edit; warnings mean the scan is incomplete.
 
 Turn applicable findings into concrete inspection questions before editing. Preserve their scope and counterexamples. After rendering, tie the assessment to an artifact/version, viewport and interaction state; report uninspected conditions as unverified.
 

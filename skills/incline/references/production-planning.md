@@ -2,6 +2,10 @@
 
 Use within Design when the requested experience needs generated assets, layered scenes, interaction, motion, or coordinated components. A short edit can proceed directly. A request only for a plan or prompt ends with that artifact.
 
+## Start from a shared brief
+
+Before committing to representations and stage dependencies, establish the intended use, look, behaviour, keep/avoid constraints and output. Use [Brainstorm](workflows/brainstorm.md) when consequential choices are unresolved; reuse an existing brief rather than repeating intake. A conditional outline can expose a trade-off, but defer dependent production work while its user choice remains unanswered. Carry the brief's user decisions, reference/study versions, agent defaults and open questions into the plan.
+
 ## Work backward from the experience
 
 Describe what the user should see and control, which parts change, and which reference relationships make the effect distinctive. Inspect references before reducing them to tags. Keep uncertain interpretations provisional and explicit keep/avoid instructions attached to the brief. The user need not identify every asset or technique.
@@ -19,13 +23,29 @@ Test the most uncertain mechanism cheaply before expensive polish. A placeholder
 
 For a substantial task, create a small plan with stages and dependencies. Each stage specifies its purpose, owner, required input versions, concrete outputs, relevant constraints and checks. Use a checklist when a graph adds little. Saved prompt recipes may contain a stage DAG; these are adaptable instructions, not an executable scheduler.
 
+Make stages actionable for a worker who has not seen the conversation. Inspect the project first, name the actual files or artifact destinations and interfaces that matter, and split work into steps with observable results. Use known project check commands and specific visual states when available. Explain what a check demonstrates: a passing interaction test does not establish convincing lighting. Avoid placeholder tasks such as “make it beautiful” or inventing precise values the brief has not settled.
+
+For each substantial stage, include only the relevant parts of this contract:
+
+```text
+Purpose and brief decision served:
+Dependencies and required input versions:
+Files/artifacts to create or change:
+Inputs/outputs shared with other stages (coordinates, states, formats, etc.):
+Concrete implementation or generation steps:
+Verification action and expected observable result:
+Owner; unresolved prerequisite or fallback:
+```
+
+Before execution, check that every consequential brief requirement has a stage and an inspection check, shared interfaces agree, and likely failure states are covered. For hand input, these might include lost tracking, denied camera access and ordinary input alternatives. Keep the plan proportionate: the decisions another worker cannot safely infer belong here; a transcript of all future code does not. A plan-only request stops here.
+
 Agree shared visual and technical requirements before splitting work: composition, type and palette roles, spacing, camera/perspective, scale, lighting, framing, alpha/masks, anchors, depth order, interaction state and component boundaries. Decide which shadows are baked into assets and which must change live.
 
 Delegate independent stages only when the host offers subagents and the task permits their tools and cost. Give each a bounded brief, selected source evidence and separate output files or an isolated checkout. Keep coupled art-direction choices with one owner. A listing of tools or models is not proof that the host can dispatch them. Run sequentially when delegation is unavailable or unnecessary.
 
 If a required tool or upstream input is unavailable, mark only the affected branch blocked and state the missing prerequisite. Continue independent scene, layout or pointer/keyboard work where useful. Do not silently install tools or present a placeholder as verified real input. Report the camera or other real-input gap explicitly until it is tested.
 
-The lead agent reviews intermediate outputs against their contracts and owns integration. A node becomes ready when required inputs satisfy the checks its work needs; an output file alone does not imply success. Changes to an input version require rechecking affected dependants. Preserve failed attempts, reuse unaffected outputs, and avoid repeatedly generating until an agreeable result appears.
+The lead agent reviews intermediate outputs against their contracts and owns integration. A node becomes ready when required inputs satisfy the checks its work needs; an output file alone does not imply success. Changes to an input version or creative brief require revisiting affected representations and dependants. Preserve failed attempts, reuse unaffected outputs, and avoid repeatedly generating until an agreeable result appears.
 
 ## Use prompt recipes selectively
 

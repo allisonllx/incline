@@ -64,7 +64,7 @@ Use [Jev review](jev-review.md) for an explicitly requested external assessment 
 
 Run `node <skill-directory>/scripts/insights.mjs pending --project <project>`. It returns exact `batchId`, `eventId`, `recordHash` triples plus warnings for unsupported legacy folders. It reads record metadata, not screenshot contents, and creates no files. Malformed known records fail visibly. Open relevant original events and artifacts before deciding an outcome.
 
-Save an immutable receipt with `node <skill-directory>/scripts/insights.mjs review --project <project> --input <receipt.json>`:
+When recording is active or the user explicitly requests findings maintenance, save an immutable receipt with `node <skill-directory>/scripts/insights.mjs review --project <project> --input <receipt.json>`. Otherwise keep the review read-only; reading pending events does not authorize new findings or receipts:
 
 ```json
 {

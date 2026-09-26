@@ -13,6 +13,8 @@ Save a source revision before adapting it. Personal saves and imports are explic
 
 ## Author and adapt
 
+If the requested effect has consequential gaps in intent, visual treatment or behaviour, use [Brainstorm](brainstorm.md) to establish a shared creative brief first. Reuse explicit choices; do not ask for a complete specification or choose assets from an object name alone. For a prompt-only request, resolve questions conversationally; do not execute generation or build samples unless requested or otherwise authorized.
+
 For a desired effect, use [production planning](../production-planning.md) to decide what needs generation, ordinary implementation and staged integration. Keep related components under one shared direction. Query only for stages where a saved mechanism is useful, then inspect relevant originals and limitations.
 
 Write an execution brief with necessary inputs, observable effect, essential relationships, adaptable choices, output requirements, technique when justified, failure cases and concrete inspection checks. Use known reference values or label reversible defaults; avoid invented precision and generic quality adjectives. A useful recipe can transfer across style labels, while a similar colour or object may be irrelevant.
