@@ -1,11 +1,11 @@
 ---
 name: incline
-description: Discover and collect website design taste, apply references to frontend design, record iteration feedback, and explicitly reuse personal collections. Use for reference-led design work, taste exploration, or feedback capture in the active project.
+description: Discover website design taste, apply references to frontend design, curate and adapt execution prompts, plan layered visual effects, and record iteration feedback. Use for reference-led design, prompt curation, taste exploration, or feedback capture in the active project.
 ---
 
 # Incline
 
-One installable skill, four focused workflows. Choose by the requested outcome, load only the relevant workflow and supporting references, and continue the user's task. The browser collection UI is one workflow tool, not the default response to every design request.
+One installable skill, five focused workflows. Choose by the requested outcome, load only the relevant workflow and supporting references, and continue the user's task. The browser collection UI is one workflow tool, not the default response to every design request.
 
 ## Start from the request and project
 
@@ -21,6 +21,7 @@ An explicit stop-recording request stops recording without deleting evidence. A 
 | Interpret references, compare design samples, critique or improve a frontend, or write a design brief | [Design](references/workflows/design.md) | Requested critique, visual study, brief or visually assessed change |
 | Catch up on past feedback, record iterations, curate insights, or manage recording | [Feedback](references/workflows/feedback.md) | Project-local evidence and linked, revisable insights |
 | Explicitly find, save or reuse personal collections | [Library](references/workflows/library.md) | Selected library snapshot or imported local draft |
+| Curate execution prompts, find a relevant recipe, or write/adapt a generation brief | [Prompt](references/workflows/prompt.md) | Source-attributed prompt entry or execution brief |
 
 Match the action, not an incidental word or file type: “improve this app using screenshots” is Design; “save these screenshots as references” is Collect. “Write a DESIGN.md” is Design; “import this DESIGN.md” is Collect. “Resume the frontend” is Design; “resume my unfinished collection” is Collect. Ask one focused routing question only when the distinction materially changes the work and cannot be inferred.
 
@@ -32,11 +33,12 @@ Keep one owner for the requested deliverable. Load another workflow only for a n
 - “Review earlier feedback, then continue the redesign”: Feedback catches up first; Design owns the resumed redesign.
 - “Choose a saved collection and use it for this page”: Library handles selection/reuse; Design applies the chosen evidence. Listing alone does not authorize application.
 - “Collect references, then build”: Collect saves the user's evidence; Design continues from the returned session when ready.
+- “Build this effect using a saved prompt”: Design plans and owns the result; Prompt supports selected stages. A prompt-only request ends with its brief.
 
-Do not repeatedly reopen routing, restart a quiz or load every module on each edit. Do not start a background watcher, automatically consult the personal library, or promote tentative interpretations to confirmed preferences.
+Do not repeatedly reopen routing, restart a quiz or load every module on each edit. Personal prompt lookup can run within an explicitly enabled project setting; other personal stores retain their explicit-operation scope. Do not start a background watcher or promote tentative interpretations to confirmed preferences.
 
 ## Runtime and installation
 
-Node 22 or newer is required. The complete UI and scripts ship in this skill; no account or source build is required. Commands live under `<skill-directory>/scripts/`: `incline.mjs` for the local visual session, `feedback.mjs` for the journal, `insights.mjs` for linked findings, `exploration.mjs` for recoverable design studies, and optional `getdesign.mjs` for public guide retrieval. Load the selected workflow for usage. The optional public guide helper and explicitly requested [Jev review](references/jev-review.md) require network access; the rest of the workflow remains local.
+Node 22 or newer is required. The complete UI and scripts ship in this skill; no account or source build is required. Commands live under `<skill-directory>/scripts/`: `incline.mjs` for the local visual session, `feedback.mjs` for the journal, `insights.mjs` for linked findings, `exploration.mjs` for recoverable studies, `prompts.mjs` for prompt curation and evidence, and `prompt-routing.mjs` for optional advisory selection. Load the selected workflow for usage. The optional `getdesign.mjs` public guide helper, explicit [Jev insight review](references/jev-review.md), and explicit [prompt selection sends](references/prompts.md#optional-jev-shortlist-selection) require network access; ordinary storage, retrieval and previews remain local.
 
 Install with `npx skills add allisonllx/incline --skill incline`, optionally with `--global`. These workflows are bundled reference modules, not separately installed skills. Existing commands and project data formats are unchanged. If a bundled module is missing, report the incomplete installation rather than inventing its instructions.

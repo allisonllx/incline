@@ -13,6 +13,8 @@ Example request: “Use Incline while we iterate this frontend. Review our earli
 
 ## Batch format
 
+When the task also uses prompt runs or routing receipts, apply the same recording scope through [prompt settings](prompts.md#recording-and-testing). On an explicit stop, set that layer to `stopped` and stop journal/exploration writes. Enabling prompt recording is a scoped setting, not a background observer or inferred permission to collect more history.
+
 ```json
 {
   "id": "dashboard-thread-a-checkpoint-1",

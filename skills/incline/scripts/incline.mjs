@@ -1,18 +1,18 @@
 // local/server.mjs
 import { createServer } from "node:http";
-import { randomBytes, randomUUID as randomUUID4, timingSafeEqual } from "node:crypto";
+import { randomBytes, randomUUID as randomUUID6, timingSafeEqual } from "node:crypto";
 import {
   readFile as readFile3,
-  writeFile as writeFile2,
-  mkdir as mkdir3,
-  rename as rename2,
-  unlink as unlink2,
-  open as open3,
-  realpath,
+  writeFile as writeFile4,
+  mkdir as mkdir5,
+  rename as rename4,
+  unlink as unlink3,
+  open as open6,
+  realpath as realpath3,
   access,
-  rm as rm2
+  rm as rm3
 } from "node:fs/promises";
-import { resolve as resolve3, join as join3, extname as extname3, sep, basename as basename2 } from "node:path";
+import { resolve as resolve6, join as join7, extname as extname3, sep as sep2, basename as basename2 } from "node:path";
 
 // lib/collection.ts
 function referenceUrl(value) {
@@ -495,21 +495,21 @@ async function readRaw(req) {
   }
   return Buffer.concat(chunks);
 }
-async function storeAsset(directory, bytes, contentType2) {
+async function storeAsset(directory2, bytes, contentType2) {
   const format = inspectAsset(bytes, contentType2);
   return storeNamedAsset(
-    directory,
+    directory2,
     `${randomUUID()}.${format.extension}`,
     bytes,
     contentType2
   );
 }
-async function storeNamedAsset(directory, name, bytes, contentType2) {
+async function storeNamedAsset(directory2, name, bytes, contentType2) {
   const format = inspectAsset(bytes, contentType2);
   if (!assetName(name) || !name.endsWith(`.${format.extension}`))
     throw new Error("Invalid asset name");
-  await mkdir(directory, { recursive: true, mode: 448 });
-  const path = join(directory, name);
+  await mkdir(directory2, { recursive: true, mode: 448 });
+  const path = join(directory2, name);
   const handle = await open(path, "wx", 384);
   try {
     await handle.writeFile(bytes);
@@ -522,11 +522,11 @@ async function storeNamedAsset(directory, name, bytes, contentType2) {
   }
   return name;
 }
-async function loadAsset(directory, name) {
+async function loadAsset(directory2, name) {
   if (!assetName(name))
     throw Object.assign(new Error("Invalid asset name"), { status: 404 });
   try {
-    return await readFile(join(directory, name));
+    return await readFile(join(directory2, name));
   } catch (error) {
     if (error.code === "ENOENT")
       throw Object.assign(new Error("Asset not found"), { status: 404 });
@@ -596,14 +596,14 @@ function referencedAssets(session) {
     )
   ];
 }
-async function readAssets(directory, session) {
+async function readAssets(directory2, session) {
   const names = referencedAssets(session);
-  if (names.length) await directoryOnly(directory);
+  if (names.length) await directoryOnly(directory2);
   const assets = [];
   for (const asset of names) {
     if (!assetName(asset)) throw failure2("Invalid asset reference");
     const bytes = await boundedRead(
-      join2(directory, asset),
+      join2(directory2, asset),
       asset.endsWith(".md") ? maxGuideBytes : maxAssetBytes
     );
     const type = contentType(asset);
@@ -633,8 +633,8 @@ This immutable snapshot records evidence in its original context. Reuse requires
 
 ${exportMarkdown(snapshot.session).replaceAll(".incline/assets/", "assets/")}`;
 }
-function createLibrary(directory, projectDirectory) {
-  const root = resolve(directory);
+function createLibrary(directory2, projectDirectory) {
+  const root = resolve(directory2);
   const sourceAssets = join2(projectDirectory, ".incline", "assets");
   async function guarded(work) {
     try {
@@ -831,7 +831,7 @@ function createLibrary(directory, projectDirectory) {
 }
 
 // local/server.mjs
-import { homedir } from "node:os";
+import { homedir as homedir2 } from "node:os";
 
 // local/import.mjs
 import { readFile as readFile2 } from "node:fs/promises";
@@ -950,30 +950,1668 @@ async function prepareImport(inputPath) {
   return { session, assets: prepared.filter((ref) => ref.kind !== "link") };
 }
 
+// local/prompts-api.mjs
+import { join as join6, resolve as resolve5 } from "node:path";
+import { homedir } from "node:os";
+
+// local/prompts.mjs
+import { constants as constants3 } from "node:fs";
+import {
+  lstat as lstat3,
+  mkdir as mkdir4,
+  mkdtemp,
+  open as open5,
+  opendir as opendir2,
+  realpath as realpath2,
+  rename as rename3,
+  rm as rm2,
+  writeFile as writeFile3
+} from "node:fs/promises";
+import { createHash as createHash2, randomUUID as randomUUID5 } from "node:crypto";
+import { dirname as dirname2, isAbsolute as isAbsolute2, join as join5, parse, resolve as resolve4, sep } from "node:path";
+
+// local/prompt-settings.mjs
+import { writeFile as writeFile2, rename as rename2, unlink as unlink2, open as open4 } from "node:fs/promises";
+import { randomUUID as randomUUID4 } from "node:crypto";
+import { isAbsolute, join as join4, resolve as resolve3 } from "node:path";
+
+// local/exploration-files.mjs
+import { lstat as lstat2, realpath, mkdir as mkdir3, readdir, open as open3 } from "node:fs/promises";
+import { constants as constants2 } from "node:fs";
+import { join as join3 } from "node:path";
+var MAX_JSON_BYTES = 1e6;
+var MAX_ASSET_BYTES = 8 * 1024 * 1024;
+function pathParts(relative) {
+  if (typeof relative !== "string" || !relative || relative.includes("\\") || relative.includes("\0"))
+    throw new Error("Unsafe relative path");
+  const parts = relative.split("/");
+  if (parts.some((part) => !part || part === "." || part === ".."))
+    throw new Error("Unsafe relative path");
+  return parts;
+}
+async function safeDirectory(project, parts, create = false) {
+  let current = await realpath(project);
+  if (!(await lstat2(current)).isDirectory())
+    throw new Error("Project must be a directory");
+  for (const part of parts) {
+    pathParts(part);
+    if (part.includes("/")) throw new Error("Unsafe directory component");
+    current = join3(current, part);
+    let info;
+    try {
+      info = await lstat2(current);
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+      if (!create) return null;
+      try {
+        await mkdir3(current, { mode: 448 });
+      } catch (failure4) {
+        if (failure4.code !== "EEXIST") throw failure4;
+      }
+      info = await lstat2(current);
+    }
+    if (info.isSymbolicLink()) throw new Error("Unsafe symlink directory");
+    if (!info.isDirectory()) throw new Error("Expected storage directory");
+  }
+  return current;
+}
+async function safeBytes(project, parts, maxBytes = MAX_JSON_BYTES) {
+  const directory2 = await safeDirectory(project, parts.slice(0, -1));
+  if (directory2 === null) return null;
+  const name = parts.at(-1);
+  pathParts(name);
+  if (name.includes("/")) throw new Error("Unsafe file component");
+  const path = join3(directory2, name);
+  let info;
+  try {
+    info = await lstat2(path);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+  if (info.isSymbolicLink()) throw new Error("Unsafe symlink file");
+  if (!info.isFile()) throw new Error("Expected regular file");
+  if (info.size > maxBytes) throw new Error("File size limit exceeded");
+  const handle = await open3(path, constants2.O_RDONLY | constants2.O_NOFOLLOW);
+  try {
+    const opened = await handle.stat();
+    if (!opened.isFile() || opened.size > maxBytes)
+      throw new Error("File size limit exceeded");
+    const buffer = Buffer.alloc(maxBytes + 1);
+    let length = 0;
+    while (length < buffer.length) {
+      const { bytesRead } = await handle.read(
+        buffer,
+        length,
+        buffer.length - length,
+        null
+      );
+      if (!bytesRead) break;
+      length += bytesRead;
+    }
+    if (length > maxBytes) throw new Error("File size limit exceeded");
+    return { path, bytes: buffer.subarray(0, length) };
+  } finally {
+    await handle.close();
+  }
+}
+
+// local/prompt-settings.mjs
+var defaults = Object.freeze({
+  version: 1,
+  revision: null,
+  personalLookup: false,
+  personalDirectory: null,
+  recording: "off"
+});
+var editable = ["personalLookup", "personalDirectory", "recording"];
+function validate2(value, saved2 = false) {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("Invalid prompt settings");
+  const fields = saved2 ? [...editable, "version", "revision"] : [...editable, "expectedRevision"];
+  if (Object.keys(value).some((key) => !fields.includes(key)))
+    throw new Error("Unknown prompt settings field");
+  if (saved2 && (value.version !== 1 || typeof value.revision !== "string" || !/^[a-f0-9-]{36}$/.test(value.revision)))
+    throw new Error("Invalid saved prompt settings revision");
+  if ("personalLookup" in value && typeof value.personalLookup !== "boolean")
+    throw new Error("Invalid personal lookup setting");
+  if ("personalDirectory" in value && value.personalDirectory !== null && (typeof value.personalDirectory !== "string" || value.personalDirectory.length > 4e3 || !isAbsolute(value.personalDirectory) || value.personalDirectory.includes("\0")))
+    throw new Error("Personal prompt directory must be absolute");
+  if ("recording" in value && !["off", "active", "stopped"].includes(value.recording))
+    throw new Error("Invalid recording setting");
+  if (saved2 && editable.some((key) => !(key in value)))
+    throw new Error("Missing saved prompt settings field");
+  if (saved2 && value.personalLookup && !value.personalDirectory)
+    throw new Error("Personal lookup requires a selected directory");
+}
+async function readPromptSettings(project) {
+  const raw = await safeBytes(
+    project,
+    [".incline", "prompt-settings.json"],
+    16e3
+  );
+  if (!raw) return { ...defaults };
+  let data;
+  try {
+    data = JSON.parse(raw.bytes.toString("utf8"));
+  } catch {
+    throw new Error(
+      "Cannot read prompt settings; preserve and repair the existing file"
+    );
+  }
+  validate2(data, true);
+  return data;
+}
+async function savePromptSettings(project, input) {
+  validate2(input);
+  const previous = await readPromptSettings(project);
+  const merged = { ...previous, ...input };
+  delete merged.expectedRevision;
+  merged.revision = randomUUID4();
+  validate2(merged, true);
+  const directory2 = await safeDirectory(project, [".incline"], true);
+  const lockPath = join4(directory2, ".prompt-settings.lock");
+  let lock;
+  try {
+    lock = await open4(lockPath, "wx", 384);
+  } catch (error) {
+    if (error.code === "EEXIST")
+      throw new Error(
+        "Prompt settings are being updated; retry after the current write finishes"
+      );
+    throw error;
+  }
+  const temp = join4(directory2, `.prompt-settings-${randomUUID4()}.tmp`);
+  try {
+    const current = await readPromptSettings(project);
+    if (current.revision !== previous.revision || Object.hasOwn(input, "expectedRevision") && input.expectedRevision !== current.revision)
+      throw new Error(
+        "Prompt settings changed; read the current settings before updating"
+      );
+    if (merged.personalDirectory)
+      merged.personalDirectory = resolve3(merged.personalDirectory);
+    await writeFile2(temp, JSON.stringify(merged, null, 2) + "\n", {
+      flag: "wx",
+      mode: 384
+    });
+    await safeDirectory(project, [".incline"]);
+    await rename2(temp, join4(directory2, "prompt-settings.json"));
+    return merged;
+  } finally {
+    await unlink2(temp).catch(() => {
+    });
+    await lock.close();
+    await unlink2(lockPath);
+  }
+}
+async function assertPromptRecording(project) {
+  if (!project || (await readPromptSettings(project)).recording !== "active")
+    throw new Error(
+      "Prompt recording must be active for new run or decision evidence"
+    );
+}
+
+// local/prompts.mjs
+var uuid2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+var slug = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+var hashPattern = /^[0-9a-f]{64}$/;
+var maxEntries = 1e3;
+var maxRevisions = 100;
+var maxMetadata = 1e6;
+var maxPrompt = 3e5;
+var maxAssets = 24;
+var maxTotalAssets = 32e6;
+var maxRuns = 1e3;
+var media = {
+  "text/markdown": "md",
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/gif": "gif"
+};
+var origins = [
+  "published",
+  "user-authored",
+  "agent-authored",
+  "agent-reconstructed"
+];
+var provenances = [
+  "user",
+  "source-text",
+  "inspected-visual",
+  "agent-hypothesis"
+];
+var sha2562 = (bytes) => createHash2("sha256").update(bytes).digest("hex");
+var fail = (message, status = 400) => Object.assign(new Error(message), { status });
+var has = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+function plain(value, name, fields) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype)
+    throw fail(`${name} must be an object`);
+  for (const field of Object.keys(value))
+    if (!fields.includes(field)) throw fail(`${name}: unknown field ${field}`);
+  return value;
+}
+function string(value, name, max, { empty = false } = {}) {
+  if (typeof value !== "string" || Buffer.byteLength(value) > max || !empty && !value.trim() || /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(
+    value
+  ))
+    throw fail(`Invalid ${name}`);
+  return value;
+}
+function optionalString(value, name, max) {
+  return value === void 0 ? null : value === null ? null : string(value, name, max);
+}
+function boundedList(value, name, max) {
+  if (!Array.isArray(value) || value.length > max)
+    throw fail(`Invalid ${name}`);
+  return value;
+}
+function safeId(value, name = "ID") {
+  if (typeof value !== "string" || !uuid2.test(value))
+    throw fail(`Invalid ${name}`);
+  return value;
+}
+function safeSlug(value, name) {
+  if (typeof value !== "string" || !slug.test(value))
+    throw fail(`Invalid ${name}`);
+  return value;
+}
+function revisionNumber(value) {
+  if (!Number.isInteger(value) || value < 1 || value > maxRevisions)
+    throw fail("Invalid revision");
+  return value;
+}
+function revisionName(value) {
+  return String(revisionNumber(value)).padStart(4, "0");
+}
+function exactKeys(value, fields, name) {
+  return plain(value, name, fields);
+}
+function textList(value, name, count = 24, length = 240) {
+  return boundedList(value ?? [], name, count).map(
+    (item) => string(item, name, length)
+  );
+}
+function normalizeSource(value) {
+  const source = exactKeys(
+    value ?? {},
+    ["url", "author", "capturedAt", "license", "contentGap", "embedUrl"],
+    "source"
+  );
+  const result = {};
+  for (const key of ["url", "embedUrl"])
+    if (source[key] !== void 0) {
+      const url = string(source[key], `source ${key}`, 2e3);
+      if (!/^https?:\/\//i.test(url))
+        throw fail(`source ${key} must be an http(s) URL`);
+      result[key] = url;
+    }
+  for (const key of ["author", "license", "contentGap"])
+    if (source[key] !== void 0)
+      result[key] = string(source[key], `source ${key}`, 500);
+  if (source.capturedAt !== void 0) {
+    string(source.capturedAt, "source capturedAt", 40);
+    if (Number.isNaN(Date.parse(source.capturedAt)))
+      throw fail("Invalid source capturedAt");
+    result.capturedAt = source.capturedAt;
+  }
+  return result;
+}
+function normalizeTags(value) {
+  const seen = /* @__PURE__ */ new Set();
+  return boundedList(value ?? [], "tags", 40).map((tag) => {
+    exactKeys(tag, ["facet", "value", "provenance"], "tag");
+    const facet = safeSlug(tag.facet, "tag facet");
+    const label = string(tag.value, "tag value", 100);
+    if (!provenances.includes(tag.provenance))
+      throw fail("Invalid tag provenance");
+    const key = `${facet}\0${label.toLowerCase()}\0${tag.provenance}`;
+    if (seen.has(key)) throw fail("Duplicate tag");
+    seen.add(key);
+    return { facet, value: label, provenance: tag.provenance };
+  });
+}
+function normalizeRequirements(value) {
+  const data = exactKeys(
+    value ?? {},
+    [
+      "effect",
+      "roles",
+      "medium",
+      "inputs",
+      "tools",
+      "runtime",
+      "limitations",
+      "unknowns",
+      "checks"
+    ],
+    "requirements"
+  );
+  return {
+    effect: optionalString(data.effect, "effect", 1e3),
+    roles: textList(data.roles, "roles"),
+    medium: optionalString(data.medium, "medium", 120),
+    inputs: textList(data.inputs, "inputs"),
+    tools: textList(data.tools, "tools"),
+    runtime: optionalString(data.runtime, "runtime", 240),
+    limitations: textList(data.limitations, "limitations"),
+    unknowns: textList(data.unknowns, "unknowns"),
+    checks: textList(data.checks, "checks")
+  };
+}
+function normalizeNotes(value) {
+  return boundedList(value ?? [], "notes", 30).map((item) => {
+    exactKeys(item, ["text", "provenance"], "note");
+    if (!provenances.includes(item.provenance))
+      throw fail("Invalid note provenance");
+    return {
+      text: string(item.text, "note text", 3e3),
+      provenance: item.provenance
+    };
+  });
+}
+function normalizeLink(value, name) {
+  if (value === void 0 || value === null) return null;
+  exactKeys(value, ["id", "revision", "promptSha256"], name);
+  if (typeof value.promptSha256 !== "string" || !hashPattern.test(value.promptSha256))
+    throw fail(`Invalid ${name} hash`);
+  return {
+    id: safeId(value.id, `${name} ID`),
+    revision: revisionNumber(value.revision),
+    promptSha256: value.promptSha256
+  };
+}
+function normalizeRecipe(value) {
+  if (value === void 0 || value === null) return null;
+  exactKeys(value, ["stages"], "recipe");
+  const stages = boundedList(value.stages, "recipe stages", 24).map((stage) => {
+    exactKeys(
+      stage,
+      ["id", "role", "dependsOn", "inputs", "outputs", "checks"],
+      "recipe stage"
+    );
+    return {
+      id: safeSlug(stage.id, "stage ID"),
+      role: string(stage.role, "stage role", 200),
+      dependsOn: boundedList(
+        stage.dependsOn ?? [],
+        "stage dependencies",
+        24
+      ).map((id) => safeSlug(id, "stage dependency")),
+      inputs: textList(stage.inputs, "stage inputs"),
+      outputs: textList(stage.outputs, "stage outputs"),
+      checks: textList(stage.checks, "stage checks")
+    };
+  });
+  const ids = new Set(stages.map((stage) => stage.id));
+  if (ids.size !== stages.length) throw fail("Duplicate recipe stage ID");
+  const byId = new Map(stages.map((stage) => [stage.id, stage]));
+  const state = /* @__PURE__ */ new Map();
+  function visit(id) {
+    if (state.get(id) === "visiting") throw fail("Recipe dependency cycle");
+    if (state.get(id) === "done") return;
+    state.set(id, "visiting");
+    for (const dep of byId.get(id).dependsOn) {
+      if (!ids.has(dep)) throw fail(`Unknown recipe dependency ${dep}`);
+      visit(dep);
+    }
+    state.set(id, "done");
+  }
+  for (const id of ids) visit(id);
+  return { stages };
+}
+function normalizeEditable(input) {
+  exactKeys(
+    input,
+    [
+      "id",
+      "baseRevision",
+      "title",
+      "prompt",
+      "origin",
+      "source",
+      "tags",
+      "requirements",
+      "notes",
+      "assets",
+      "recipe",
+      "parent",
+      "copyOf"
+    ],
+    "prompt input"
+  );
+  const prompt = string(input.prompt, "prompt", maxPrompt, { empty: true });
+  if (!prompt.length && !input.source?.contentGap)
+    throw fail(
+      "Empty prompt requires source.contentGap explaining unavailable text"
+    );
+  if (!origins.includes(input.origin)) throw fail("Invalid prompt origin");
+  if (input.id !== void 0) safeId(input.id);
+  if (input.baseRevision !== void 0) revisionNumber(input.baseRevision);
+  if (has(input, "id") !== has(input, "baseRevision"))
+    throw fail("Updates require id and baseRevision together");
+  return {
+    title: string(input.title, "title", 200),
+    prompt,
+    origin: input.origin,
+    source: normalizeSource(input.source),
+    tags: normalizeTags(input.tags),
+    requirements: normalizeRequirements(input.requirements),
+    notes: normalizeNotes(input.notes),
+    recipe: normalizeRecipe(input.recipe),
+    parent: normalizeLink(input.parent, "parent"),
+    copyOf: normalizeLink(input.copyOf, "copyOf"),
+    assets: boundedList(input.assets ?? [], "assets", maxAssets)
+  };
+}
+async function safeExisting(path, { missing = false } = {}) {
+  const absolute = resolve4(path);
+  let current = parse(absolute).root;
+  for (const segment of absolute.slice(current.length).split(sep).filter(Boolean)) {
+    current = join5(current, segment);
+    let info;
+    try {
+      info = await lstat3(current);
+    } catch (error) {
+      if (missing && error.code === "ENOENT") return;
+      throw error;
+    }
+    if (info.isSymbolicLink())
+      throw fail(`Symbolic links are not allowed: ${current}`);
+    if (current !== absolute && !info.isDirectory())
+      throw fail(`Expected a directory: ${current}`);
+  }
+}
+async function directory(path, { missing = false } = {}) {
+  try {
+    await safeExisting(path);
+    if (!(await lstat3(path)).isDirectory())
+      throw fail(`Expected a directory: ${path}`);
+    return true;
+  } catch (error) {
+    if (missing && error.code === "ENOENT") return false;
+    throw error;
+  }
+}
+async function boundedRead2(path, limit) {
+  await safeExisting(dirname2(path));
+  let handle;
+  try {
+    handle = await open5(
+      path,
+      constants3.O_RDONLY | constants3.O_NOFOLLOW | constants3.O_NONBLOCK
+    );
+  } catch (error) {
+    if (error.code === "ELOOP") throw fail(`Symbolic link refused: ${path}`);
+    throw error;
+  }
+  try {
+    const info = await handle.stat();
+    if (!info.isFile() || info.size > limit)
+      throw fail(`Invalid or oversized file: ${path}`, 413);
+    const bytes = await handle.readFile();
+    if (bytes.length !== info.size || bytes.length > limit)
+      throw fail(`File changed while reading: ${path}`);
+    return bytes;
+  } finally {
+    await handle.close();
+  }
+}
+async function writeJson(path, value) {
+  const bytes = Buffer.from(JSON.stringify(value, null, 2) + "\n");
+  if (bytes.length > maxMetadata)
+    throw fail("Prompt metadata exceeds 1 MB", 413);
+  await writeFile3(path, bytes, { flag: "wx", mode: 384 });
+}
+async function withPublicationLock(folder, work) {
+  const path = join5(folder, ".pending-publication.lock");
+  let handle;
+  try {
+    handle = await open5(path, "wx", 384);
+  } catch (error) {
+    if (error.code === "EEXIST")
+      throw fail("Prompt publication is in progress; retry the write", 409);
+    throw error;
+  }
+  try {
+    return await work();
+  } finally {
+    try {
+      await handle.close();
+    } finally {
+      await rm2(path, { force: true });
+    }
+  }
+}
+async function assertPublishedBelow(folder, limit, kind) {
+  let count = 0;
+  const handle = await opendir2(folder);
+  for await (const item of handle) {
+    if (item.name.startsWith(".pending-")) continue;
+    if (!uuid2.test(item.name) || !item.isDirectory())
+      throw fail(`Unexpected ${kind} entry: ${item.name}`);
+    if (++count >= limit) throw fail(`${kind} limit of ${limit} reached`, 413);
+  }
+}
+function assetLimit(type) {
+  return type === "text/markdown" ? maxGuideBytes : maxAssetBytes;
+}
+async function incomingAssets(items) {
+  let total = 0;
+  const seen = /* @__PURE__ */ new Set();
+  const result = [];
+  for (const item of items) {
+    exactKeys(
+      item,
+      ["id", "path", "contentType", "missingReason", "bytes"],
+      "asset"
+    );
+    const id = safeSlug(item.id, "asset ID");
+    if (seen.has(id)) throw fail("Duplicate asset ID");
+    seen.add(id);
+    if (item.missingReason !== void 0) {
+      if (item.path !== void 0 || item.bytes !== void 0 || item.contentType !== void 0)
+        throw fail("Asset gap cannot include file data");
+      result.push({
+        descriptor: {
+          id,
+          missingReason: string(item.missingReason, "asset missingReason", 500)
+        }
+      });
+      continue;
+    }
+    if (item.path === void 0 === (item.bytes === void 0))
+      throw fail("Asset requires exactly one of path or bytes");
+    const contentType2 = string(
+      item.contentType,
+      "asset contentType",
+      80
+    ).toLowerCase();
+    if (!media[contentType2])
+      throw fail(`Unsupported asset type ${contentType2}`, 415);
+    let bytes;
+    if (item.path !== void 0) {
+      if (typeof item.path !== "string" || !isAbsolute2(item.path))
+        throw fail("Asset path must be absolute");
+      bytes = await boundedRead2(item.path, assetLimit(contentType2));
+    } else {
+      if (!Buffer.isBuffer(item.bytes))
+        throw fail("Asset bytes must be a Buffer");
+      bytes = item.bytes;
+    }
+    inspectAsset(bytes, contentType2);
+    total += bytes.length;
+    if (total > maxTotalAssets) throw fail("Assets exceed 32 MB", 413);
+    result.push({
+      descriptor: {
+        id,
+        filename: `${id}.${media[contentType2]}`,
+        contentType: contentType2,
+        size: bytes.length,
+        sha256: sha2562(bytes)
+      },
+      bytes
+    });
+  }
+  return result;
+}
+function validateMetadata(meta, id, revision) {
+  exactKeys(
+    meta,
+    [
+      "version",
+      "id",
+      "revision",
+      "createdAt",
+      "title",
+      "origin",
+      "source",
+      "tags",
+      "requirements",
+      "notes",
+      "recipe",
+      "parent",
+      "copyOf",
+      "assets",
+      "promptSha256",
+      "metadataSha256"
+    ],
+    "revision metadata"
+  );
+  const { metadataSha256, ...body2 } = meta;
+  if (typeof metadataSha256 !== "string" || metadataSha256 !== sha2562(Buffer.from(JSON.stringify(body2))))
+    throw fail("Prompt metadata hash mismatch");
+  if (!meta || meta.version !== 1 || meta.id !== id || meta.revision !== revision || !uuid2.test(meta.id) || typeof meta.createdAt !== "string" || Number.isNaN(Date.parse(meta.createdAt)) || typeof meta.promptSha256 !== "string" || !hashPattern.test(meta.promptSha256))
+    throw fail("Corrupt prompt revision metadata");
+  normalizeEditable({
+    title: meta.title,
+    prompt: "x",
+    origin: meta.origin,
+    source: meta.source,
+    tags: meta.tags,
+    requirements: meta.requirements,
+    notes: meta.notes,
+    recipe: meta.recipe,
+    parent: meta.parent,
+    copyOf: meta.copyOf,
+    assets: []
+  });
+  if (!Array.isArray(meta.assets) || meta.assets.length > maxAssets)
+    throw fail("Corrupt asset manifest");
+  const names = /* @__PURE__ */ new Set();
+  for (const asset of meta.assets) {
+    exactKeys(
+      asset,
+      ["id", "filename", "contentType", "size", "sha256", "missingReason"],
+      "asset descriptor"
+    );
+    safeSlug(asset.id, "asset ID");
+    if (names.has(asset.id)) throw fail("Duplicate asset descriptor");
+    names.add(asset.id);
+    if (asset.missingReason !== void 0) {
+      if (asset.filename !== void 0 || asset.contentType !== void 0 || asset.size !== void 0 || asset.sha256 !== void 0)
+        throw fail("Corrupt asset gap");
+      string(asset.missingReason, "asset missingReason", 500);
+    } else if (!media[asset.contentType] || asset.filename !== `${asset.id}.${media[asset.contentType]}` || !Number.isInteger(asset.size) || asset.size < 1 || asset.size > assetLimit(asset.contentType) || typeof asset.sha256 !== "string" || !hashPattern.test(asset.sha256))
+      throw fail("Corrupt asset descriptor");
+  }
+  return meta;
+}
+function summary2(meta) {
+  return {
+    id: meta.id,
+    revision: meta.revision,
+    title: meta.title,
+    origin: meta.origin,
+    createdAt: meta.createdAt,
+    source: meta.source,
+    tags: meta.tags,
+    requirements: meta.requirements,
+    assetCount: meta.assets.length,
+    promptSha256: meta.promptSha256,
+    promptAvailable: meta.promptSha256 !== sha2562(Buffer.alloc(0))
+  };
+}
+function normalizeRun(input, meta) {
+  exactKeys(
+    input,
+    [
+      "inputs",
+      "tools",
+      "artifacts",
+      "execution",
+      "inspection",
+      "tester",
+      "userReview",
+      "stageId",
+      "dependencies",
+      "briefRevision",
+      "planRevision"
+    ],
+    "run"
+  );
+  const inputs = boundedList(input.inputs ?? [], "run inputs", 24).map(
+    (entry) => {
+      exactKeys(entry, ["name", "value", "sha256"], "run input");
+      const value = string(entry.value, "run input value", 1e4, {
+        empty: true
+      });
+      if (entry.sha256 !== void 0 && entry.sha256 !== sha2562(Buffer.from(value)))
+        throw fail("Run input hash mismatch");
+      return {
+        name: safeSlug(entry.name, "run input name"),
+        value,
+        sha256: sha2562(Buffer.from(value))
+      };
+    }
+  );
+  const tools = boundedList(input.tools ?? [], "run tools", 24).map((tool) => {
+    exactKeys(tool, ["name", "version", "settings"], "run tool");
+    return {
+      name: string(tool.name, "tool name", 120),
+      version: optionalString(tool.version, "tool version", 120),
+      settings: optionalString(tool.settings, "tool settings", 2e3)
+    };
+  });
+  function observation(value, name, statuses) {
+    if (value === void 0 || value === null) return null;
+    exactKeys(value, ["status", "notes", "evidence", "by"], name);
+    if (!statuses.includes(value.status)) throw fail(`Invalid ${name} status`);
+    const evidence2 = textList(value.evidence, `${name} evidence`, 20, 1e3);
+    let by = null;
+    if (name === "tester") {
+      if (value.by !== void 0 && ![
+        "agent-run",
+        "author-reported",
+        "user-reported",
+        "user-observed"
+      ].includes(value.by))
+        throw fail("Invalid tester provenance");
+      if (value.status !== "not-tested" && !value.by)
+        throw fail("Tester result requires by provenance");
+      by = value.by ?? null;
+    } else if (value.by !== void 0) throw fail(`${name} cannot include by`);
+    if (name === "userReview" && value.status !== "not-reviewed" && evidence2.length === 0)
+      throw fail("User review requires actual evidence text or locator");
+    return {
+      status: value.status,
+      notes: optionalString(value.notes, `${name} notes`, 3e3),
+      evidence: evidence2,
+      ...name === "tester" ? { by } : {}
+    };
+  }
+  const stageId = input.stageId === void 0 ? null : safeSlug(input.stageId, "run stage ID");
+  if (stageId && !meta.recipe?.stages.some((stage) => stage.id === stageId))
+    throw fail("Run stage is absent from this revision");
+  const dependencies = boundedList(
+    input.dependencies ?? [],
+    "run dependencies",
+    24
+  ).map((dep) => {
+    exactKeys(dep, ["stageId", "runId"], "run dependency");
+    return {
+      stageId: safeSlug(dep.stageId, "dependency stage ID"),
+      runId: safeId(dep.runId, "dependency run ID")
+    };
+  });
+  if (dependencies.length && !stageId)
+    throw fail("Run dependencies require a stage ID");
+  if (stageId) {
+    const stage = meta.recipe.stages.find((item) => item.id === stageId);
+    const allowed = new Set(stage.dependsOn);
+    for (const dep of dependencies)
+      if (!allowed.has(dep.stageId))
+        throw fail("Run dependency does not match recipe");
+    if (new Set(dependencies.map((d) => d.stageId)).size !== dependencies.length)
+      throw fail("Duplicate run dependency stage");
+  }
+  return {
+    inputs,
+    tools,
+    artifacts: boundedList(input.artifacts ?? [], "run artifacts", 24),
+    stageId,
+    dependencies,
+    briefRevision: optionalString(input.briefRevision, "brief revision", 120),
+    planRevision: optionalString(input.planRevision, "plan revision", 120),
+    execution: observation(input.execution, "execution", [
+      "not-run",
+      "succeeded",
+      "failed",
+      "partial"
+    ]),
+    inspection: observation(input.inspection, "inspection", [
+      "not-inspected",
+      "passed",
+      "failed",
+      "inconclusive"
+    ]),
+    tester: observation(input.tester, "tester", [
+      "not-tested",
+      "passed",
+      "failed",
+      "inconclusive"
+    ]),
+    userReview: observation(input.userReview, "userReview", [
+      "not-reviewed",
+      "positive",
+      "negative",
+      "mixed",
+      "accepted"
+    ])
+  };
+}
+async function incomingRunArtifacts(items) {
+  let total = 0;
+  const seen = /* @__PURE__ */ new Set();
+  const result = [];
+  for (const item of items) {
+    exactKeys(
+      item,
+      ["id", "path", "contentType", "locator", "missingReason"],
+      "run artifact"
+    );
+    const id = safeSlug(item.id, "run artifact ID");
+    if (seen.has(id)) throw fail("Duplicate run artifact ID");
+    seen.add(id);
+    const locator = item.locator === void 0 ? null : string(item.locator, "artifact locator", 2e3);
+    if (item.path === void 0) {
+      result.push({
+        descriptor: {
+          id,
+          locator,
+          missingReason: string(
+            item.missingReason,
+            "artifact missingReason",
+            500
+          )
+        }
+      });
+      continue;
+    }
+    if (item.missingReason !== void 0)
+      throw fail("Captured run artifact cannot have missingReason");
+    if (typeof item.path !== "string" || !isAbsolute2(item.path))
+      throw fail("Run artifact path must be absolute");
+    const contentType2 = string(
+      item.contentType,
+      "run artifact contentType",
+      80
+    ).toLowerCase();
+    if (!media[contentType2])
+      throw fail(
+        `Unsupported run artifact type ${contentType2}; record a missingReason for uncaptured media`,
+        415
+      );
+    const bytes = await boundedRead2(item.path, assetLimit(contentType2));
+    inspectAsset(bytes, contentType2);
+    total += bytes.length;
+    if (total > maxTotalAssets) throw fail("Run artifacts exceed 32 MB", 413);
+    result.push({
+      descriptor: {
+        id,
+        locator,
+        filename: `${id}.${media[contentType2]}`,
+        contentType: contentType2,
+        size: bytes.length,
+        sha256: sha2562(bytes)
+      },
+      bytes
+    });
+  }
+  return result;
+}
+function createPromptStore(directoryPath, { projectDirectory, readOnly = false } = {}) {
+  let root = resolve4(directoryPath);
+  let project = projectDirectory === void 0 ? null : resolve4(projectDirectory);
+  const requestedRoot = root;
+  const requestedProject = project;
+  let canonicalizing;
+  async function canonicalizeRoot() {
+    canonicalizing ??= (async () => {
+      if (requestedProject && requestedRoot === join5(requestedProject, ".incline", "prompts")) {
+        project = await realpath2(requestedProject);
+        root = join5(project, ".incline", "prompts");
+      } else {
+        let parent = dirname2(requestedRoot);
+        const tail = [];
+        while (true) {
+          try {
+            parent = join5(await realpath2(parent), ...tail.reverse());
+            break;
+          } catch (error) {
+            if (error.code !== "ENOENT") throw error;
+            const next = dirname2(parent);
+            if (next === parent) throw error;
+            tail.push(parent.slice(next.length + (next.endsWith(sep) ? 0 : 1)));
+            parent = next;
+          }
+        }
+        root = join5(
+          parent,
+          requestedRoot.slice(dirname2(requestedRoot).length + 1)
+        );
+        if (requestedProject) project = await realpath2(requestedProject);
+      }
+    })();
+    await canonicalizing;
+  }
+  async function ensureWritable() {
+    await canonicalizeRoot();
+    if (readOnly) throw fail("Prompt store is read-only", 403);
+    await safeExisting(root, { missing: true });
+    await mkdir4(root, { recursive: true, mode: 448 });
+    await directory(root);
+  }
+  async function revisionFiles(id, revision) {
+    await canonicalizeRoot();
+    safeId(id);
+    revisionNumber(revision);
+    const path = join5(root, id, "revisions", revisionName(revision));
+    try {
+      await directory(path);
+    } catch (error) {
+      if (error.code === "ENOENT")
+        throw fail(`Prompt ${id} revision ${revision} not found`, 404);
+      throw error;
+    }
+    let meta;
+    try {
+      meta = JSON.parse(
+        (await boundedRead2(join5(path, "meta.json"), maxMetadata)).toString(
+          "utf8"
+        )
+      );
+    } catch (error) {
+      if (error.code === "ENOENT" || error instanceof SyntaxError)
+        throw fail(
+          `Missing or corrupt prompt metadata for ${id} revision ${revision}`
+        );
+      throw error;
+    }
+    return { path, meta: validateMetadata(meta, id, revision) };
+  }
+  async function revisions(id) {
+    await canonicalizeRoot();
+    safeId(id);
+    const path = join5(root, id, "revisions");
+    if (!await directory(path, { missing: true })) return [];
+    const values = [];
+    const handle = await opendir2(path);
+    for await (const entry of handle) {
+      if (entry.name.startsWith(".pending-")) continue;
+      if (!/^\d{4}$/.test(entry.name) || !entry.isDirectory())
+        throw fail(`Unexpected prompt revision entry: ${entry.name}`);
+      const revision = Number(entry.name);
+      revisionNumber(revision);
+      values.push(revision);
+      if (values.length > maxRevisions)
+        throw fail("Prompt exceeds revision limit", 413);
+    }
+    return values.sort((a, b) => a - b);
+  }
+  async function latest(id) {
+    const values = await revisions(id);
+    if (!values.length) throw fail("Prompt not found", 404);
+    return values.at(-1);
+  }
+  async function allLatest() {
+    await canonicalizeRoot();
+    if (!await directory(root, { missing: true })) return [];
+    const entries = [];
+    const handle = await opendir2(root);
+    for await (const item of handle) {
+      if (item.name.startsWith(".pending-")) continue;
+      if (!uuid2.test(item.name) || !item.isDirectory())
+        throw fail(`Unexpected prompt store entry: ${item.name}`);
+      if (entries.length >= maxEntries)
+        throw fail("Prompt store exceeds 1,000 entries", 413);
+      const revision = await latest(item.name);
+      entries.push(summary2((await revisionFiles(item.name, revision)).meta));
+    }
+    return entries.sort(
+      (a, b) => b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id)
+    );
+  }
+  async function read(id, revision) {
+    const number = revision === void 0 ? await latest(id) : revisionNumber(revision);
+    const { path, meta } = await revisionFiles(id, number);
+    let promptBytes;
+    try {
+      promptBytes = await boundedRead2(join5(path, "prompt.txt"), maxPrompt);
+    } catch (error) {
+      if (error.code === "ENOENT")
+        throw fail(`Missing prompt text for ${id} revision ${number}`);
+      throw error;
+    }
+    if (sha2562(promptBytes) !== meta.promptSha256)
+      throw fail(`Prompt text hash mismatch for ${id} revision ${number}`);
+    let prompt;
+    try {
+      prompt = new TextDecoder("utf-8", {
+        fatal: true,
+        ignoreBOM: true
+      }).decode(promptBytes);
+    } catch {
+      throw fail("Prompt text is not UTF-8");
+    }
+    for (const descriptor of meta.assets)
+      if (descriptor.filename) await asset(id, number, descriptor.id);
+    return {
+      ...meta,
+      prompt,
+      integrity: {
+        promptSha256: meta.promptSha256,
+        metadataSha256: meta.metadataSha256
+      }
+    };
+  }
+  async function asset(id, revision, assetId) {
+    safeSlug(assetId, "asset ID");
+    const { path, meta } = await revisionFiles(id, revisionNumber(revision));
+    const descriptor = meta.assets.find((item) => item.id === assetId);
+    if (!descriptor) throw fail("Prompt asset not found", 404);
+    if (descriptor.missingReason)
+      throw fail(`Prompt asset unavailable: ${descriptor.missingReason}`, 404);
+    let bytes;
+    try {
+      bytes = await boundedRead2(
+        join5(path, "assets", descriptor.filename),
+        assetLimit(descriptor.contentType)
+      );
+    } catch (error) {
+      if (error.code === "ENOENT")
+        throw fail(`Missing prompt asset ${assetId}`);
+      throw error;
+    }
+    if (bytes.length !== descriptor.size || sha2562(bytes) !== descriptor.sha256)
+      throw fail(`Prompt asset hash mismatch: ${assetId}`);
+    inspectAsset(bytes, descriptor.contentType);
+    return { ...descriptor, bytes };
+  }
+  async function save(input) {
+    const editable3 = normalizeEditable(input);
+    const assets = await incomingAssets(editable3.assets);
+    const id = input.id ?? randomUUID5();
+    const previous = input.baseRevision ?? null;
+    let revision = 1;
+    if (previous !== null) {
+      const current = await latest(id);
+      if (current !== previous)
+        throw fail(
+          `Prompt ${id} changed; expected revision ${previous}, found ${current}`,
+          409
+        );
+      if (current >= maxRevisions)
+        throw fail("Prompt exceeds revision limit", 413);
+      revision = current + 1;
+    }
+    const promptBytes = Buffer.from(editable3.prompt, "utf8");
+    const meta = {
+      version: 1,
+      id,
+      revision,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      title: editable3.title,
+      origin: editable3.origin,
+      source: editable3.source,
+      tags: editable3.tags,
+      requirements: editable3.requirements,
+      notes: editable3.notes,
+      recipe: editable3.recipe,
+      parent: editable3.parent,
+      copyOf: editable3.copyOf,
+      assets: assets.map((item) => item.descriptor),
+      promptSha256: sha2562(promptBytes)
+    };
+    meta.metadataSha256 = sha2562(Buffer.from(JSON.stringify(meta)));
+    await ensureWritable();
+    let staging;
+    let destination;
+    if (previous === null) {
+      staging = await mkdtemp(join5(root, ".pending-"));
+      destination = join5(root, id);
+      await mkdir4(join5(staging, "revisions", revisionName(1)), {
+        recursive: true,
+        mode: 448
+      });
+    } else {
+      await directory(join5(root, id, "revisions"));
+      staging = await mkdtemp(join5(root, id, "revisions", ".pending-"));
+      destination = join5(root, id, "revisions", revisionName(revision));
+    }
+    const payload = previous === null ? join5(staging, "revisions", revisionName(1)) : staging;
+    try {
+      await writeJson(join5(payload, "meta.json"), meta);
+      await writeFile3(join5(payload, "prompt.txt"), promptBytes, {
+        flag: "wx",
+        mode: 384
+      });
+      if (assets.some((item) => item.bytes))
+        await mkdir4(join5(payload, "assets"), { mode: 448 });
+      for (const item of assets)
+        if (item.bytes)
+          await writeFile3(
+            join5(payload, "assets", item.descriptor.filename),
+            item.bytes,
+            { flag: "wx", mode: 384 }
+          );
+      if (previous === null) {
+        await withPublicationLock(root, async () => {
+          await assertPublishedBelow(root, maxEntries, "Prompt entry");
+          if (await directory(destination, { missing: true }))
+            throw fail("Prompt entry already exists", 409);
+          await rename3(staging, destination);
+        });
+      } else {
+        if (await latest(id) !== previous)
+          throw fail("Prompt changed before revision was published", 409);
+        if (await directory(destination, { missing: true }))
+          throw fail("Prompt revision already exists", 409);
+        await rename3(staging, destination);
+      }
+    } catch (error) {
+      if (["EEXIST", "ENOTEMPTY"].includes(error.code))
+        throw fail("Prompt revision already exists", 409);
+      throw error;
+    } finally {
+      await rm2(staging, { recursive: true, force: true });
+    }
+    return read(id, revision);
+  }
+  async function query(options = {}) {
+    exactKeys(options, ["text", "tags", "tagValue", "limit"], "query");
+    const words = options.text === void 0 ? [] : string(options.text, "query text", 200).toLocaleLowerCase().split(/\s+/u).filter(Boolean).slice(0, 20);
+    const tags = boundedList(options.tags ?? [], "query tags", 20).map(
+      (tag) => {
+        exactKeys(tag, ["facet", "value", "provenance"], "query tag");
+        return {
+          facet: safeSlug(tag.facet, "query tag facet"),
+          value: string(tag.value, "query tag value", 100).toLocaleLowerCase(),
+          provenance: tag.provenance === void 0 ? null : provenances.includes(tag.provenance) ? tag.provenance : (() => {
+            throw fail("Invalid query provenance");
+          })()
+        };
+      }
+    );
+    const tagValue = options.tagValue === void 0 ? null : string(options.tagValue, "query tag value", 100).toLocaleLowerCase();
+    const limit = options.limit ?? 20;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50)
+      throw fail("Query limit must be 1\u201350");
+    const candidates = await allLatest();
+    return candidates.filter((entry) => {
+      const haystack = [
+        entry.title,
+        entry.requirements.effect ?? "",
+        entry.requirements.medium ?? "",
+        ...entry.requirements.roles,
+        ...entry.requirements.inputs,
+        ...entry.requirements.tools,
+        ...entry.tags.map((tag) => tag.value),
+        entry.source.author ?? ""
+      ].join(" ").toLocaleLowerCase();
+      return words.every((word) => haystack.includes(word)) && tags.every(
+        (wanted) => entry.tags.some(
+          (tag) => tag.facet === wanted.facet && tag.value.toLocaleLowerCase() === wanted.value && (!wanted.provenance || tag.provenance === wanted.provenance)
+        )
+      ) && (!tagValue || entry.tags.some(
+        (tag) => tag.value.toLocaleLowerCase() === tagValue
+      ));
+    }).slice(0, limit);
+  }
+  async function runs(id, revision) {
+    await canonicalizeRoot();
+    const number = revision === void 0 ? await latest(id) : revisionNumber(revision);
+    await revisionFiles(id, number);
+    const path = join5(root, id, "runs", revisionName(number));
+    if (!await directory(path, { missing: true })) return [];
+    const result = [];
+    const handle = await opendir2(path);
+    for await (const item of handle) {
+      if (item.name.startsWith(".pending-")) continue;
+      if (!uuid2.test(item.name) || !item.isDirectory())
+        throw fail(`Unexpected prompt run entry: ${item.name}`);
+      if (result.length >= maxRuns)
+        throw fail("Prompt run limit exceeded", 413);
+      let run;
+      try {
+        run = JSON.parse(
+          (await boundedRead2(join5(path, item.name, "record.json"), maxMetadata)).toString("utf8")
+        );
+      } catch (error) {
+        if (error instanceof SyntaxError)
+          throw fail(`Corrupt prompt run ${item.name}`);
+        throw error;
+      }
+      if (run.version !== 1 || run.id !== item.name || run.promptId !== id || run.revision !== number || !Array.isArray(run.artifacts))
+        throw fail(`Corrupt prompt run ${item.name}`);
+      const { recordSha256, ...runBody } = run;
+      if (typeof recordSha256 !== "string" || recordSha256 !== sha2562(Buffer.from(JSON.stringify(runBody))) || typeof run.recordedAt !== "string" || Number.isNaN(Date.parse(run.recordedAt)))
+        throw fail(`Run record hash mismatch: ${item.name}`);
+      for (const artifact of run.artifacts) {
+        safeSlug(artifact.id, "run artifact ID");
+        if (artifact.missingReason) continue;
+        if (!media[artifact.contentType] || artifact.filename !== `${artifact.id}.${media[artifact.contentType]}` || !Number.isInteger(artifact.size) || !hashPattern.test(artifact.sha256 ?? ""))
+          throw fail(`Corrupt run artifact ${artifact.id}`);
+        let bytes;
+        try {
+          bytes = await boundedRead2(
+            join5(path, item.name, "artifacts", artifact.filename),
+            assetLimit(artifact.contentType)
+          );
+        } catch (error) {
+          if (error.code === "ENOENT")
+            throw fail(`Missing run artifact ${artifact.id}`);
+          throw error;
+        }
+        if (bytes.length !== artifact.size || sha2562(bytes) !== artifact.sha256)
+          throw fail(`Run artifact hash mismatch: ${artifact.id}`);
+      }
+      result.push(run);
+    }
+    return result.sort(
+      (a, b) => a.recordedAt.localeCompare(b.recordedAt) || a.id.localeCompare(b.id)
+    );
+  }
+  async function saveRun(id, revision, input) {
+    await canonicalizeRoot();
+    if (readOnly) throw fail("Prompt store is read-only", 403);
+    if (!project) throw fail("Run recording requires projectDirectory");
+    if (root !== join5(project, ".incline", "prompts"))
+      throw fail("Runs belong in the project-local prompt store");
+    await assertPromptRecording(project);
+    const number = revisionNumber(revision);
+    const { meta } = await revisionFiles(id, number);
+    const data = normalizeRun(input, meta);
+    const artifacts = await incomingRunArtifacts(data.artifacts);
+    const existing = await runs(id, number);
+    if (existing.length >= maxRuns)
+      throw fail(`Prompt run limit of ${maxRuns} reached`, 413);
+    for (const dependency of data.dependencies) {
+      const run = existing.find((item) => item.id === dependency.runId);
+      if (!run || run.stageId !== dependency.stageId)
+        throw fail(`Unknown run dependency ${dependency.runId}`);
+    }
+    const record2 = {
+      version: 1,
+      id: randomUUID5(),
+      promptId: id,
+      revision: number,
+      promptSha256: meta.promptSha256,
+      recordedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      ...data,
+      artifacts: artifacts.map((item) => item.descriptor)
+    };
+    record2.recordSha256 = sha2562(Buffer.from(JSON.stringify(record2)));
+    const path = join5(root, id, "runs", revisionName(number));
+    await safeExisting(path, { missing: true });
+    await mkdir4(path, { recursive: true, mode: 448 });
+    await directory(path);
+    const staging = await mkdtemp(join5(path, ".pending-"));
+    try {
+      await writeJson(join5(staging, "record.json"), record2);
+      if (artifacts.some((item) => item.bytes))
+        await mkdir4(join5(staging, "artifacts"), { mode: 448 });
+      for (const item of artifacts)
+        if (item.bytes)
+          await writeFile3(
+            join5(staging, "artifacts", item.descriptor.filename),
+            item.bytes,
+            { flag: "wx", mode: 384 }
+          );
+      await withPublicationLock(path, async () => {
+        await assertPublishedBelow(path, maxRuns, "Prompt run");
+        await assertPromptRecording(project);
+        await rename3(staging, join5(path, record2.id));
+      });
+    } finally {
+      await rm2(staging, { recursive: true, force: true });
+    }
+    return record2;
+  }
+  async function runAsset(id, revision, runId, artifactId) {
+    safeId(runId, "run ID");
+    safeSlug(artifactId, "run artifact ID");
+    const number = revisionNumber(revision);
+    const record2 = (await runs(id, number)).find((item) => item.id === runId);
+    if (!record2) throw fail("Prompt run not found", 404);
+    const descriptor = record2.artifacts.find((item) => item.id === artifactId);
+    if (!descriptor) throw fail("Run artifact not found", 404);
+    if (descriptor.missingReason)
+      throw fail(`Run artifact unavailable: ${descriptor.missingReason}`, 404);
+    const bytes = await boundedRead2(
+      join5(
+        root,
+        id,
+        "runs",
+        revisionName(number),
+        runId,
+        "artifacts",
+        descriptor.filename
+      ),
+      assetLimit(descriptor.contentType)
+    );
+    if (bytes.length !== descriptor.size || sha2562(bytes) !== descriptor.sha256)
+      throw fail(`Run artifact hash mismatch: ${artifactId}`);
+    return { ...descriptor, bytes };
+  }
+  return {
+    get directory() {
+      return root;
+    },
+    get projectDirectory() {
+      return project;
+    },
+    readOnly,
+    save,
+    list: allLatest,
+    read,
+    query,
+    saveRun,
+    runs,
+    asset,
+    runAsset
+  };
+}
+async function copyPrompt(source, destination, id, revision) {
+  const from = typeof source === "string" ? createPromptStore(source, { readOnly: true }) : source;
+  const to = typeof destination === "string" ? createPromptStore(destination) : destination;
+  if (!from?.read || !from?.asset || !to?.save)
+    throw fail("copyPrompt requires prompt stores");
+  const entry = await from.read(id, revision);
+  const assets = [];
+  for (const descriptor of entry.assets) {
+    if (descriptor.missingReason)
+      assets.push({
+        id: descriptor.id,
+        missingReason: descriptor.missingReason
+      });
+    else {
+      const original = await from.asset(
+        entry.id,
+        entry.revision,
+        descriptor.id
+      );
+      assets.push({
+        id: descriptor.id,
+        contentType: descriptor.contentType,
+        bytes: original.bytes
+      });
+    }
+  }
+  return to.save({
+    title: entry.title,
+    prompt: entry.prompt,
+    origin: entry.origin,
+    source: entry.source,
+    tags: entry.tags,
+    requirements: entry.requirements,
+    notes: entry.notes,
+    recipe: entry.recipe,
+    parent: entry.parent,
+    assets,
+    copyOf: {
+      id: entry.id,
+      revision: entry.revision,
+      promptSha256: entry.promptSha256
+    }
+  });
+}
+
+// local/prompts-api.mjs
+var fail2 = (message, status = 400) => Object.assign(new Error(message), { status });
+var allowedScopes = /* @__PURE__ */ new Set(["project", "personal"]);
+var editable2 = /* @__PURE__ */ new Set([
+  "title",
+  "prompt",
+  "origin",
+  "source",
+  "tags",
+  "assets"
+]);
+var maxBodyBytes = 12e6;
+function object(value, fields) {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw fail2("Invalid prompt request");
+  if (Object.keys(value).some((key) => !fields.includes(key)))
+    throw fail2("Unknown prompt request field");
+  return value;
+}
+async function json(req) {
+  if (!req.headers["content-type"]?.startsWith("application/json"))
+    throw fail2("JSON required", 415);
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > maxBodyBytes) throw fail2("Prompt upload is too large", 413);
+    chunks.push(chunk);
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw fail2("Invalid JSON");
+  }
+}
+function queryRevision(value) {
+  if (value === null) return void 0;
+  const revision = Number(value);
+  if (!Number.isInteger(revision) || revision < 1 || revision > 100)
+    throw fail2("Invalid revision");
+  return revision;
+}
+function upload(item) {
+  object(item, ["id", "contentType", "base64"]);
+  if (typeof item.id !== "string" || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(item.id))
+    throw fail2("Invalid asset ID");
+  if (typeof item.base64 !== "string" || item.base64.length > 107e5 || item.base64.length % 4 !== 0 || /[^A-Za-z0-9+/=]/.test(item.base64))
+    throw fail2("Invalid asset upload");
+  const bytes = Buffer.from(item.base64, "base64");
+  if (bytes.toString("base64") !== item.base64)
+    throw fail2("Invalid asset upload");
+  inspectAsset(bytes, item.contentType);
+  return { id: item.id, contentType: item.contentType, bytes };
+}
+function scopeStore(scope, project, personalDirectory, readOnly = false) {
+  if (!allowedScopes.has(scope)) throw fail2("Invalid prompt scope");
+  if (scope === "personal") {
+    if (personalDirectory === null)
+      throw fail2("Personal prompt library is disabled", 404);
+    return createPromptStore(resolve5(personalDirectory), { readOnly });
+  }
+  return createPromptStore(join6(project, ".incline", "prompts"), {
+    projectDirectory: project,
+    readOnly
+  });
+}
+async function retainedAssets(store, entry) {
+  const assets = [];
+  for (const descriptor of entry.assets) {
+    if (descriptor.missingReason) {
+      assets.push({
+        id: descriptor.id,
+        missingReason: descriptor.missingReason
+      });
+    } else {
+      const asset = await store.asset(entry.id, entry.revision, descriptor.id);
+      assets.push({
+        id: descriptor.id,
+        contentType: asset.contentType,
+        bytes: asset.bytes
+      });
+    }
+  }
+  return assets;
+}
+function sendAsset(res, asset) {
+  res.writeHead(200, {
+    "Content-Type": asset.contentType === "text/markdown" ? "text/plain; charset=utf-8" : asset.contentType,
+    "Content-Length": asset.bytes.length,
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": "default-src 'none'"
+  });
+  res.end(asset.bytes);
+}
+async function handlePromptRequest(req, res, url, {
+  project,
+  promptLibraryDirectory = join6(homedir(), ".incline", "prompt-library"),
+  send
+}) {
+  if (!url.pathname.startsWith("/api/prompts")) return false;
+  const parts = url.pathname.split("/").filter(Boolean);
+  if (parts[0] !== "api" || parts[1] !== "prompts")
+    throw fail2("Not found", 404);
+  const scope = url.searchParams.get("scope") ?? "project";
+  const store = () => scopeStore(scope, project, promptLibraryDirectory, true);
+  if (parts.length === 3 && parts[2] === "settings") {
+    if (req.method === "GET") {
+      const settings = await readPromptSettings(project);
+      send(res, 200, {
+        settings: {
+          revision: settings.revision,
+          personalLookup: settings.personalLookup && promptLibraryDirectory !== null && settings.personalDirectory === resolve5(promptLibraryDirectory),
+          directoryChanged: settings.personalLookup && (promptLibraryDirectory === null || settings.personalDirectory !== resolve5(promptLibraryDirectory))
+        },
+        personalAvailable: promptLibraryDirectory !== null
+      });
+      return true;
+    }
+    if (req.method === "POST") {
+      const data = object(await json(req), [
+        "personalLookup",
+        "expectedRevision"
+      ]);
+      if (typeof data.personalLookup !== "boolean")
+        throw fail2("Invalid lookup setting");
+      if (promptLibraryDirectory === null && data.personalLookup)
+        throw fail2("Personal prompt library is disabled", 404);
+      if (!Object.hasOwn(data, "expectedRevision"))
+        throw fail2("Expected settings revision required");
+      let settings;
+      try {
+        settings = await savePromptSettings(project, {
+          personalLookup: data.personalLookup,
+          personalDirectory: data.personalLookup ? resolve5(promptLibraryDirectory) : null,
+          expectedRevision: data.expectedRevision
+        });
+      } catch (error) {
+        if (/Prompt settings changed|being updated/.test(error.message))
+          throw fail2(error.message, 409);
+        throw error;
+      }
+      send(res, 200, {
+        settings: {
+          revision: settings.revision,
+          personalLookup: settings.personalLookup
+        },
+        personalAvailable: promptLibraryDirectory !== null
+      });
+      return true;
+    }
+    throw fail2("Method not allowed", 405);
+  }
+  if (parts.length === 3 && parts[2] === "save" && req.method === "POST") {
+    const data = object(await json(req), [
+      "scope",
+      "id",
+      "baseRevision",
+      "changes",
+      "uploads"
+    ]);
+    const target = scopeStore(data.scope, project, promptLibraryDirectory);
+    const changes = object(data.changes, [...editable2]);
+    if (data.uploads !== void 0 && (!Array.isArray(data.uploads) || data.uploads.length > 4))
+      throw fail2("Too many uploaded assets");
+    const uploads = (data.uploads ?? []).map(upload);
+    let previous;
+    if (data.id !== void 0) {
+      if (!Number.isInteger(data.baseRevision))
+        throw fail2("Base revision required");
+      previous = await target.read(data.id, data.baseRevision);
+    } else if (data.baseRevision !== void 0)
+      throw fail2("Unexpected base revision");
+    if (changes.assets !== void 0) {
+      if (!Array.isArray(changes.assets) || changes.assets.some(
+        (a) => !a || typeof a !== "object" || Array.isArray(a) || Object.keys(a).some((k) => !["id", "missingReason"].includes(k)) || typeof a.id !== "string" || typeof a.missingReason !== "string"
+      ))
+        throw fail2("Assets must be explicit gaps or bounded uploads");
+    }
+    const baseAssets = previous ? await retainedAssets(target, previous) : [];
+    const assets = [...baseAssets, ...changes.assets ?? [], ...uploads];
+    const source = { ...previous?.source };
+    if (changes.source !== void 0) {
+      const patch = object(changes.source, [
+        "url",
+        "author",
+        "capturedAt",
+        "license",
+        "contentGap",
+        "embedUrl"
+      ]);
+      for (const [key, value] of Object.entries(patch)) {
+        if (value === null || value === "") delete source[key];
+        else source[key] = value;
+      }
+    }
+    const input = {
+      ...previous && { id: previous.id, baseRevision: data.baseRevision },
+      title: changes.title ?? previous?.title,
+      prompt: changes.prompt ?? previous?.prompt,
+      origin: changes.origin ?? previous?.origin,
+      source,
+      tags: changes.tags ?? previous?.tags ?? [],
+      requirements: previous?.requirements ?? {},
+      notes: previous?.notes ?? [],
+      recipe: previous?.recipe ?? null,
+      parent: previous?.parent ?? null,
+      copyOf: previous?.copyOf ?? null,
+      assets
+    };
+    const entry = await target.save(input);
+    send(res, 201, { entry });
+    return true;
+  }
+  if (parts.length === 3 && parts[2] === "copy" && req.method === "POST") {
+    const data = object(await json(req), ["from", "to", "id", "revision"]);
+    if (data.from === data.to) throw fail2("Choose a different destination");
+    const from = scopeStore(data.from, project, promptLibraryDirectory, true);
+    const to = scopeStore(data.to, project, promptLibraryDirectory);
+    const entry = await copyPrompt(from, to, data.id, data.revision);
+    send(res, 201, { entry });
+    return true;
+  }
+  if (req.method !== "GET") throw fail2("Method not allowed", 405);
+  if (parts.length === 2) {
+    const tagFilters = url.searchParams.getAll("tag").map((value) => {
+      const index = value.indexOf(":");
+      if (index < 0) return { value: value.trim() };
+      return {
+        facet: value.slice(0, index).trim(),
+        value: value.slice(index + 1).trim()
+      };
+    });
+    const exactTags = tagFilters.filter((tag) => tag.facet);
+    const plainTags = tagFilters.filter((tag) => !tag.facet);
+    if (plainTags.length > 1) throw fail2("Use one plain tag value at a time");
+    const entries = url.searchParams.has("text") || tagFilters.length ? await store().query({
+      text: url.searchParams.get("text") || void 0,
+      tags: exactTags,
+      tagValue: plainTags[0]?.value,
+      limit: 50
+    }) : await store().list();
+    send(res, 200, { entries });
+    return true;
+  }
+  if (parts.length >= 3) {
+    const id = parts[2];
+    const revision = queryRevision(url.searchParams.get("revision"));
+    if (parts.length === 3) {
+      send(res, 200, { entry: await store().read(id, revision) });
+      return true;
+    }
+    if (parts.length === 4 && parts[3] === "runs") {
+      const selected = revision ?? (await store().read(id)).revision;
+      send(res, 200, { runs: await store().runs(id, selected) });
+      return true;
+    }
+    if (parts.length === 5 && parts[3] === "assets") {
+      const selected = revision ?? (await store().read(id)).revision;
+      sendAsset(res, await store().asset(id, selected, parts[4]));
+      return true;
+    }
+    if (parts.length === 6 && parts[3] === "runs" && parts[5] !== "") {
+      const selected = revision ?? (await store().read(id)).revision;
+      sendAsset(res, await store().runAsset(id, selected, parts[4], parts[5]));
+      return true;
+    }
+  }
+  throw fail2("Not found", 404);
+}
+
 // local/server.mjs
 function failure3(message, status = 400) {
   return Object.assign(new Error(message), { status });
 }
-async function requireAssets(sessions, directory) {
+async function requireAssets(sessions, directory2) {
   for (const session of sessions)
     for (const reference of session.collection?.references ?? [])
       if (reference.kind === "image" || reference.kind === "guide") {
         if (!assetName(reference.asset))
           throw failure3("Invalid asset reference");
         try {
-          await access(join3(directory, reference.asset));
+          await access(join7(directory2, reference.asset));
         } catch {
           throw failure3(`Missing asset: ${reference.asset}`);
         }
       }
 }
 async function atomic(path, data) {
-  const temp = `${path}.${randomUUID4()}.tmp`;
+  const temp = `${path}.${randomUUID6()}.tmp`;
   try {
-    await writeFile2(temp, data, { mode: 384, flag: "wx" });
-    await rename2(temp, path);
+    await writeFile4(temp, data, { mode: 384, flag: "wx" });
+    await rename4(temp, path);
   } catch (e) {
-    await unlink2(temp).catch(() => {
+    await unlink3(temp).catch(() => {
     });
     throw e;
   }
@@ -997,7 +2635,7 @@ function merge(previous, incoming) {
   return [...all.values()];
 }
 function body(req) {
-  return new Promise((resolve6, reject) => {
+  return new Promise((resolve9, reject) => {
     let size = 0, text3 = "", tooLarge = false;
     req.on("data", (chunk) => {
       size += chunk.length;
@@ -1009,7 +2647,7 @@ function body(req) {
     req.on("end", () => {
       if (tooLarge) return reject(failure3("Request too large", 413));
       try {
-        resolve6(JSON.parse(text3));
+        resolve9(JSON.parse(text3));
       } catch {
         reject(failure3("Invalid JSON"));
       }
@@ -1035,17 +2673,18 @@ async function startServer({
   },
   idleMs = 30 * 60 * 1e3,
   input,
-  libraryDirectory = join3(homedir(), ".incline", "library")
+  libraryDirectory = join7(homedir2(), ".incline", "library"),
+  promptLibraryDirectory = join7(homedir2(), ".incline", "prompt-library")
 } = {}) {
-  const root = await realpath(resolve3(project));
-  const personalDirectory = libraryDirectory === null ? null : resolve3(libraryDirectory);
+  const root = await realpath3(resolve6(project));
+  const personalDirectory = libraryDirectory === null ? null : resolve6(libraryDirectory);
   const library = personalDirectory === null ? null : createLibrary(personalDirectory, root);
-  const directory = join3(root, ".incline");
-  await mkdir3(directory, { recursive: true, mode: 448 });
-  const lock = join3(directory, ".lock");
+  const directory2 = join7(root, ".incline");
+  await mkdir5(directory2, { recursive: true, mode: 448 });
+  const lock = join7(directory2, ".lock");
   let handle;
   try {
-    handle = await open3(lock, "wx", 384);
+    handle = await open6(lock, "wx", 384);
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
     let pid;
@@ -1055,8 +2694,8 @@ async function startServer({
       process.kill(pid, 0);
     } catch (err) {
       if (err.code === "ESRCH") {
-        await unlink2(lock);
-        handle = await open3(lock, "wx", 384);
+        await unlink3(lock);
+        handle = await open6(lock, "wx", 384);
       }
     }
     if (!handle)
@@ -1068,13 +2707,13 @@ async function startServer({
   await handle.close();
   let committed, draft, initialId;
   try {
-    committed = await saved(join3(directory, "state.json"));
-    draft = await saved(join3(directory, "draft.json"));
+    committed = await saved(join7(directory2, "state.json"));
+    draft = await saved(join7(directory2, "draft.json"));
     if (input) {
       const prepared = await prepareImport(input);
       const imported = validate([prepared.session])[0];
       validate([...merge(committed.sessions, draft.sessions), imported]);
-      const assetsDirectory2 = join3(directory, "assets");
+      const assetsDirectory2 = join7(directory2, "assets");
       for (const asset of prepared.assets)
         await storeNamedAsset(
           assetsDirectory2,
@@ -1084,18 +2723,18 @@ async function startServer({
         );
       draft = { ...draft, sessions: merge(draft.sessions, [imported]) };
       await atomic(
-        join3(directory, "draft.json"),
+        join7(directory2, "draft.json"),
         JSON.stringify(draft, null, 2)
       );
       initialId = imported.id;
     }
   } catch (e) {
-    await unlink2(lock);
+    await unlink3(lock);
     throw e;
   }
   let sessions = merge(committed.sessions, draft.sessions);
   const token = randomBytes(32).toString("hex");
-  const assetsDirectory = join3(directory, "assets");
+  const assetsDirectory = join7(directory2, "assets");
   let origin = "", done = false, closing = false, timer;
   let resolveClosed;
   const closed = new Promise((r) => {
@@ -1129,15 +2768,24 @@ async function startServer({
           throw failure3("Local session token required", 401);
         if (req.method === "POST" && req.headers.origin !== origin)
           throw failure3("Origin not allowed", 403);
+        if (await handlePromptRequest(req, res, url, {
+          project: root,
+          promptLibraryDirectory,
+          send
+        }))
+          return;
         if (req.method === "GET" && url.pathname === "/api/boot")
           return send(res, 200, {
             mode: "local",
             project: root,
-            directory,
+            directory: directory2,
             sessions,
             personalLibrary: {
               available: library !== null,
               directory: personalDirectory
+            },
+            promptLibrary: {
+              available: promptLibraryDirectory !== null
             },
             ...initialId ? { initialId } : {}
           });
@@ -1161,34 +2809,34 @@ async function startServer({
               };
             const prepared = await library.prepare(data2.id);
             const next = validate(merge(sessions, [prepared.session]));
-            const sources = join3(directory, "library-sources");
-            const receiptDirectory = join3(sources, prepared.session.id);
-            const staging = join3(sources, `.pending-${prepared.session.id}`);
+            const sources = join7(directory2, "library-sources");
+            const receiptDirectory = join7(sources, prepared.session.id);
+            const staging = join7(sources, `.pending-${prepared.session.id}`);
             const writtenAssets = [];
             let receiptWritten = false;
             try {
-              await mkdir3(sources, { recursive: true, mode: 448 });
-              await mkdir3(staging, { mode: 448 });
-              await writeFile2(
-                join3(staging, "snapshot.json"),
+              await mkdir5(sources, { recursive: true, mode: 448 });
+              await mkdir5(staging, { mode: 448 });
+              await writeFile4(
+                join7(staging, "snapshot.json"),
                 prepared.source.snapshot,
                 { flag: "wx", mode: 384 }
               );
-              await writeFile2(
-                join3(staging, "evidence.md"),
+              await writeFile4(
+                join7(staging, "evidence.md"),
                 prepared.source.evidence,
                 { flag: "wx", mode: 384 }
               );
-              await writeFile2(
-                join3(staging, "receipt.json"),
+              await writeFile4(
+                join7(staging, "receipt.json"),
                 JSON.stringify(prepared.source.receipt, null, 2),
                 { flag: "wx", mode: 384 }
               );
               if (prepared.assets.length)
-                await mkdir3(join3(staging, "assets"), { mode: 448 });
+                await mkdir5(join7(staging, "assets"), { mode: 448 });
               for (const asset of prepared.assets) {
-                await writeFile2(
-                  join3(staging, "assets", asset.originalAsset),
+                await writeFile4(
+                  join7(staging, "assets", asset.originalAsset),
                   asset.bytes,
                   { flag: "wx", mode: 384 }
                 );
@@ -1198,28 +2846,28 @@ async function startServer({
                   asset.bytes,
                   asset.contentType
                 );
-                writtenAssets.push(join3(assetsDirectory, asset.asset));
+                writtenAssets.push(join7(assetsDirectory, asset.asset));
               }
-              await rename2(staging, receiptDirectory);
+              await rename4(staging, receiptDirectory);
               receiptWritten = true;
               await atomic(
-                join3(directory, "draft.json"),
+                join7(directory2, "draft.json"),
                 JSON.stringify({ version: 1, sessions: next }, null, 2)
               );
             } catch (error) {
               await Promise.all(
-                writtenAssets.map((path) => unlink2(path).catch(() => {
+                writtenAssets.map((path) => unlink3(path).catch(() => {
                 }))
               );
               if (receiptWritten)
-                await rm2(receiptDirectory, {
+                await rm3(receiptDirectory, {
                   recursive: true,
                   force: true
                 }).catch(() => {
                 });
               throw error;
             } finally {
-              await rm2(staging, { recursive: true, force: true }).catch(
+              await rm3(staging, { recursive: true, force: true }).catch(
                 () => {
                 }
               );
@@ -1274,20 +2922,20 @@ async function startServer({
           await requireAssets(next, assetsDirectory);
           if (url.pathname === "/api/draft") {
             await atomic(
-              join3(directory, "draft.json"),
+              join7(directory2, "draft.json"),
               JSON.stringify({ version: 1, sessions: next }, null, 2)
             );
             sessions = next;
             return { status: "saved" };
           }
-          const revision = `${Date.now()}-${randomUUID4()}`;
-          const revisions = join3(directory, "revisions");
-          const profiles = join3(directory, "profiles");
-          await mkdir3(revisions, { recursive: true });
-          await mkdir3(profiles, { recursive: true });
-          const revisionPath = join3(revisions, `${revision}.json`);
-          const statePath = join3(directory, "state.json");
-          const profilePath = join3(directory, "profile.md");
+          const revision = `${Date.now()}-${randomUUID6()}`;
+          const revisions = join7(directory2, "revisions");
+          const profiles = join7(directory2, "profiles");
+          await mkdir5(revisions, { recursive: true });
+          await mkdir5(profiles, { recursive: true });
+          const revisionPath = join7(revisions, `${revision}.json`);
+          const statePath = join7(directory2, "state.json");
+          const profilePath = join7(directory2, "profile.md");
           const state = {
             version: 1,
             revision,
@@ -1295,12 +2943,12 @@ async function startServer({
             savedAt: (/* @__PURE__ */ new Date()).toISOString(),
             sessions: next
           };
-          await writeFile2(revisionPath, JSON.stringify(state, null, 2), {
+          await writeFile4(revisionPath, JSON.stringify(state, null, 2), {
             flag: "wx",
             mode: 384
           });
           for (const s of next.filter((s2) => s2.complete))
-            await atomic(join3(profiles, `${s.id}.md`), exportMarkdown(s));
+            await atomic(join7(profiles, `${s.id}.md`), exportMarkdown(s));
           await atomic(
             profilePath,
             `# Incline project taste collection
@@ -1311,7 +2959,7 @@ ${next.filter((s) => s.complete).map(exportMarkdown).join("\n---\n\n")}`
           );
           await atomic(statePath, JSON.stringify(state, null, 2));
           await atomic(
-            join3(directory, "draft.json"),
+            join7(directory2, "draft.json"),
             JSON.stringify({ version: 1, sessions: next }, null, 2)
           );
           sessions = next;
@@ -1340,8 +2988,8 @@ ${next.filter((s) => s.complete).map(exportMarkdown).join("\n---\n\n")}`
       if (req.method !== "GET" && req.method !== "HEAD")
         throw failure3("Method not allowed", 405);
       const relative = decodeURIComponent(url.pathname) === "/" ? "index.html" : decodeURIComponent(url.pathname).slice(1);
-      const base2 = resolve3(ui), file = resolve3(base2, relative);
-      if (!file.startsWith(base2 + sep)) throw failure3("Not found", 404);
+      const base2 = resolve6(ui), file = resolve6(base2, relative);
+      if (!file.startsWith(base2 + sep2)) throw failure3("Not found", 404);
       let bytes;
       try {
         bytes = await readFile3(file);
@@ -1368,18 +3016,18 @@ ${next.filter((s) => s.complete).map(exportMarkdown).join("\n---\n\n")}`
     clearTimeout(timer);
     await serial;
     server.close(async () => {
-      await unlink2(lock).catch(() => {
+      await unlink3(lock).catch(() => {
       });
       resolveClosed();
     });
     server.closeIdleConnections();
     return closed;
   }
-  await new Promise((resolve6, reject) => {
+  await new Promise((resolve9, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve6);
+    server.listen(0, "127.0.0.1", resolve9);
   }).catch(async (e) => {
-    await unlink2(lock);
+    await unlink3(lock);
     throw e;
   });
   origin = `http://127.0.0.1:${server.address().port}`;
@@ -1389,27 +3037,27 @@ ${next.filter((s) => s.complete).map(exportMarkdown).join("\n---\n\n")}`
     origin,
     token,
     url: `${origin}/#incline=${token}`,
-    directory,
+    directory: directory2,
     close,
     closed
   };
 }
 
 // local/options.mjs
-import { realpath as realpath2, stat } from "node:fs/promises";
-import { homedir as homedir2 } from "node:os";
-import { dirname as dirname2, join as join4, resolve as resolve4 } from "node:path";
+import { realpath as realpath4, stat } from "node:fs/promises";
+import { homedir as homedir3 } from "node:os";
+import { dirname as dirname3, join as join8, resolve as resolve7 } from "node:path";
 async function projectRoot(cwd) {
-  const start = await realpath2(cwd);
+  const start = await realpath4(cwd);
   let current = start;
   while (true) {
     try {
-      const marker = await stat(join4(current, ".git"));
+      const marker = await stat(join8(current, ".git"));
       if (marker.isDirectory() || marker.isFile()) return current;
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }
-    const parent = dirname2(current);
+    const parent = dirname3(current);
     if (parent === current) return start;
     current = parent;
   }
@@ -1423,6 +3071,7 @@ async function resolveOptions(args2, cwd = process.cwd()) {
       "--input",
       "--library-dir",
       "--personal-dir",
+      "--prompt-library-dir",
       "--local-only"
     ].includes(flag) || options.has(flag))
       throw new Error(
@@ -1433,15 +3082,16 @@ async function resolveOptions(args2, cwd = process.cwd()) {
       const value = args2[++index];
       if (!value || value.startsWith("--"))
         throw new Error(`Missing value for ${flag}.`);
-      options.set(flag, resolve4(cwd, value));
+      options.set(flag, resolve7(cwd, value));
     }
   }
-  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir")))
+  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir") || options.has("--prompt-library-dir")))
     throw new Error("Choose --local-only or a shared directory, not both.");
   return {
     project: options.get("--project") ?? await projectRoot(cwd),
-    personalDirectory: options.has("--local-only") ? null : options.get("--personal-dir") ?? join4(homedir2(), ".incline", "personal-insights"),
-    libraryDirectory: options.has("--local-only") ? null : options.get("--library-dir") ?? join4(homedir2(), ".incline", "library"),
+    personalDirectory: options.has("--local-only") ? null : options.get("--personal-dir") ?? join8(homedir3(), ".incline", "personal-insights"),
+    libraryDirectory: options.has("--local-only") ? null : options.get("--library-dir") ?? join8(homedir3(), ".incline", "library"),
+    promptLibraryDirectory: options.has("--local-only") ? null : options.get("--prompt-library-dir") ?? join8(homedir3(), ".incline", "prompt-library"),
     ...options.has("--input") ? { input: options.get("--input") } : {}
   };
 }
@@ -1449,16 +3099,19 @@ async function resolveOptions(args2, cwd = process.cwd()) {
 // local/cli.mjs
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { resolve as resolve5 } from "node:path";
+import { resolve as resolve8 } from "node:path";
 var help = `Incline \u2014 collect and explore your design taste
 
 node incline.mjs [--project <directory>] [--input <collection.json>]
                  [--library-dir <directory> | --local-only]
+                 [--prompt-library-dir <directory>]
 
 Uses the current repository, or the current directory outside a repository.
 --project selects a different project. A personal library is available at
 ~/.incline/library; it is only accessed when you open it or save a copy.
 --library-dir selects another library. --local-only disables shared access.
+--prompt-library-dir selects the personal prompt library, which is read only
+when you explicitly open it or enable personal prompt lookup.
 
 Prints a ready event with a localhost URL. Open that URL for the user.
 Finish writes the project's .incline/profile.md and an immutable revision,
@@ -1474,7 +3127,7 @@ if (args.length === 1 && ["--help", "-h"].includes(args[0])) {
     const ui = [
       new URL("../assets/ui/", import.meta.url),
       new URL("../skills/incline/assets/ui/", import.meta.url)
-    ].map(fileURLToPath).find((path) => existsSync(resolve5(path, "index.html")));
+    ].map(fileURLToPath).find((path) => existsSync(resolve8(path, "index.html")));
     if (!ui)
       throw new Error(
         "Incline UI is missing. Reinstall the complete skill, or run npm run build:skill in the source project."

@@ -1,0 +1,42 @@
+{
+  "title": "Hand input to bounded progress",
+  "origin": "agent-authored",
+  "prompt": "Build the interaction layer for an existing scene whose visual state is controlled by a progress value from 0 to 1. Keep the current visual direction. First make pointer and keyboard input drive that value and verify the end stops. Then connect the project's available hand tracker: explicitly map camera coordinates, define when the gesture engages and releases, and convert relative movement into bounded progress without jumps on re-engagement. Keep sensing separate from state and rendering. Add smoothing only enough to reduce jitter without making direct manipulation lag. Define what happens when the hand leaves view, capture is denied, or the camera is turned off. Preserve ordinary input alternatives. Use placeholders until real input works; report whether camera input was actually tested. Return the state/input adapter, its integration instructions, and evidence of the relevant interaction checks.",
+  "tags": [
+    {
+      "facet": "production",
+      "value": "interaction",
+      "provenance": "agent-hypothesis"
+    },
+    {
+      "facet": "motion",
+      "value": "direct manipulation",
+      "provenance": "agent-hypothesis"
+    }
+  ],
+  "requirements": {
+    "effect": "Map hand movement into bounded scene progress",
+    "roles": [
+      "gesture input"
+    ],
+    "medium": "live frontend",
+    "inputs": [
+      "Existing scene state contract",
+      "Available tracking tool"
+    ],
+    "unknowns": [
+      "User's preferred response feel"
+    ],
+    "checks": [
+      "No jump on gesture engagement",
+      "Pointer and keyboard fallback",
+      "Lost tracking state"
+    ]
+  },
+  "notes": [
+    {
+      "text": "Synthetic recipe for trying retrieval and authoring. No generated result or user test is claimed.",
+      "provenance": "agent-hypothesis"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Curated prompt hub and staged design production
 
-Date: 2026-09-26. Status: design proposal, not implemented.
+Date: 2026-09-26. Status: first delivery implemented; final verification recorded in the [implementation plan](../plans/2026-09-26-prompt-hub.md) and [evaluation notes](../plans/2026-09-26-prompt-hub-evaluation.md). Real design and live selector efficacy trials remain pending.
 
 The user agreed to a source-attributed prompt hub and a focused prompt-authoring workflow, then added faceted tags, lightweight retrieval, possible Jev review, component-level generation, and visible testing status. They further clarified that the agent should work backward from an intended effect to a staged production workflow, choosing when to generate assets, implement ordinary frontend code, connect interaction, and refine the composition. Dependencies can form a directed acyclic graph (DAG), allowing bounded subagent work on independent stages. This document records that direction and the proposed boundaries. It does not update the installed skill, enable external calls, or collect new personal evidence.
 

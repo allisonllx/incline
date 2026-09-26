@@ -7,6 +7,8 @@ await build({
     insights: 'local/insights-cli.mjs',
     exploration: 'local/exploration-cli.mjs',
     'jev-review': 'local/jev-review-cli.mjs',
+    prompts: 'local/prompts-cli.mjs',
+    'prompt-routing': 'local/prompt-routing-cli.mjs',
   },
   bundle: true,
   platform: 'node',

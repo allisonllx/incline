@@ -44,10 +44,11 @@ Incline remains one installable skill. Its [entry point](skills/incline/SKILL.md
 | [Design](skills/incline/references/workflows/design.md) | Interpret references, critique or improve a frontend, and write a project design brief. |
 | [Feedback](skills/incline/references/workflows/feedback.md) | Catch up on accessible history and record meaningful iteration checkpoints. |
 | [Library](skills/incline/references/workflows/library.md) | Explicitly find, save and reuse personal collections. |
+| [Prompt](skills/incline/references/workflows/prompt.md) | Curate source-attributed prompts, retrieve relevant recipes, and write or adapt execution briefs. |
 
 You can keep saying “Use Incline”; there are no extra skills to install or names to memorize. “Improve this screen using these references” enters Design, while “save these references” enters Collect. For “improve this screen and record my feedback,” Design owns the frontend work and Feedback supports it. Shared evidence rules have one home, and workflows hand off saved paths and context without restarting intake.
 
-This reorganizes the agent instructions. The existing browser UI, commands, storage formats and installation stay the same. It does not add automatic library suggestions or an independent background observer.
+The collection commands and version-1 data remain compatible. Prompt entries have their own additive store and library view. Personal prompt lookup can be enabled for a selected library within a project; collection and insight reuse retain their explicit-operation scope. There is no independent background observer.
 
 ## Ways to use Incline
 
@@ -70,6 +71,10 @@ After installing the skill, use these prompts in your coding agent with the inte
 | **Bring a written design guide** | “Use Incline to collect this DESIGN.md as a reference. Keep its reading rhythm, but explore a different colour palette.” | Preserves the original guide and your qualifications alongside other references. |
 | **Explore public design guides** | “Use Incline to look for editorial references in the public getdesign.md collection, then help me choose a guide to explore.” | Uses the optional public-catalog helper to find candidates and import a selected guide as inspiration. Internet access is required. |
 | **Write a project design brief** | “Use our chosen Incline references and explicit feedback to write a project-specific DESIGN.md. Separate confirmed decisions from open questions.” | The agent synthesizes the evidence into an implementation guide with sources and qualities to preserve. |
+| **Save a useful prompt** | “Save this prompt and its original post in Incline. Keep the source text, tag its motion and visual treatment, and mark it untested.” | Creates a source-attributed prompt entry with editable tags and explicit gaps for unavailable media. |
+| **Adapt a saved mechanism** | “Find a prompt that could help build this reveal. Adapt it to this project's direction, and keep the original intact.” | Queries a small shortlist, inspects selected references, and saves a separate adaptation when requested. |
+| **Plan a layered effect** | “Plan and build a hand-controlled aircraft window shade. Decide which parts need assets or ordinary code, test the interaction, then integrate and refine the lighting. Use subagents where the work is independent.” | Design plans stages and shared requirements, uses relevant recipes, and reviews the integrated experience. Available host tools determine execution. |
+| **Reuse prompts automatically within a project** | “For this project, you can look in my Incline personal prompt library when a relevant recipe could help. Ask before saving new personal copies.” | Enables scoped read-only lookup without merging taste profiles or permitting external Jev calls. |
 
 For a visual collection session, choose **Finish & return to agent** when ready to continue building. Feedback recording works directly through the active agent and does not require opening the visual session.
 
@@ -91,6 +96,18 @@ Taste stays project-local unless you explicitly save a collection to the persona
 Catch-up depends on the history and artifacts your agent can access. Summarized conversations remain labeled summaries, unavailable screenshots remain gaps, and unchanged elements are not treated as approval. The skill guides the active agent; it does not independently watch chats or retrieve inaccessible conversations.
 
 Automatic personal-library suggestions, a dedicated interface for mixing aspects from several collections, browser display of journal events, and automatic profile refinement are still [planned](plan.md). Today, ask explicitly to check the library and describe any particular qualities you want the agent to combine.
+
+## Curate prompts and plan production stages
+
+The prompt hub keeps exact source text, attribution, editable tags, requirements, retained assets and immutable revisions. Use the **Prompts** area within the local library to save, search, inspect and revise entries, or ask your agent to use the bundled `scripts/prompts.mjs`. Personal prompt copies use the separate `~/.incline/prompt-library/` store. A source URL remains available even when a durable screenshot or motion capture is missing; the gap stays visible.
+
+The agent can work backward from an effect into stages: choose HTML/CSS/SVG or generated assets, establish shared composition and lighting, prototype uncertain mechanisms, and delegate independent work before integration. Saved recipes can support a single stage or an adaptable workflow. The main agent retains the overall design direction. Incline supplies planning guidance and dependency data; it does not run a separate autonomous scheduler.
+
+Run evidence distinguishes execution, inspection coverage, who tested a result, and the user's actual reaction. Evidence belongs to an exact prompt revision and its inputs/artifacts. Editing or copying a prompt does not inherit a successful test as a new result. Prompt run and decision recording defaults off and respects an explicit stop; ordinary prompt curation remains available.
+
+Optional Jev routing starts with one narrow choice: select an eligible recipe to inspect, or abstain. Local code performs exact tag and compatibility checks. The agent still reads the selected prompt and visuals before adapting. The default is an offline preview; an explicit send with the preview hash makes at most one external call and saves an advisory receipt. Existing keys do not enable background calls. Worker routing, recovery selectors and automatic design judgments remain outside this first version.
+
+See [prompt commands and schema](skills/incline/references/prompts.md), [production planning](skills/incline/references/production-planning.md), [the implementation plan](docs/superpowers/plans/2026-09-26-prompt-hub.md), and [offline evaluation and limits](docs/superpowers/plans/2026-09-26-prompt-hub-evaluation.md). The bundled example recipes are labelled agent-authored and untested; the source-only motion bookmark does not claim to retain its original prompt or video.
 
 ## Where taste lives
 

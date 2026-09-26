@@ -1,0 +1,41 @@
+{
+  "title": "Prepare compatible layers for a desk scene",
+  "origin": "agent-authored",
+  "prompt": "Prepare a realistic fixed-view desk scene using the supplied composition and reference images. Before generating, identify which objects actually need independent movement or placement. If the scene is decorative, propose one coherent background. If layers are needed, establish one camera angle, horizon, object scale, light direction, palette and framing for every asset. Prepare the desk/background and only the necessary separate objects. Keep edges usable for compositing through true transparency or an explicit mask; do not assume a checkerboard is transparency. Specify anchors and front-to-back ordering. Avoid baking a contact shadow into a moving object when the shadow must respond to its new position. Assemble a low-resolution study early to catch perspective and scale mismatch before polishing each file. Keep interactive screen content as live HTML rather than rasterized text. Return versioned assets, mask/anchor notes, and an assembled preview showing the actual composition. State any reference or render that could not be inspected.",
+  "tags": [
+    {
+      "facet": "production",
+      "value": "asset layers",
+      "provenance": "agent-hypothesis"
+    },
+    {
+      "facet": "style",
+      "value": "realistic scene",
+      "provenance": "agent-hypothesis"
+    }
+  ],
+  "requirements": {
+    "effect": "Compose independently useful assets into one coherent scene",
+    "roles": [
+      "scene assets",
+      "composition"
+    ],
+    "medium": "image asset",
+    "inputs": [
+      "Composition brief",
+      "Reference views",
+      "List of interactive objects"
+    ],
+    "checks": [
+      "Shared perspective and scale",
+      "Consistent contact shadows",
+      "No baked functional controls"
+    ]
+  },
+  "notes": [
+    {
+      "text": "Agent-authored example, untested. Adapt the subject and aesthetic to the actual project.",
+      "provenance": "agent-hypothesis"
+    }
+  ]
+}

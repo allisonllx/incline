@@ -33,6 +33,8 @@ For competing interpretations across iterations, or an exploration the user asks
 
 ## Apply and inspect
 
+For an effect involving generated assets, layered scenes or interaction, use [production planning](../production-planning.md) to choose representations and stage dependencies before implementation. Use [Prompt](prompt.md) when a saved recipe or dedicated execution brief will help a stage. Keep the shared visual direction and final integration with this workflow; a small edit needs no production graph.
+
 Identify explicit qualities to preserve, inspect the target, and explain which relationships from the references serve the actual product. Follow the critique guide for hierarchy, whitespace, alignment, proximity, contrast, balance, repetition and unity. Diagnose structural problems before assuming a palette change is sufficient. Do not copy salient colours or a reference's concept without a reason relevant to the target.
 
 For a requested `DESIGN.md`, read [design guides](../design-guides.md) and inspect any existing project guide before updating it. For implementation, follow the project's engineering conventions and inspect the actual rendered before/after at relevant viewports and states where tools permit. When a study was chosen, also compare against that exact version and its qualifications; preserve its focal hierarchy and distinctive treatment rather than silently diluting it into minor styling changes. Distinguish passing checks, your visual assessment and user approval.

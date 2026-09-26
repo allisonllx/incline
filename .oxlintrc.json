@@ -37,7 +37,10 @@
     "skills/incline/scripts/getdesign.mjs",
     "skills/incline/scripts/feedback.mjs",
     "skills/incline/scripts/insights.mjs",
-    "skills/incline/scripts/jev-review.mjs"
+    "skills/incline/scripts/jev-review.mjs",
+    "skills/incline/scripts/exploration.mjs",
+    "skills/incline/scripts/prompts.mjs",
+    "skills/incline/scripts/prompt-routing.mjs"
   ],
   "rules": {
     "no-array-constructor": "error",

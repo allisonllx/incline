@@ -1,0 +1,22 @@
+{
+  "title": "Motion prompt source supplied in the design discussion",
+  "origin": "published",
+  "prompt": "",
+  "source": {
+    "url": "https://x.com/twoclipping/status/2103273003555402193",
+    "contentGap": "Source-only bookmark. The original prompt text and motion result are not captured in this example; inspect the source before creating a usable revision."
+  },
+  "requirements": {
+    "unknowns": [
+      "Original prompt text",
+      "Runtime and required assets",
+      "Observed motion result"
+    ]
+  },
+  "notes": [
+    {
+      "text": "Source-only example. Saving does not establish reproducibility or aesthetic approval.",
+      "provenance": "agent-hypothesis"
+    }
+  ]
+}

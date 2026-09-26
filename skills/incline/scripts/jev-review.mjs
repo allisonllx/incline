@@ -26,6 +26,7 @@ async function resolveOptions(args, cwd = process.cwd()) {
       "--input",
       "--library-dir",
       "--personal-dir",
+      "--prompt-library-dir",
       "--local-only"
     ].includes(flag) || options.has(flag))
       throw new Error(
@@ -39,12 +40,13 @@ async function resolveOptions(args, cwd = process.cwd()) {
       options.set(flag, resolve(cwd, value));
     }
   }
-  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir")))
+  if (options.has("--local-only") && (options.has("--library-dir") || options.has("--personal-dir") || options.has("--prompt-library-dir")))
     throw new Error("Choose --local-only or a shared directory, not both.");
   return {
     project: options.get("--project") ?? await projectRoot(cwd),
     personalDirectory: options.has("--local-only") ? null : options.get("--personal-dir") ?? join(homedir(), ".incline", "personal-insights"),
     libraryDirectory: options.has("--local-only") ? null : options.get("--library-dir") ?? join(homedir(), ".incline", "library"),
+    promptLibraryDirectory: options.has("--local-only") ? null : options.get("--prompt-library-dir") ?? join(homedir(), ".incline", "prompt-library"),
     ...options.has("--input") ? { input: options.get("--input") } : {}
   };
 }

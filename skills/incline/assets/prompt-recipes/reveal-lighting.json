@@ -1,0 +1,40 @@
+{
+  "title": "Lighting and occlusion for a moving reveal",
+  "origin": "agent-authored",
+  "prompt": "Refine the supplied layered reveal without changing its established composition or input contract. Identify the foreground frame, moving occluder, revealed view and surrounding surface. Drive visibility, position and changing light from the same existing progress state so the scene cannot drift out of sync. Use ordinary CSS or SVG where it reproduces the required geometry; retain supplied textured assets where they are essential. Determine which depth cues are fixed and which must change as the opening moves. Add restrained edge/contact shadows with one consistent light direction, and avoid a uniform glow that flattens the frame. Inspect closed, partly open and fully open states, plus movement between them. Check masking seams and responsive crop at the intended sizes. Compare the integrated result against the supplied reference and report unverified conditions. Return the implementation and captured states; do not call it user-approved merely because checks pass.",
+  "tags": [
+    {
+      "facet": "production",
+      "value": "lighting",
+      "provenance": "agent-hypothesis"
+    },
+    {
+      "facet": "motion",
+      "value": "reveal",
+      "provenance": "agent-hypothesis"
+    }
+  ],
+  "requirements": {
+    "effect": "Keep occlusion, moving layers and illumination coherent",
+    "roles": [
+      "composition polish"
+    ],
+    "medium": "live frontend",
+    "inputs": [
+      "Layered scene",
+      "Shared progress state",
+      "Reference treatment"
+    ],
+    "checks": [
+      "Closed/partial/open states",
+      "No mask seams",
+      "Coherent dynamic and baked shadows"
+    ]
+  },
+  "notes": [
+    {
+      "text": "Agent-authored example. There is no claimed execution or aesthetic result.",
+      "provenance": "agent-hypothesis"
+    }
+  ]
+}

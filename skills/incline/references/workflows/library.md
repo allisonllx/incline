@@ -3,6 +3,8 @@
 **Use for:** explicitly listing, saving or reusing personal collections or curated insight snapshots across projects.
 **Result:** a chosen reusable snapshot or a project-local imported draft with its source context intact. A library lookup alone does not authorize importing or applying a collection.
 
+For prompt recipes, use [prompt operations](../prompts.md). They use the separate personal prompt store, source-preserving copies and revision-specific results. An explicitly enabled project setting permits read-only prompt lookup within that selected library; it does not enable automatic personal saves or change collection/insight access.
+
 Follow [shared evidence rules](../evidence.md), then read [personal library](../personal-library.md) for storage, UI and API operations. If a local browser session is required, use the launch/recovery procedure in [Collect](collect.md) without forcing a quiz, replacing an existing draft or running a new discovery interview.
 
 Global installation does not make library access automatic. Respect `--local-only`; access the configured personal library only within the user's requested scope. Preserve separate contexts and alternative styles. Imports are inspiration until the user chooses what should guide the new project; copying a collection does not approve every inherited preference.
