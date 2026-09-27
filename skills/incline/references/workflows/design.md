@@ -47,4 +47,6 @@ When recording is active, load [Feedback](feedback.md) at meaningful checkpoints
 
 ## Handoff
 
+After showing a substantial preview or integrated result, selectively offer an [optional overall-vibe checkpoint](../feedback-checkpoints.md). Both rating and comment are optional; do not interrupt a specific correction, duplicate feedback already supplied, or block authorized work while waiting. Using Incline does not itself enable persistent recording.
+
 Report what changed and why, which evidence informed it, what was actually inspected and any material unresolved issue. Record acceptance only when the user expresses it. A library copy is a separate explicit operation.

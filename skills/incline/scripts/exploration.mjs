@@ -598,15 +598,23 @@ function validateBatch(data) {
       "occurredAt",
       "context",
       "artifactIds",
-      "disposition"
+      "disposition",
+      "rating"
     ]);
     if (event.disposition !== void 0) {
-      object2(event.disposition, ["publication", "readiness", "aesthetic", "basis"]);
+      object2(event.disposition, [
+        "publication",
+        "readiness",
+        "aesthetic",
+        "basis"
+      ]);
       for (const [axis, values] of Object.entries({
         publication: ["unknown", "authorized"],
         readiness: ["unknown", "acceptable"],
         aesthetic: ["unknown", "positive", "preferred"]
-      })) if (!values.includes(event.disposition[axis])) fail2(`disposition ${axis}`);
+      }))
+        if (!values.includes(event.disposition[axis]))
+          fail2(`disposition ${axis}`);
       text(event.disposition.basis, "disposition basis");
     }
     id2(event.id);
@@ -620,7 +628,8 @@ function validateBatch(data) {
       "acceptance",
       "preservation",
       "hypothesis",
-      "pause"
+      "pause",
+      "reaction"
     ];
     if (!kinds.includes(event.kind)) fail2("event kind");
     if (!["verbatim", "summary", "observation", "inference"].includes(
@@ -632,7 +641,8 @@ function validateBatch(data) {
       "negative",
       "directed-edit",
       "reversion",
-      "acceptance"
+      "acceptance",
+      "reaction"
     ].includes(event.kind) && !["verbatim", "summary"].includes(event.evidence))
       fail2(`${event.kind} requires explicit user evidence`);
     if (event.kind === "hypothesis" && event.evidence !== "inference")
@@ -646,6 +656,25 @@ function validateBatch(data) {
     list(event.artifactIds, "artifact references", 24);
     if (event.artifactIds.some((value) => !artifactIds.has(value)))
       fail2("unknown artifact reference");
+    if (event.rating !== void 0) {
+      if (event.kind !== "reaction") fail2("rating requires a reaction event");
+      if (!event.artifactIds.length)
+        fail2("rating requires an artifact reference");
+      const rating = event.rating;
+      object2(rating, [
+        "value",
+        "min",
+        "max",
+        "question",
+        "minLabel",
+        "maxLabel"
+      ]);
+      if (![rating.value, rating.min, rating.max].every(Number.isFinite) || rating.min >= rating.max || rating.value < rating.min || rating.value > rating.max)
+        fail2("rating requires a finite value within its stated scale");
+      text(rating.question, "rating question", 2e3);
+      text(rating.minLabel, "rating minLabel", 500);
+      text(rating.maxLabel, "rating maxLabel", 500);
+    }
   }
   return data;
 }

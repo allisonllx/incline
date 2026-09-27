@@ -70,14 +70,22 @@ export function validateBatch(data) {
       'context',
       'artifactIds',
       'disposition',
+      'rating',
     ]);
     if (event.disposition !== undefined) {
-      object(event.disposition, ['publication', 'readiness', 'aesthetic', 'basis']);
+      object(event.disposition, [
+        'publication',
+        'readiness',
+        'aesthetic',
+        'basis',
+      ]);
       for (const [axis, values] of Object.entries({
         publication: ['unknown', 'authorized'],
         readiness: ['unknown', 'acceptable'],
         aesthetic: ['unknown', 'positive', 'preferred'],
-      })) if (!values.includes(event.disposition[axis])) fail(`disposition ${axis}`);
+      }))
+        if (!values.includes(event.disposition[axis]))
+          fail(`disposition ${axis}`);
       text(event.disposition.basis, 'disposition basis');
     }
     id(event.id);
@@ -92,6 +100,7 @@ export function validateBatch(data) {
       'preservation',
       'hypothesis',
       'pause',
+      'reaction',
     ];
     if (!kinds.includes(event.kind)) fail('event kind');
     if (
@@ -107,6 +116,7 @@ export function validateBatch(data) {
         'directed-edit',
         'reversion',
         'acceptance',
+        'reaction',
       ].includes(event.kind) &&
       !['verbatim', 'summary'].includes(event.evidence)
     )
@@ -126,6 +136,30 @@ export function validateBatch(data) {
     list(event.artifactIds, 'artifact references', 24);
     if (event.artifactIds.some((value) => !artifactIds.has(value)))
       fail('unknown artifact reference');
+    if (event.rating !== undefined) {
+      if (event.kind !== 'reaction') fail('rating requires a reaction event');
+      if (!event.artifactIds.length)
+        fail('rating requires an artifact reference');
+      const rating = event.rating;
+      object(rating, [
+        'value',
+        'min',
+        'max',
+        'question',
+        'minLabel',
+        'maxLabel',
+      ]);
+      if (
+        ![rating.value, rating.min, rating.max].every(Number.isFinite) ||
+        rating.min >= rating.max ||
+        rating.value < rating.min ||
+        rating.value > rating.max
+      )
+        fail('rating requires a finite value within its stated scale');
+      text(rating.question, 'rating question', 2000);
+      text(rating.minLabel, 'rating minLabel', 500);
+      text(rating.maxLabel, 'rating maxLabel', 500);
+    }
   }
   return data;
 }

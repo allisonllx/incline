@@ -57,6 +57,8 @@ An asset recipe, gesture recipe and lighting recipe can serve different stages. 
 
 Inspect the assembled result at relevant viewports and states: hierarchy, spacing, typography, lighting consistency, seams, occlusion, interaction response, fallbacks and accessibility. Compare with the supplied or selected reference treatment, including qualities that can disappear during implementation. State missing visual or motion evidence explicitly.
 
+When presenting a meaningful visual milestone, use Design's [optional overall-vibe checkpoint](feedback-checkpoints.md) where helpful. Ask about the coherent result rather than every generated layer; a user rating remains separate from these inspection checks and does not block the remaining authorized work.
+
 When recording is active, connect exact prompt revisions, inputs, stage/plan identities, outputs and original reactions through prompt run evidence. Use the [exploration graph](exploration.md) for competing interpretations and recoverable attempts. Execution dependencies and taste hypotheses have different meanings: failed tracking does not reject the visual idea. User response, agent inspection and technical tests remain separate evidence.
 
 ## Illustrative workflows

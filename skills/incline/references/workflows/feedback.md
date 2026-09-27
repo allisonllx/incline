@@ -11,6 +11,8 @@ When supporting an ongoing frontend task, record meaningful checkpoints and retu
 
 When a read fails, report it and preserve the original files; do not replace them with empty defaults or silently migrate older ad hoc folders. Distinguish a requested memory recap from a request to create new historical evidence.
 
+For occasional invitations after a shown design milestone, follow [optional overall-vibe checkpoints](../feedback-checkpoints.md). A numeric rating and comment are independently optional. Preserve their exact wording, scale and target version as a contextual reaction; comments are partial evidence, not a complete explanation of taste. Skipping is not feedback, and a rating alone is not acceptance or an instruction. Asking and recording have separate scopes.
+
 ## Curate findings separately
 
 When recording is active, or when asked to extract or maintain useful findings, read [project insights](../insights.md). Save concise, scoped insights with links to supporting and conflicting events, separate from raw records. Read existing insights first on resume, and retrieve relevant source events as needed. Recording feedback alone does not authorize silently turning it into explicit user instructions. Preserve the difference between user-requested constraints and tentative recurring patterns.

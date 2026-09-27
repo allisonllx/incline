@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { saveInsight, readInsights } from './insights.mjs';
 import { previewReview, runReview, reviewApiKey } from './jev-review.mjs';
 import { QUESTIONS } from './jev-learning.mjs';
+import { recordFeedback } from './feedback.mjs';
 async function setup(t) {
   const project = await mkdtemp(join(tmpdir(), 'incline-jev-review-'));
   t.after(() => rm(project, { recursive: true, force: true }));
@@ -97,6 +98,71 @@ test('preview is offline, selective, path-free and excludes candidate from compa
     'other',
   );
   await assert.rejects(previewReview(project, 'spacing', ['spacing']));
+});
+
+test('linked overall reactions retain the question and scale in offline review without becoming instructions', async (t) => {
+  const { project, input } = await setup(t);
+  const rating = {
+    value: 4,
+    min: 1,
+    max: 5,
+    question:
+      'How much do you like the overall vibe of this version for this project?',
+    minLabel: 'Not for me',
+    maxLabel: 'Love it',
+  };
+  await recordFeedback(
+    project,
+    {
+      id: 'vibe-check',
+      mode: 'live',
+      coverage: { source: 'Synthetic user reply', limitations: [] },
+      artifacts: [
+        {
+          id: 'shown-v2',
+          locator: 'Shown V2',
+          missingReason: 'Capture unavailable',
+        },
+      ],
+      events: [
+        {
+          id: 'reaction',
+          kind: 'reaction',
+          evidence: 'verbatim',
+          text: '4, though the heading still feels cramped.',
+          source: 'Synthetic reply',
+          occurredAt: null,
+          context: 'Overall V2; comment is partial.',
+          artifactIds: ['shown-v2'],
+          rating,
+        },
+      ],
+    },
+    project,
+  );
+  const finding = {
+    ...input,
+    id: 'vibe',
+    aspect: 'overall-vibe',
+    finding:
+      'The user rated the overall feel of V2 4/5, while qualifying the heading.',
+    supportingEvidence: [{ batchId: 'vibe-check', eventId: 'reaction' }],
+  };
+  await assert.rejects(
+    saveInsight(project, { ...finding, status: 'explicit' }),
+    /explicit instruction/,
+  );
+  await saveInsight(project, finding);
+  const before = await readdir(join(project, '.incline'));
+  const preview = await previewReview(project, 'vibe');
+  assert.equal(preview.request.state.events.length, 1);
+  assert.deepEqual(preview.request.state.events[0].rating, rating);
+  assert.equal(preview.request.state.events[0].kind, 'reaction');
+  assert.equal(
+    preview.request.state.events[0].text,
+    '4, though the heading still feels cramped.',
+  );
+  assert.deepEqual(await readdir(join(project, '.incline')), before);
 });
 test('live review requires current payload hash, saves an immutable receipt and preserves insights/evidence', async (t) => {
   const { project, recordPath } = await setup(t);

@@ -4,6 +4,7 @@ import { mkdtemp, writeFile, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { validateBatch } from './feedback.mjs';
 
 const cli = resolve(
   process.env.INCLINE_FEEDBACK_TEST_CLI ?? 'local/feedback-cli.mjs',
@@ -175,4 +176,147 @@ test('concurrent identical checkpoints publish exactly one complete record', asy
     ['already-recorded', 'recorded'],
   );
   assert.equal(run('read').batches.length, 1);
+});
+
+const vibeRating = (value = 3) => ({
+  value,
+  min: 1,
+  max: 5,
+  question:
+    'How much do you like the overall vibe of this version for this project?',
+  minLabel: 'Not for me',
+  maxLabel: 'Love it',
+});
+function reactionBatch() {
+  const data = batch();
+  data.mode = 'live';
+  data.events[0] = {
+    ...data.events[0],
+    kind: 'reaction',
+    text: '3 — I like the scene, but the heading feels cramped.',
+    context:
+      'Overall dashboard V1. Comment is partial; unmentioned qualities unknown.',
+    rating: vibeRating(),
+  };
+  return data;
+}
+
+test('overall ratings retain their scale and partial comments without assigning acceptance or preference', async (t) => {
+  const { root, input, run, save } = await setup(t);
+  for (const value of [1, 3, 5]) {
+    const data = reactionBatch();
+    data.id = `vibe-${value}`;
+    data.events[0].rating.value = value;
+    data.events[0].text = `${value} — I like the scene, but the heading feels cramped.`;
+    await save(data);
+    run('record', '--input', input);
+    assert.equal(run('record', '--input', input).status, 'already-recorded');
+    const record = run('read').batches.find((item) => item.id === data.id);
+    assert.deepEqual(record.events, data.events);
+    assert.equal(record.events[0].disposition, undefined);
+    assert.equal(record.artifacts[0].missingReason, 'Screenshot unavailable');
+  }
+  assert.deepEqual(await readdir(join(root, '.incline')), ['feedback']);
+});
+
+test('rating-only, comment-only and different stated scales survive alongside legacy feedback', async (t) => {
+  const { input, run, save } = await setup(t);
+  const original = batch();
+  await save(original);
+  run('record', '--input', input);
+  const data = reactionBatch();
+  data.id = 'optional-responses';
+  data.events[0].text = '4';
+  data.events[0].rating.value = 4;
+  const comment = {
+    ...data.events[0],
+    id: 'comment',
+    text: 'Something about the composition feels off.',
+  };
+  delete comment.rating;
+  data.events.push(comment, {
+    ...data.events[0],
+    id: 'own-scale',
+    text: '7.5 out of 10 for the overall feel',
+    rating: { ...vibeRating(7.5), max: 10 },
+  });
+  await save(data);
+  run('record', '--input', input);
+  const records = run('read').batches;
+  assert.deepEqual(
+    records.find((item) => item.id === original.id).events,
+    original.events,
+  );
+  assert.deepEqual(
+    records.find((item) => item.id === data.id).events,
+    data.events,
+  );
+});
+
+test('ratings require explicit reactions, identifiable versions and a complete finite scale', () => {
+  for (const mutate of [
+    (e) => {
+      e.evidence = 'inference';
+    },
+    (e) => {
+      e.evidence = 'observation';
+    },
+    (e) => {
+      e.kind = 'hypothesis';
+      e.evidence = 'inference';
+    },
+    (e) => {
+      e.kind = 'acceptance';
+    },
+    (e) => {
+      e.artifactIds = [];
+    },
+    (e) => {
+      e.rating.value = 6;
+    },
+    (e) => {
+      e.rating.value = 0;
+    },
+    (e) => {
+      e.rating.value = '3';
+    },
+    (e) => {
+      e.rating.value = NaN;
+    },
+    (e) => {
+      e.rating.min = -Infinity;
+    },
+    (e) => {
+      e.rating.max = Infinity;
+    },
+    (e) => {
+      e.rating.max = 1;
+    },
+    (e) => {
+      e.rating.min = 6;
+    },
+    (e) => {
+      e.rating.question = '';
+    },
+    (e) => {
+      delete e.rating.minLabel;
+    },
+    (e) => {
+      delete e.rating.maxLabel;
+    },
+    (e) => {
+      e.rating.comment = 'Unrecognized field';
+    },
+  ]) {
+    const data = reactionBatch();
+    mutate(data.events[0]);
+    assert.throws(() => validateBatch(data));
+  }
+  const data = reactionBatch();
+  delete data.events[0].rating;
+  data.events[0].evidence = 'inference';
+  assert.throws(
+    () => validateBatch(data),
+    /reaction requires explicit user evidence/,
+  );
 });

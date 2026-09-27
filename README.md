@@ -91,6 +91,10 @@ Once you have activated recording, ordinary feedback is enough—you do not need
 
 To resume in a new conversation, say: **“Use Incline for this iteration. Read this project’s saved collection and feedback before we continue.”** To stop, say: **“Stop recording Incline feedback for this task.”** Existing records stay available.
 
+After substantial previews, Incline may occasionally invite an **optional overall-vibe rating and optional comment**: “How much do you like the overall vibe of this version for this project? 1 — Not for me … 5 — Love it.” Either response can help the agent understand what resonates with you; you can skip both or ask for no rating prompts. It avoids asking after every small edit or repeating feedback already given, and the invitation does not hold up authorized work.
+
+The score describes that version as a whole. Comments supply partial detail; unmentioned qualities and the full reasons behind a reaction remain unknown. When recording is enabled, the journal preserves the response, question, scale and exact version reference, including any missing visual capture. A high rating is not blanket approval, and skipping or saying “push” creates no score. See [feedback checkpoints](skills/incline/references/feedback-checkpoints.md). This works through the active agent, not a new browser survey or automatic observer.
+
 ### What to expect
 
 Taste stays project-local unless you explicitly save a collection to the personal library. Global installation makes the skill available across projects; it does not merge their preferences. Personal-library exports currently include collections, not the separate iteration journal.
