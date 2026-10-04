@@ -1,6 +1,6 @@
 # Library
 
-**Use for:** explicitly listing, saving or reusing personal collections or curated insight snapshots across projects.
+**Use for:** listing, saving or reusing personal collections, curated insights or observed design snapshots across projects within their authorized scope.
 **Result:** a chosen reusable snapshot or a project-local imported draft with its source context intact. A library lookup alone does not authorize importing or applying a collection.
 
 For prompt recipes, use [prompt operations](../prompts.md). They use the separate personal prompt store, source-preserving copies and revision-specific results. An explicitly enabled project setting permits read-only prompt lookup within that selected library; it does not enable automatic personal saves or change collection/insight access.
@@ -12,3 +12,5 @@ Global installation does not make library access automatic. Respect `--local-onl
 After a save, verify and report the returned entry. After reuse, continue the imported draft through Collect if the user wants to refine it, or support Design if applying the chosen evidence was requested. Pass the entry/session IDs and provenance rather than restarting intake. The reference collection library exports collections, not the separate iteration journal. Automatic suggestions and a dedicated multi-collection mixing interface remain planned.
 
 For curated findings, follow [personal insight operations](../insights.md#explicit-personal-insight-snapshots) instead of collection export. Preview the precise finding, scope, exceptions, selected source revisions and event/artifact bundles; save only within explicit user authorization. Use the separate `--personal-dir` store; `--library-dir` retains its collection-only meaning. Preserve differing source contexts and contradictory evidence. Import requires a relevance note for the new brief and creates a tentative project draft with a portable provenance receipt. It does not create an explicit instruction or automatically apply the finding. No broad repository scan or automatic promotion is part of this workflow.
+
+For observed project milestones, follow [design snapshots](../design-snapshots.md). Their separate `~/.incline/design-library/` store includes an observed guide, retained visual/source files, contextual reactions and limitations. Query and read selected snapshots, then import useful ones as inspiration with a relevance note. Publication is explicit or follows the project’s saved auto-save opt-in for its selected directory during active recording. This opt-in does not change collection, insight or prompt boundaries.

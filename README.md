@@ -44,7 +44,7 @@ Incline remains one installable skill. Its [entry point](skills/incline/SKILL.md
 | [Brainstorm](skills/incline/references/workflows/brainstorm.md) | Clarify an idea's purpose, look and behaviour, compare useful options, and form a shared creative brief before detailed planning. |
 | [Design](skills/incline/references/workflows/design.md) | Interpret references, critique or improve a frontend, and write a project design brief. |
 | [Feedback](skills/incline/references/workflows/feedback.md) | Catch up on accessible history and record meaningful iteration checkpoints. |
-| [Library](skills/incline/references/workflows/library.md) | Explicitly find, save and reuse personal collections. |
+| [Library](skills/incline/references/workflows/library.md) | Find, save and reuse personal collections, curated insights and observed design snapshots within their selected scope. |
 | [Prompt](skills/incline/references/workflows/prompt.md) | Curate source-attributed prompts, retrieve relevant recipes, and write or adapt execution briefs. |
 
 You can keep saying “Use Incline”; there are no extra skills to install or names to memorize. “Improve this screen using these references” enters Design, while “save these references” enters Collect. For “improve this screen and record my feedback,” Design owns the frontend work and Feedback supports it. Shared evidence rules have one home, and workflows hand off saved paths and context without restarting intake.
@@ -97,7 +97,7 @@ The score describes that version as a whole. Comments supply partial detail; unm
 
 ### What to expect
 
-Taste stays project-local unless you explicitly save a collection to the personal library. Global installation makes the skill available across projects; it does not merge their preferences. Personal-library exports currently include collections, not the separate iteration journal.
+Taste stays project-local unless you authorize a personal copy. Global installation makes the skill available across projects; it does not merge their preferences. Collections, curated insights, prompts and observed design snapshots use separate personal stores with their own scope; collection export does not copy the separate iteration journal. Design snapshots support project opt-in for future personal saves while recording is active.
 
 Catch-up depends on the history and artifacts your agent can access. Summarized conversations remain labeled summaries, unavailable screenshots remain gaps, and unchanged elements are not treated as approval. The skill guides the active agent; it does not independently watch chats or retrieve inaccessible conversations.
 
@@ -128,6 +128,9 @@ See [prompt commands and schema](skills/incline/references/prompts.md), [product
   draft.json                 unfinished work
   assets/<reference-id>.*     original images and Markdown design guides
   feedback/<batch-id>/        iteration evidence and available artifact snapshots
+  design-snapshots/<id>/      observed milestone guide, reactions and retained files
+  design-references/<hash>/   imported design inspiration with provenance
+  design-snapshot-settings.json  project opt-in for personal design saves
   insights/<id>/<revision>.json  versioned findings linked to evidence
   knowledge/                 rebuildable index and generated topic views
 ```
@@ -184,6 +187,21 @@ In another project, open **Your collections → Personal library** and choose **
 Project edits do not update the personal copy or other projects. Saving another personal copy creates a new snapshot. This supports several different styles without averaging them into one profile, and does not scan or require access to other repositories. Existing project-only collections can be copied through the same explicit action; their original files and revision history stay intact.
 
 The personal library is only read when opened or used and is created only when saving a copy. The agent's existing filesystem permissions still apply; if access is denied, Incline reports the required library location and preserves existing data. Global installation grants no additional filesystem permission. See [personal-library workflow](skills/incline/references/personal-library.md) for storage and agent details.
+
+## Remember a finished design as a reference
+
+Incline can retain a meaningful design milestone as an **observed DESIGN.md, selected screenshots or motion captures, original user reactions and version context**. It keeps partial approval and unresolved work visible. The generated guide lives inside `.incline/design-snapshots/<id>/`; it leaves your root `DESIGN.md` untouched.
+
+Try these prompts:
+
+- **Save once:** “Use Incline to save this version as a design snapshot. Keep my actual feedback, retained desktop screenshots and the fact that mobile is still unfinished.”
+- **Reuse elsewhere:** “Search my Incline design library for portfolio references. Show relevant snapshots with their original context, then import the one I choose as inspiration.”
+- **Enable future personal saves:** “While Incline recording is active for this project, save meaningful milestones I’m satisfied with to my personal design library. Keep qualifications and don’t treat ‘push’ as aesthetic approval.”
+- **Stop personal saves:** “Disable automatic personal design saves for this project; keep recording locally.”
+
+During active recording, the agent can capture a stable milestone with expressed contextual satisfaction, then offer to save the concrete snapshot for other projects. Personal copies require explicit authorization or the project opt-in above and live separately under `~/.incline/design-library/`. Each copy includes its selected evidence so it remains readable if the original checkout disappears. A later project imports an independent reference with a relevance note, not a universal preference or replacement design rule.
+
+This is an agent workflow and packaged CLI, not a new browser tab or background observer. Missing screenshots remain gaps; source inspection is distinguished from rendered inspection. There is no automatic rating threshold, repo scan or guarantee of accurate aesthetic interpretation. See [snapshot commands, settings and schema](skills/incline/references/design-snapshots.md).
 
 ## Bring references from the conversation
 

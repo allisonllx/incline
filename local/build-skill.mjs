@@ -9,6 +9,7 @@ await build({
     'jev-review': 'local/jev-review-cli.mjs',
     prompts: 'local/prompts-cli.mjs',
     'prompt-routing': 'local/prompt-routing-cli.mjs',
+    'design-snapshots': 'local/design-snapshots-cli.mjs',
   },
   bundle: true,
   platform: 'node',

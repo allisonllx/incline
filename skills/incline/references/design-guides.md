@@ -31,7 +31,7 @@ Read the stored original and user notes alongside the project brief and relevant
 
 When a direction has been chosen for the current project, the agent can write a project-specific `DESIGN.md` documenting the intended implementation: colour roles, typography, layout, components, responsive behaviour and relevant motion. Include source/reference IDs, explicit qualities to preserve, and decisions that remain hypotheses. Adapt to the actual content rather than combining every source. Inspect an existing project guide before updating it and preserve unrelated instructions and approved qualities.
 
-This is an agent synthesis step. Incline stores evidence and does not automatically generate, approve or overwrite the project's DESIGN.md. Keep the original guide in `.incline/` alongside broader taste evidence. Positive feedback on a complete result supports that example; it does not separately confirm all its tokens for every future project.
+This is an agent synthesis step. Incline does not automatically approve or overwrite the project root DESIGN.md. For an observed milestone, [design snapshots](design-snapshots.md) generate a separate guide under `.incline/design-snapshots/<id>/`, with retained visuals, original reactions and qualifications. Keep the original guide in `.incline/` alongside broader taste evidence. Positive feedback on a complete result supports that example; it does not separately confirm all its tokens for every future project.
 
 ## Optional public getdesign.md collection
 
